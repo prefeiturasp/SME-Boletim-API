@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using SME.SERAp.Boletim.Infra.Services;
 using SME.SERAp.Boletim.IoC;
+using StackExchange.Redis;
 using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +49,18 @@ builder.Services.AddSingleton(_ =>
 var configuracaoRabbitLogOptions = new RabbitLogOptions();
 builder.Configuration.GetSection("RabbitLog").Bind(configuracaoRabbitLogOptions, c => c.BindNonPublicProperties = true);
 builder.Services.AddSingleton(configuracaoRabbitLogOptions);
+
+var redisOptions = new RedisOptions();
+builder.Configuration.GetSection(RedisOptions.Secao).Bind(redisOptions, c => c.BindNonPublicProperties = true);
+
+var redisConfigurationOptions = new ConfigurationOptions()
+{
+    Proxy = redisOptions.Proxy,
+    SyncTimeout = redisOptions.SyncTimeout,
+    EndPoints = { redisOptions.Endpoint }
+};
+var muxer = ConnectionMultiplexer.Connect(redisConfigurationOptions);
+builder.Services.AddSingleton<IConnectionMultiplexer>(muxer);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationInsightsTelemetry(builder.Configuration);

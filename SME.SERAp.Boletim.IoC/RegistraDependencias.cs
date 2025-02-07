@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dados.Cache;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dados.Mapeamentos;
 using SME.SERAp.Boletim.Dados.Repositorios.Serap;
@@ -31,13 +32,14 @@ namespace SME.SERAp.Boletim.IoC
 
         private static void RegistrarRepositorios(IServiceCollection services)
         {
+            services.TryAddScoped<IRepositorioCache, RepositorioCache>();
             services.TryAddScoped<IRepositorioAluno, RepositorioAluno>();
         }
 
         private static void RegistrarServicos(IServiceCollection services)
         {
-            //services.TryAddScoped<IServicoTelemetria, ServicoTelemetria>();
-            //services.TryAddScoped<IServicoLog, ServicoLog>();
+            services.TryAddScoped<IServicoTelemetria, ServicoTelemetria>();
+            services.TryAddScoped<IServicoLog, ServicoLog>();
 
         }
 
