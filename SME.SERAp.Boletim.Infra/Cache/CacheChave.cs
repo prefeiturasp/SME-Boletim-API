@@ -14,6 +14,12 @@ namespace SME.SERAp.Boletim.Infra.Cache
         }
 
         /// <summary>
+        /// Autenticação
+        /// 0 - Código
+        /// </summary>
+        public const string Autenticacao = "boletim-auth-{0}";
+
+        /// <summary>
         /// Questões resumidas da prova
         /// 0 - Prova Id
         /// </summary>

@@ -15,6 +15,7 @@ namespace SME.SERAp.Boletim.Dados.Mapeamentos
             FluentMapper.Initialize(config =>
             {
                 config.AddMap(new AlunoMap());
+                config.AddMap(new AbrangenciaMap());
                 config.ForDommel();
             });
         }
