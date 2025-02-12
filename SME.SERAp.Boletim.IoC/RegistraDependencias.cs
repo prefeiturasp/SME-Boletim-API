@@ -47,6 +47,7 @@ namespace SME.SERAp.Boletim.IoC
         private static void RegistrarCasosDeUso(IServiceCollection services)
         {
             services.TryAddScoped<IObterAlunoPorRaUseCase, ObterAlunoPorRaUseCase>();
+            services.TryAddScoped<IObterUesAbrangenciaUsuarioLogadoUseCase, ObterUesAbrangenciaUsuarioLogadoUseCase>();
             services.TryAddScoped<IAutenticacaoUseCase, AutenticacaoUseCase>();
             services.TryAddScoped<IAutenticacaoValidarUseCase, AutenticacaoValidarUseCase>();
         }
