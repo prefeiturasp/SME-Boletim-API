@@ -18,7 +18,7 @@
 
         public long DreId { get; set; }
 
-        public long UeId { get; set; }
+        public long? UeId { get; set; }
 
         public long TurmaId { get; set; }
 

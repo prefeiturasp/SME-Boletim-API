@@ -166,5 +166,11 @@ namespace SME.SERAp.Boletim.Infra.Cache
         /// Dados da versão do app
         /// </summary>
         public const string VersaoApp = "versaoApp";
+
+        /// <summary>
+        /// Ues de abrangência do usuário
+        /// 0 - Login do usuário
+        /// </summary>
+        public const string UsuarioLoginUeAbrangencia = "us-login-ue-abrangencia-{0}";
     }
 }
