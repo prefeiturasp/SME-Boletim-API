@@ -34,6 +34,8 @@ namespace SME.SERAp.Boletim.IoC
         {
             services.TryAddScoped<IRepositorioCache, RepositorioCache>();
             services.TryAddScoped<IRepositorioAluno, RepositorioAluno>();
+            services.TryAddScoped<IRepositorioAbrangencia, RepositorioAbrangencia>();
+            services.TryAddScoped<IRepositorioBoletimEscolar, RepositorioBoletimEscolar>();
         }
 
         private static void RegistrarServicos(IServiceCollection services)
@@ -46,6 +48,9 @@ namespace SME.SERAp.Boletim.IoC
         private static void RegistrarCasosDeUso(IServiceCollection services)
         {
             services.TryAddScoped<IObterAlunoPorRaUseCase, ObterAlunoPorRaUseCase>();
+            services.TryAddScoped<IAutenticacaoUseCase, AutenticacaoUseCase>();
+            services.TryAddScoped<IAutenticacaoValidarUseCase, AutenticacaoValidarUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarPorUeUseCase, ObterBoletimEscolarPorUeUseCase>();
         }
     }
 }

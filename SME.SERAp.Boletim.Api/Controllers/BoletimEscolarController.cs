@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
-using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos;
 
 namespace SME.SERAp.Boletim.Api.Controllers
@@ -10,15 +8,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class AlunoController : ControllerBase
+    public class BoletimEscolarController : ControllerBase
     {
-        [HttpGet("{alunoRA}")]
+        [HttpGet("{codigoUe}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> SalvarPreferencias(long alunoRA,
-            [FromServices] IObterAlunoPorRaUseCase obterAlunoPorRaUseCase)
+        public async Task<IActionResult> ObterBoletimPorUe(long codigoUe,
+            [FromServices] IObterBoletimEscolarPorUeUseCase obterBoletimEscolarPorUeUseCase)
         {
-            return Ok(await obterAlunoPorRaUseCase.Executar(alunoRA));
+            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(codigoUe));
         }
     }
 }
