@@ -13,13 +13,13 @@ COPY ["SME.SERAp.Boletim.Infra/SME.SERAp.Boletim.Infra.csproj", "SME.SERAp.Bolet
 COPY ["SME.SERAp.Boletim.IoC/SME.SERAp.Boletim.IoC.csproj", "SME.SERAp.Boletim.IoC/"]
 RUN dotnet restore "SME.SERAp.Boletim.Api/SME.SERAp.Boletim.Api.csproj"
 COPY . .
-WORKDIR "/SME.SERAp.Boletim.Api/SME.SERAp.Boletim.Api"
+WORKDIR "/src/SME.SERAp.Boletim.Api"
 RUN dotnet build "SME.SERAp.Boletim.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "SME.SERAp.Boletim.Api.csproj" -c Release -o /app/publish
 
-FROM base AS final
+FROM base AS final 
 WORKDIR /app
 ENV TZ=America/Sao_Paulo
 RUN apt-get update \
