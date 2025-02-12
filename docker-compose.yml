@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  sme.serap.boletim.api:
+    image: ${DOCKER_REGISTRY-}smeserapboletimapi
+    build:
+      context: .
+      dockerfile: SME.SERAp.Boletim.Api/Dockerfile
+    networks:
+      - sme-network    
+networks:
+  sme-network:
+    external:
+      name: sme-network
+    driver: bridge
