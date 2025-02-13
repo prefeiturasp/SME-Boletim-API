@@ -14,6 +14,12 @@ namespace SME.SERAp.Boletim.Infra.Cache
         }
 
         /// <summary>
+        /// Autenticação
+        /// 0 - Código
+        /// </summary>
+        public const string Autenticacao = "boletim-auth-{0}";
+
+        /// <summary>
         /// Questões resumidas da prova
         /// 0 - Prova Id
         /// </summary>
@@ -103,15 +109,17 @@ namespace SME.SERAp.Boletim.Infra.Cache
         /// </summary>
         public const string AlunoTurma = "al-turmas-{0}";
 
-
-
         /// <summary>
         /// Turmas do aluno
         /// 0 - Código ra do aluno
         /// </summary>
         public const string AlunoRa = "al-ra-{0}";
 
-
+        /// <summary>
+        /// Boletins da ue
+        /// 0 - Código da ue
+        /// </summary>
+        public const string BoletimUe = "bol-ue-{0}";
 
         /// <summary>
         /// Prova do aluno
@@ -158,5 +166,11 @@ namespace SME.SERAp.Boletim.Infra.Cache
         /// Dados da versão do app
         /// </summary>
         public const string VersaoApp = "versaoApp";
+
+        /// <summary>
+        /// Ues de abrangência do usuário
+        /// 0 - Login do usuário
+        /// </summary>
+        public const string UsuarioLoginUeAbrangencia = "us-login-ue-abrangencia-{0}";
     }
 }

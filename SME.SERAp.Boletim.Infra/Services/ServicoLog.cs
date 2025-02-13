@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static MongoDB.Driver.WriteConcern;
 
 namespace SME.SERAp.Boletim.Infra.Services
 {
@@ -63,15 +64,20 @@ namespace SME.SERAp.Boletim.Infra.Services
                     VirtualHost = configuracaoRabbitOptions.VirtualHost
                 };
 
-                using (var conexaoRabbit = factory.CreateConnection())
+                using var conexaoRabbit = await factory.CreateConnectionAsync();
+                using var channel = await conexaoRabbit.CreateChannelAsync();
+                var props = new BasicProperties
                 {
-                    using (IModel _channel = conexaoRabbit.CreateModel())
-                    {
-                        var props = _channel.CreateBasicProperties();
-                        props.Persistent = true;
-                        _channel.BasicPublish(ExchangeRabbit.Logs, RotasRabbit.RotaLogs, props, body);
-                    }
-                }
+                    Persistent = true
+                };
+
+                await channel.BasicPublishAsync(
+                    ExchangeRabbit.Logs,
+                    RotasRabbit.RotaLogs,
+                    true,
+                    props,
+                    body
+                );
             }
             catch (Exception ex)
             {
