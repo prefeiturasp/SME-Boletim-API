@@ -10,7 +10,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
     public class AutenticacaoController : ControllerBase
     {
         [HttpPost]
-        [ChaveAutenticacaoApi]
+        //[ChaveAutenticacaoApi]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]

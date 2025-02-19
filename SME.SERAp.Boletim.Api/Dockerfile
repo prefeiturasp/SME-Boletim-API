@@ -1,10 +1,15 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
+#EXPOSE 8080
+#EXPOSE 8081
 EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+
+RUN if ! dotnet nuget list source | grep -q "https://api.nuget.org/v3/index.json"; then dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org; fi
+
 COPY ["SME.SERAp.Boletim.Api/SME.SERAp.Boletim.Api.csproj", "SME.SERAp.Boletim.Api/"]
 COPY ["SME.SERAp.Boletim.Aplicacao/SME.SERAp.Boletim.Aplicacao.csproj", "SME.SERAp.Boletim.Aplicacao/"]
 COPY ["SME.SERAp.Boletim.Dados/SME.SERAp.Boletim.Dados.csproj", "SME.SERAp.Boletim.Dados/"]
@@ -30,4 +35,5 @@ RUN apt-get update \
 RUN sed -i 's/DEFAULT@SECLEVEL=2/DEFAULT@SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
 COPY --from=publish /app/publish .
+
 ENTRYPOINT ["dotnet", "SME.SERAp.Boletim.Api.dll"]
