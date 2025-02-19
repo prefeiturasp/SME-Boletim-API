@@ -92,7 +92,7 @@ app.UseCors(builder => builder
 
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
