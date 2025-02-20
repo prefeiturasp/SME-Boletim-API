@@ -70,7 +70,7 @@ RegistraAutenticacao.Registrar(builder.Services, builder.Configuration);
 RegistraDocumentacaoSwagger.Registrar(builder.Services);
 RegistraDependencias.Registrar(builder.Services);
 
-var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -79,15 +79,24 @@ var app = builder.Build();
 //    app.UseSwaggerUI();
 //}
 
+// Configuração do CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
-
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins");
-
+app.UseCors("AllowAllOrigins"); // Certifique-se de que o nome corresponde ao definido acima
 app.UseAuthorization();
 
 app.MapControllers();
