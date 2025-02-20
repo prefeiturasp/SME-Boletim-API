@@ -79,7 +79,6 @@ RegistraDependencias.Registrar(builder.Services);
 //    app.UseSwaggerUI();
 //}
 
-// Configuração do CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policy =>
@@ -96,7 +95,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins"); // Certifique-se de que o nome corresponde ao definido acima
+app.UseCors("AllowAllOrigins");
 app.UseAuthorization();
 
 app.MapControllers();
