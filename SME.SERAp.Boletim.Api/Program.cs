@@ -86,17 +86,10 @@ app.UseSwaggerUI();
 
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
-
-app.UseCors(builder => builder
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthorization();
 
-app.MapControllers();
 app.MapControllers();
 
 app.Run();
