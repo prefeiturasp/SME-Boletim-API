@@ -1,4 +1,5 @@
 ﻿using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterBoletimEscolarPorUeUseCase
     {
-        Task<IEnumerable<BoletimEscolar>> Executar(long ueId);
+        Task<IEnumerable<BoletimEscolarDto>> Executar(long ueId);
     }
 }
