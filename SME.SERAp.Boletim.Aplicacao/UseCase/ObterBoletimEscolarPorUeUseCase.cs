@@ -47,7 +47,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     int indiceParenteses = boletim.ComponenteCurricular.IndexOf('(');
 
                     boletimDto.DisciplinaDescricao = boletim.ComponenteCurricular.Substring(0, indiceParenteses).Trim();
-                    boletimDto.AnoEscolar = Convert.ToInt32(boletim.ComponenteCurricular.Substring(indiceParenteses + 1).Replace("°", "").Replace("ano", "").Replace(")", "").Trim());
+                    boletimDto.AnoEscolar = Convert.ToInt32(Regex.Match(boletim.ComponenteCurricular, @"\d+").Value);
                     boletimDto.AnoEscolarDescricao = $"{boletimDto.AnoEscolar}º Ano";
                     boletimDto.DisciplinaId = boletimDto.DisciplinaDescricao == "Matemática" ? 2 : 5;
 
