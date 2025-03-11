@@ -2,7 +2,7 @@
 {
     public class JwtOptions
     {
-        public static string Secao => "JwtOptions";
+        public static string Secao => "Jwt";
         public string Issuer { get; set; }
         public string Audience { get; set; }
         public string ExpiresInMinutes { get; set; }

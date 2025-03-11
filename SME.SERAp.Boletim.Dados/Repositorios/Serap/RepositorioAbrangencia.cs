@@ -46,7 +46,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<AbrangenciaDetalheDto>> ObterAbrangenciaPorLoginGrupo(string login, long grupoId)
+        public async Task<IEnumerable<AbrangenciaDetalheDto>> ObterAbrangenciaPorLoginGrupo(string login, Guid perfil)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -64,11 +64,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                 a.inicio as Inicio,
                                 a.fim as Fim
                             FROM abrangencia a
-                            LEFT JOIN usuario_serap_coresso usc ON usc.id = a.usuario_id
-                            LEFT JOIN grupo_serap_coresso gsc ON gsc.id = a.grupo_id
-                            WHERE usc.login = @login AND a.grupo_id = @grupoId";
+                            INNER JOIN usuario_serap_coresso usc ON usc.id = a.usuario_id
+                            INNER JOIN grupo_serap_coresso gsc ON gsc.id = a.grupo_id
+                            WHERE usc.login = @login AND gsc.id_coresso = @perfil";
 
-                var resultado = await conn.QueryAsync<AbrangenciaDetalheDto>(query, new { login, grupoId });
+                var resultado = await conn.QueryAsync<AbrangenciaDetalheDto>(query, new { login, perfil });
                 return resultado;
             }
             finally

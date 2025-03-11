@@ -1,4 +1,4 @@
-
+version: '3.4'
 
 services:
   sme.serap.boletim.api:
@@ -6,8 +6,13 @@ services:
     build:
       context: .
       dockerfile: SME.SERAp.Boletim.Api/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
     networks:
-      - sme-network    
+      - sme-network
+
 networks:
   sme-network:
     external:

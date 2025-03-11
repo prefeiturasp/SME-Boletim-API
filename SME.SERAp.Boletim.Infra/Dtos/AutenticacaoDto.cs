@@ -3,6 +3,6 @@
     public class AutenticacaoDto
     {
         public string Login { get; set; }
-        public long GrupoId { get; set; }
+        public Guid Perfil { get; set; }
     }
 }

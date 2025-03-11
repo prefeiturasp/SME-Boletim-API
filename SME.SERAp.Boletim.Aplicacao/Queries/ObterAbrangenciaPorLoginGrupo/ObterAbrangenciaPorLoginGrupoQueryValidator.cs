@@ -10,7 +10,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbrangenciaPorLoginGrupo
                .NotEmpty()
                .WithMessage("O login ou código Rf é obrigatório.");
 
-            RuleFor(c => c.GrupoId)
+            RuleFor(c => c.Perfil)
                 .NotEmpty()
                 .WithMessage("O id do Grupo é obrigatório.");
         }
