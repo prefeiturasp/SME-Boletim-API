@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,30 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             {
                 const string query = @"SELECT * FROM boletim_escolar WHERE ue_id = @ueId;";
                 return await conn.QueryAsync<BoletimEscolar>(query, new { ueId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<ProvaBoletimEscolarDto>> ObterProvasBoletimEscolarPorUe(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select 
+	                            be.prova_id as Id,
+	                            p.disciplina as Descricao
+                            from 
+	                            boletim_escolar be
+                            inner join prova p on
+	                            p.id = be.prova_id
+                            where
+	                            be.ue_id = @ueId";
+
+                return await conn.QueryAsync<ProvaBoletimEscolarDto>(query, new { ueId });
             }
             finally
             {
