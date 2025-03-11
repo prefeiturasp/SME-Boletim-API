@@ -1,18 +1,17 @@
 ﻿using MediatR;
-using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbrangenciaPorLoginGrupo
 {
     public class ObterAbrangenciaPorLoginGrupoQuery : IRequest<IEnumerable<AbrangenciaDetalheDto>>
     {
-        public ObterAbrangenciaPorLoginGrupoQuery(string login, long grupoId)
+        public ObterAbrangenciaPorLoginGrupoQuery(string login, Guid perfil)
         {
             Login = login;
-            GrupoId = grupoId;
+            Perfil = perfil;
         }
 
         public string Login { get; set; }
-        public long GrupoId { get; set; }
+        public Guid Perfil { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbrangenciaPorLoginGrupo
 
         public async Task<IEnumerable<AbrangenciaDetalheDto>> Handle(ObterAbrangenciaPorLoginGrupoQuery request, CancellationToken cancellationToken)
         {
-            return await repositorioAbrangencia.ObterAbrangenciaPorLoginGrupo(request.Login, request.GrupoId);
+            return await repositorioAbrangencia.ObterAbrangenciaPorLoginGrupo(request.Login, request.Perfil);
         }
     }
 }
