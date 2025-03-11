@@ -22,9 +22,9 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<IEnumerable<BoletimEscolarDto>> Executar(long ueId)
+        public async Task<IEnumerable<BoletimEscolarDto>> Executar(long ueId, FiltroBoletimDto filtros)
         {
-            var boletins = await mediator.Send(new ObterBoletimEscolarPorUeQuery(ueId));
+            var boletins = await mediator.Send(new ObterBoletimEscolarPorUeQuery(ueId, filtros));
 
             if (boletins != null)
             {
