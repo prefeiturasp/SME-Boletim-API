@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimEscolarPorUe;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
 using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Exceptions;
@@ -24,6 +25,12 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<IEnumerable<BoletimEscolarDto>> Executar(long ueId)
         {
+            var abrangenciasUsuarioLogado = await mediator
+                .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
+
+            if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
+
             var boletins = await mediator.Send(new ObterBoletimEscolarPorUeQuery(ueId));
 
             if (boletins != null)

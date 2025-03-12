@@ -19,7 +19,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(await obterBoletimEscolarPorUeUseCase.Executar(codigoUe));
         }
 
-        [HttpGet("{codigoUe}/turma")]
+        [HttpGet("{codigoUe}/turmas")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
         public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long codigoUe,

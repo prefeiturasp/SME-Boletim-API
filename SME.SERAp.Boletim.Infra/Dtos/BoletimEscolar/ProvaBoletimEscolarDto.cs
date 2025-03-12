@@ -8,6 +8,6 @@
 
         public IEnumerable<ProvaNivelProficienciaBoletimEscolarDto> Niveis { get; set; }
 
-        public IEnumerable<TurmaBoletimEscolarDto> Turmas { get; set; }
+        public IEnumerable<ProvaTurmaBoletimEscolarDto> Turmas { get; set; }
     }
 }
