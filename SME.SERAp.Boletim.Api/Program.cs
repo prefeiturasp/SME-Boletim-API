@@ -70,8 +70,6 @@ RegistraAutenticacao.Registrar(builder.Services, builder.Configuration);
 RegistraDocumentacaoSwagger.Registrar(builder.Services);
 RegistraDependencias.Registrar(builder.Services);
 
-
-
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{

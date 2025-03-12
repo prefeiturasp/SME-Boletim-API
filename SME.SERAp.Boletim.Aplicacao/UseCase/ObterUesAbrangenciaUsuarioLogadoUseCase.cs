@@ -7,16 +7,16 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
     public class ObterUesAbrangenciaUsuarioLogadoUseCase : IObterUesAbrangenciaUsuarioLogadoUseCase
     {
-        private readonly IMediator _meditor;
+        private readonly IMediator _mediator;
 
         public ObterUesAbrangenciaUsuarioLogadoUseCase(IMediator meditor)
         {
-            _meditor = meditor;
+            _mediator = meditor;
         }
 
         public Task<IEnumerable<AbrangenciaUeDto>> Executar()
         {
-            return _meditor.Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
+            return _mediator.Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
         }
     }
 }
