@@ -1,10 +1,4 @@
-﻿using SME.SERAp.Boletim.Dominio.Entidades;
-using SME.SERAp.Boletim.Infra.Dtos.Boletim;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 
 namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
