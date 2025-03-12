@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
@@ -14,9 +15,9 @@ namespace SME.SERAp.Boletim.Api.Controllers
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
         public async Task<IActionResult> ObterBoletimPorUe(long codigoUe,
-            [FromServices] IObterBoletimEscolarPorUeUseCase obterBoletimEscolarPorUeUseCase)
+            [FromServices] IObterBoletimEscolarPorUeUseCase obterBoletimEscolarPorUeUseCase, [FromQuery] FiltroBoletimDto filtros)
         {
-            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(codigoUe));
+            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(codigoUe, filtros));
         }
 
         [HttpGet("{codigoUe}/turmas")]
