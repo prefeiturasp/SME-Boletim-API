@@ -1,5 +1,4 @@
-﻿using SME.SERAp.Boletim.Dominio.Entidades;
-using SME.SERAp.Boletim.Infra.Dtos.Boletim;
+﻿using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 
 namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {

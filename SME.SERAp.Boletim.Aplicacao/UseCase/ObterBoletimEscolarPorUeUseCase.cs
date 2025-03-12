@@ -2,15 +2,9 @@
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimEscolarPorUe;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
-using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
@@ -25,7 +19,6 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<IEnumerable<BoletimEscolarDto>> Executar(long ueId, FiltroBoletimDto filtros)
         {
-            var boletins = await mediator.Send(new ObterBoletimEscolarPorUeQuery(ueId, filtros));
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
@@ -33,7 +26,6 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
             var boletins = await mediator.Send(new ObterBoletimEscolarPorUeQuery(ueId, filtros));
-
             if (boletins != null)
             {
 

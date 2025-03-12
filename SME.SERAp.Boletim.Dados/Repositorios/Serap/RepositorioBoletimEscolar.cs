@@ -4,12 +4,8 @@ using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 {
@@ -26,7 +22,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
             try
             {
-            
+
                 var query = new StringBuilder(@"
                 SELECT id, ue_id, prova_id, componente_curricular, 
                        abaixo_basico, abaixo_basico_porcentagem, 
@@ -47,12 +43,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                    { "linguaPortuguesa", "Língua Portuguesa" }
                  };
 
-             
+
                 parameters.Add("ueId", ueId);
 
 
                 // Aplicar filtros dinamicamente
-               
+
 
                 if (filtro.ComponentesCurriculares.Any())
                 {
@@ -64,7 +60,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     parameters.Add("ComponentesCurriculares", componentesCorrigidos, DbType.Object);
                 }
 
-                 if (filtro.Ano.Any())
+                if (filtro.Ano.Any())
                 {
                     var anos = filtro.Ano.ToArray(); // Converte para array
 
@@ -77,7 +73,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 return await conn.QueryAsync<BoletimEscolar>(query.ToString(), parameters);
 
             }
-         
+
             finally
             {
                 conn.Close();
