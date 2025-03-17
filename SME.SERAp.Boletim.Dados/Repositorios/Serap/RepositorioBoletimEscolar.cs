@@ -94,7 +94,10 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             inner join prova p on
 	                            p.id = be.prova_id
                             where
-	                            be.ue_id = @ueId";
+	                            be.ue_id = @ueId
+                            group by
+	                            be.prova_id,
+	                            p.disciplina;";
 
                 return await conn.QueryAsync<ProvaBoletimEscolarDto>(query, new { ueId });
             }
