@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dominio.Entidades;
-using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 
@@ -92,7 +91,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         }
 
         public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
-        ObterAbaEstudanteBoletimEscolarPorUeId(string ueId, int pagina, int tamanhoPagina)
+            ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, int pagina, int tamanhoPagina)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -106,11 +105,20 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     bpa.proficiencia as proficiencia,
                                     bpa.nivel_codigo as nivelcodigo
                               FROM boletim_prova_aluno bpa
-                              WHERE bpa.ue_codigo = @ueId
+                              INNER JOIN ue u ON
+	                            u.ue_id = bpa.ue_codigo
+                              WHERE u.id = @ueId
                               ORDER BY bpa.aluno_nome
                               LIMIT @TamanhoPagina OFFSET @Offset";
 
-                var totalQuery = @"SELECT COUNT(*) FROM boletim_prova_aluno bpa WHERE bpa.ue_codigo = @ueId";
+                var totalQuery = @"SELECT 
+                                        COUNT(*) 
+                                    FROM 
+                                        boletim_prova_aluno bpa
+                                    INNER JOIN ue u ON
+	                                    u.ue_id = bpa.ue_codigo
+                                    WHERE 
+	                                    u.id = @ueId";
 
                 var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery, new { ueId });
 

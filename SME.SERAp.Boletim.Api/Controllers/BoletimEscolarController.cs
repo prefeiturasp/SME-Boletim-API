@@ -33,7 +33,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
 
         [HttpGet("{ueId}/estudantes")]
         [ProducesResponseType(typeof(BoletimEscolarComDisciplinasDto), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(string ueId,
+        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long ueId,
         [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
