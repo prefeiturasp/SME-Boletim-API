@@ -172,5 +172,36 @@ namespace SME.SERAp.Boletim.Infra.Cache
         /// 0 - Login do usuário
         /// </summary>
         public const string UsuarioLoginUeAbrangencia = "us-login-ue-abrangencia-{0}";
+
+        /// <summary>
+        /// Opções de filtros de nível de proficiência do boletim escolar por UE
+        /// 0 - ID da UE
+        /// </summary>
+        public const string BolemtimEscolarUeOpcoesFiltrosNivelProficiencia = "bol-ue-opcoes-filtros-nivel-proficiencia-{0}";
+
+        /// <summary>
+        /// Opções de filtros de ano escolar do boletim escolar por UE
+        /// 0 - ID da UE
+        /// </summary>
+        public const string BolemtimEscolarUeOpcoesFiltrosAnoEscolar = "bol-ue-opcoes-filtros-ano-escolar-{0}";
+
+        /// <summary>
+        /// Opções de filtros de componente curricular do boletim escolar por UE
+        /// 0 - ID da UE
+        /// </summary>
+        public const string BolemtimEscolarUeOpcoesFiltrosComponenteCurricular = "bol-ue-opcoes-filtros-componente-curricular-{0}";
+
+        /// <summary>
+        /// Opções de filtros de turma do boletim escolar por UE
+        /// 0 - ID da UE
+        /// </summary>
+        public const string BolemtimEscolarUeOpcoesFiltrosTurma = "bol-ue-opcoes-filtros-turma-{0}";
+
+
+        /// <summary>
+        /// Opções de filtros de valor de proficiência do boletim escolar por UE
+        /// 0 - ID da UE
+        /// </summary>
+        public const string BolemtimEscolarUeOpcoesFiltrosValorProficiencia = "bol-ue-opcoes-filtros-valor-proficiencia-{0}";
     }
 }

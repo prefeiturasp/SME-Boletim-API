@@ -28,5 +28,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterBoletimEscolarTurmaPorUeUseCase.Executar(codigoUe));
         }
+
+        [HttpGet("{codigoUe}/filtros")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(bool), 200)]
+        public async Task<IActionResult> ObterOpcoesFiltrosBoletimEscolarPorUe(long codigoUe,
+            [FromServices] IObterBoletimEscolarOpcoesFiltrosPorUeUseCase obterBoletimEscolarOpcoesFiltrosPorUeUseCase)
+        {
+            return Ok(await obterBoletimEscolarOpcoesFiltrosPorUeUseCase.Executar(codigoUe));
+        }
     }
 }
