@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
+using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
@@ -27,6 +29,26 @@ namespace SME.SERAp.Boletim.Api.Controllers
             [FromServices] IObterBoletimEscolarTurmaPorUeUseCase obterBoletimEscolarTurmaPorUeUseCase)
         {
             return Ok(await obterBoletimEscolarTurmaPorUeUseCase.Executar(codigoUe));
+        }
+
+        [HttpGet("{ueId}/estudantes")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(BoletimEscolarComDisciplinasDto), 200)]
+        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(string ueId,
+        [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(ueId, pageNumber, pageSize);
+                return Ok(resultado);
+            }
+            catch (NegocioException ex)
+            {
+                var erro = new RetornoBaseDto(ex.Message);
+                return NotFound(erro);
+            }
         }
     }
 }

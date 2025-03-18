@@ -1,4 +1,5 @@
 ﻿using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
 namespace SME.SERAp.Boletim.Dados.Interfaces
@@ -7,5 +8,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
     {
         Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long ueId, long provaId);
         Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long ueId, long provaId);
+        Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)> ObterAbaEstudanteBoletimEscolarPorUeId(string ueId, int pagina, int tamanhoPagina);
     }
 }
