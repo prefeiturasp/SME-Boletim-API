@@ -24,7 +24,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<BoletimEscolarComDisciplinasDto> Executar(string ueId, int pagina, int tamanhoPagina)
+        public async Task<BoletimEscolarComDisciplinasDto> Executar(long ueId, int pagina, int tamanhoPagina)
         {
             var (estudanteDetalhes, totalRegistros) = await mediator.Send(new ObterAbaEstudanteBoletimEscolarPorUeIdQuery(ueId, pagina, tamanhoPagina));
 

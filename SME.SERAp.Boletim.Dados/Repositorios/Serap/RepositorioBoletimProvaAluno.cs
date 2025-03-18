@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dominio.Entidades;
-using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 
@@ -92,7 +91,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         }
 
         public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
-        ObterAbaEstudanteBoletimEscolarPorUeId(string ueId, int pagina, int tamanhoPagina)
+            ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, int pagina, int tamanhoPagina)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -106,11 +105,20 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     bpa.proficiencia as proficiencia,
                                     bpa.nivel_codigo as nivelcodigo
                               FROM boletim_prova_aluno bpa
-                              WHERE bpa.ue_codigo = @ueId
+                              INNER JOIN ue u ON
+	                            u.ue_id = bpa.ue_codigo
+                              WHERE u.id = @ueId
                               ORDER BY bpa.aluno_nome
                               LIMIT @TamanhoPagina OFFSET @Offset";
 
-                var totalQuery = @"SELECT COUNT(*) FROM boletim_prova_aluno bpa WHERE bpa.ue_codigo = @ueId";
+                var totalQuery = @"SELECT 
+                                        COUNT(*) 
+                                    FROM 
+                                        boletim_prova_aluno bpa
+                                    INNER JOIN ue u ON
+	                                    u.ue_id = bpa.ue_codigo
+                                    WHERE 
+	                                    u.id = @ueId";
 
                 var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery, new { ueId });
 
@@ -122,6 +130,147 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 });
 
                 return (estudantes, totalRegistros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            np.codigo as valor,
+	                            np.descricao as texto
+                            from
+	                            boletim_prova_aluno bpa
+                            inner join ue u on
+	                            u.ue_id = bpa.ue_codigo
+                            inner join nivel_proficiencia np on
+	                            np.codigo = bpa.nivel_codigo 
+                            where
+	                            u.id = @ueId
+                            group by
+	                            np.codigo,
+	                            np.descricao
+                            order by  
+	                            np.codigo";
+
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesAnoEscolarBoletimEscolarPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            bpa.ano_escolar as valor,
+	                            bpa.ano_escolar::text as texto
+                            from
+	                            boletim_prova_aluno bpa
+                            inner join ue u on
+	                            u.ue_id = bpa.ue_codigo
+                            where
+	                            u.id = @ueId
+                            group by
+	                            bpa.ano_escolar
+                            order by
+	                            bpa.ano_escolar";
+
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesComponenteCurricularBoletimEscolarPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            bpa.disciplina_id as valor,
+	                            bpa.disciplina as texto
+                            from
+	                            boletim_prova_aluno bpa
+                            inner join ue u on
+	                            u.ue_id = bpa.ue_codigo
+                            where
+	                            u.id = @ueId
+                            group by
+	                            bpa.disciplina_id,
+	                            bpa.disciplina
+                            order by
+	                            bpa.disciplina_id,
+	                            bpa.disciplina";
+
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterOpcoesTurmaBoletimEscolarPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            REGEXP_REPLACE(bpa.turma, '^\d', '') as valor,
+	                            REGEXP_REPLACE(bpa.turma, '^\d', '') as texto
+                            from
+	                            boletim_prova_aluno bpa
+                            inner join ue u on
+	                            u.ue_id = bpa.ue_codigo
+                            where
+	                            u.id = @ueId
+                            group by
+	                            REGEXP_REPLACE(bpa.turma, '^\d', '')
+                            order by
+	                            valor";
+
+                return await conn.QueryAsync<OpcaoFiltroDto<string>>(query, new { ueId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<BoletimEscolarValoresNivelProficienciaDto> ObterValoresNivelProficienciaBoletimEscolarPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            min(bpa.proficiencia) as valorMinimo,
+	                            max(bpa.proficiencia) as valorMaximo
+                            from
+	                            boletim_prova_aluno bpa
+                            inner join ue u on
+	                            u.ue_id = bpa.ue_codigo
+                            where
+	                            u.id = @ueId";
+
+                return await conn.QueryFirstAsync<BoletimEscolarValoresNivelProficienciaDto>(query, new { ueId });
             }
             finally
             {

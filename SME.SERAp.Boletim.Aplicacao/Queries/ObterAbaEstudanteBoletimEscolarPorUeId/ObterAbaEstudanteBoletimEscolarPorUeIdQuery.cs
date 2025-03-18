@@ -12,14 +12,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPor
     class ObterAbaEstudanteBoletimEscolarPorUeIdQuery
     : IRequest<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
     {
-        public ObterAbaEstudanteBoletimEscolarPorUeIdQuery(string ueId, int pagina, int tamanhoPagina)
+        public ObterAbaEstudanteBoletimEscolarPorUeIdQuery(long ueId, int pagina, int tamanhoPagina)
         {
             UeId = ueId;
             Pagina = pagina;
             TamanhoPagina = tamanhoPagina;
         }
 
-        public string UeId { get; set; }
+        public long UeId { get; set; }
         public int Pagina { get; set; }
         public int TamanhoPagina { get; set; }
     }

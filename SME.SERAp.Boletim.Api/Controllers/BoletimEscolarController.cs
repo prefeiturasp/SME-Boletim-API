@@ -10,7 +10,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class BoletimEscolarController : ControllerBase
     {
         [HttpGet("{codigoUe}")]
@@ -33,13 +33,22 @@ namespace SME.SERAp.Boletim.Api.Controllers
 
         [HttpGet("{ueId}/estudantes")]
         [ProducesResponseType(typeof(BoletimEscolarComDisciplinasDto), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(string ueId,
+        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long ueId,
         [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
         {
             var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(ueId, pageNumber, pageSize);
             return Ok(resultado);
+        }
+
+        [HttpGet("{codigoUe}/filtros")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(bool), 200)]
+        public async Task<IActionResult> ObterOpcoesFiltrosBoletimEscolarPorUe(long codigoUe,
+            [FromServices] IObterBoletimEscolarOpcoesFiltrosPorUeUseCase obterBoletimEscolarOpcoesFiltrosPorUeUseCase)
+        {
+            return Ok(await obterBoletimEscolarOpcoesFiltrosPorUeUseCase.Executar(codigoUe));
         }
     }
 }
