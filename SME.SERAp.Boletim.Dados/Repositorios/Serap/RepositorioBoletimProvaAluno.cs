@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 
@@ -82,6 +83,45 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            np.codigo";
 
                 return await conn.QueryAsync<NivelProficienciaBoletimEscolarDto>(query, new { ueId, provaId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
+        ObterAbaEstudanteBoletimEscolarPorUeId(string ueId, int pagina, int tamanhoPagina)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"SELECT 
+                                    bpa.disciplina as disciplina,
+                                    bpa.ano_escolar as anoescolar,
+                                    bpa.turma as turma,
+                                    bpa.aluno_ra as alunora, 
+                                    bpa.aluno_nome as alunonome,
+                                    bpa.proficiencia as proficiencia,
+                                    bpa.nivel_codigo as nivelcodigo
+                              FROM boletim_prova_aluno bpa
+                              WHERE bpa.ue_codigo = @ueId
+                              ORDER BY bpa.aluno_nome
+                              LIMIT @TamanhoPagina OFFSET @Offset";
+
+                var totalQuery = @"SELECT COUNT(*) FROM boletim_prova_aluno bpa WHERE bpa.ue_codigo = @ueId";
+
+                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery, new { ueId });
+
+                var estudantes = await conn.QueryAsync<AbaEstudanteListaDto>(query, new
+                {
+                    ueId,
+                    TamanhoPagina = tamanhoPagina,
+                    Offset = (pagina - 1) * tamanhoPagina
+                });
+
+                return (estudantes, totalRegistros);
             }
             finally
             {
