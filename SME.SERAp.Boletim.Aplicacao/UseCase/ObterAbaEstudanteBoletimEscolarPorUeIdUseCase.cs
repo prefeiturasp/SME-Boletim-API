@@ -30,8 +30,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             if (estudanteDetalhes == null || !estudanteDetalhes.Any())
             {
-                var erro = new RetornoBaseDto($"Não foi possível localizar os dados dos estudantes para o UE {ueId}");
-                throw new NegocioException(erro.Mensagens.First());
+                return new BoletimEscolarComDisciplinasDto
+                {
+                    Disciplinas = new List<string>(), // Retorna uma lista vazia
+                    Estudantes = new PaginacaoDto<AbaEstudanteListaDto>(new List<AbaEstudanteListaDto>(), pagina, tamanhoPagina, 0)
+                };
             }
 
             var disciplinas = estudanteDetalhes
