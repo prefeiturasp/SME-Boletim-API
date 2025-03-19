@@ -278,5 +278,34 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long ueId)
+        {
+            using var conn = ObterConexaoLeitura();
+
+            var query = @"SELECT 
+                    bpa.turma,
+                    bpa.disciplina,
+                    bpa.aluno_nome AS Nome,
+                    bpa.proficiencia AS Proficiencia
+                FROM boletim_prova_aluno bpa
+                INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                WHERE u.id = @ueId
+                ORDER BY bpa.turma, bpa.disciplina, bpa.aluno_nome";
+
+            var dados = await conn.QueryAsync<AbaEstudanteGraficoTempDto>(query, new { ueId });
+
+            return dados.GroupBy(d => new { d.Turma, d.Disciplina })
+                        .Select(g => new AbaEstudanteGraficoDto
+                        {
+                            Turma = g.Key.Turma,
+                            Disciplina = g.Key.Disciplina,
+                            Alunos = g.Select(a => new AbaEstudanteGraficoAlunoDto
+                            {
+                                Nome = a.Nome,
+                                Proficiencia = a.Proficiencia
+                            }).ToList()
+                        });
+        }
     }
 }
