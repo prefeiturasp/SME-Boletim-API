@@ -16,7 +16,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<MemoryStream> Executar(string ueId)
+        public async Task<MemoryStream> Executar(long ueId)
         {
             var abrangenciasUsuarioLogado = await mediator
                  .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());

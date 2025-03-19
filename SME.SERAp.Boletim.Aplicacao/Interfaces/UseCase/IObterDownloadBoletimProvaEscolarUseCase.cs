@@ -4,6 +4,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterDownloadBoletimProvaEscolarUseCase
     {
-        Task<MemoryStream> Executar(string ueId);
+        Task<MemoryStream> Executar(long ueId);
     }
 }

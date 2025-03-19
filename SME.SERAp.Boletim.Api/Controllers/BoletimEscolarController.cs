@@ -34,7 +34,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
         [HttpGet("download/{codigoUe}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(string codigoUe,
+        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long codigoUe,
           [FromServices] IObterDownloadBoletimProvaEscolarUseCase obterDownloadBoletimProvaEscolarUseCase)
         {
             var file = await obterDownloadBoletimProvaEscolarUseCase.Executar(codigoUe);
