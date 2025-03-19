@@ -86,7 +86,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                const string query = @"select 
+                const string query = @"SELECT 
 	                                        bpa.ue_codigo CodigoUE,
                                             bpa.ue_nome NomeUE,
                                             bpa.ano_escolar AnoEscola,
@@ -96,13 +96,15 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             bpa.disciplina Componente,
                                             bpa.proficiencia Proficiencia,
                                             CONCAT(np.codigo, ' - ', np.descricao) Nivel
-                                        from 
+                                        FROM 
 	                                        boletim_prova_aluno bpa
-                                        inner join nivel_proficiencia np on np.codigo  = bpa.nivel_codigo 
+                                        INNER JOIN ue u ON
+                             				u.ue_id = bpa.ue_codigo
+                                        INNER JOIN nivel_proficiencia np on np.codigo  = bpa.nivel_codigo 
                                             and  np.disciplina_id = bpa.disciplina_id 
                                             and np.ano = bpa.ano_escolar
-                                        where
-	                                        bpa.ue_codigo = @ueId;";
+                                        WHERE
+	                                        u.id = @ueId;";
 
                 return await conn.QueryAsync<DownloadProvasBoletimEscolarDto>(query, new { ueId });
             }
