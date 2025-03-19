@@ -40,7 +40,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test
                 .ReturnsAsync(boletinsMock);
 
             // Act
-            var resultado = await _useCase.Executar(ueId);
+            var resultado = await _useCase.Executar(ueId, null);
 
             // Assert
             Assert.NotNull(resultado);
@@ -60,7 +60,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test
                 .ReturnsAsync((IEnumerable<BoletimEscolar>)null);
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<NegocioException>(() => _useCase.Executar(ueId));
+            var exception = await Assert.ThrowsAsync<NegocioException>(() => _useCase.Executar(ueId, null));
             Assert.Equal($"Não foi possível localizar boletins para a UE {ueId}", exception.Message);
 
             _mediatorMock.Verify(m => m.Send(It.Is<ObterBoletimEscolarPorUeQuery>(q => q.UeId == ueId), default), Times.Once);
