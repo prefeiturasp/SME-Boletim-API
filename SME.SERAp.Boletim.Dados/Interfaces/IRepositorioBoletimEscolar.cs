@@ -8,5 +8,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
     {
         Task<IEnumerable<BoletimEscolar>> ObterBoletinsPorUe(long ueId, FiltroBoletimDto filtros);
         Task<IEnumerable<ProvaBoletimEscolarDto>> ObterProvasBoletimEscolarPorUe(long ueId);
+        Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(string ueId);
     }
 }
