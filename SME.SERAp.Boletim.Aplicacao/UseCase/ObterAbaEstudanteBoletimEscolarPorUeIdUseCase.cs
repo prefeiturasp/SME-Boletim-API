@@ -2,6 +2,7 @@
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPorUeId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAlunoSerapPorRa;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
 using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
@@ -26,6 +27,12 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<BoletimEscolarComDisciplinasDto> Executar(long ueId, int pagina, int tamanhoPagina)
         {
+            var abrangenciasUsuarioLogado = await mediator
+                .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
+
+            if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
+
             var (estudanteDetalhes, totalRegistros) = await mediator.Send(new ObterAbaEstudanteBoletimEscolarPorUeIdQuery(ueId, pagina, tamanhoPagina));
 
             if (estudanteDetalhes == null || !estudanteDetalhes.Any())
