@@ -5,11 +5,11 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadProvasBoletimEscolar
 {
     public class ObterDownloadProvasBoletimEscolarQuery : IRequest<IEnumerable<DownloadProvasBoletimEscolarDto>>
     {
-        public ObterDownloadProvasBoletimEscolarQuery(string ueId)
+        public ObterDownloadProvasBoletimEscolarQuery(long ueId)
         {
             UeId = ueId;
         }
 
-        public string UeId { get; set; }
+        public long UeId { get; set; }
     }
 }
