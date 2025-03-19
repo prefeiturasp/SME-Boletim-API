@@ -15,7 +15,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletinsEscolaresTurmasPorUeI
 
         public Task<IEnumerable<TurmaBoletimEscolarDto>> Handle(ObterBoletinsEscolaresTurmasPorUeIdProvaIdQuery request, CancellationToken cancellationToken)
         {
-            return repositorioBoletimProvaAluno.ObterBoletinsEscolaresTurmasPorUeIdProvaId(request.UeId, request.ProvaId);
+            return repositorioBoletimProvaAluno.ObterBoletinsEscolaresTurmasPorUeIdProvaId(request.UeId, request.ProvaId, request.Filtros);
         }
     }
 }

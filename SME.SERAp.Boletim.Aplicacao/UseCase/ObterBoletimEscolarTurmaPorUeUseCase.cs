@@ -5,6 +5,7 @@ using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaBoletimEscolarP
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProvasBoletimEscolarPorUe;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
 using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
 
@@ -18,7 +19,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<BoletimEscolarPorTurmaDto> Executar(long ueId)
+        public async Task<BoletimEscolarPorTurmaDto> Executar(long ueId, FiltroBoletimDto filtros)
         {
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -26,12 +27,12 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var provasBoletimEscola = await mediator.Send(new ObterProvasBoletimEscolarPorUeQuery(ueId));
+            var provasBoletimEscola = await mediator.Send(new ObterProvasBoletimEscolarPorUeQuery(ueId, filtros));
             if (provasBoletimEscola?.Any() ?? false)
             {
                 foreach (var prova in provasBoletimEscola)
                 {
-                    var turmas = await ObterBoletinsEscolaresTurmas(ueId, prova);
+                    var turmas = await ObterBoletinsEscolaresTurmas(ueId, prova, filtros);
                     prova.Turmas = turmas;
 
                     var niveis = await ObterNiveisProficiencia(ueId, prova);
@@ -42,10 +43,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return new BoletimEscolarPorTurmaDto(provasBoletimEscola);
         }
 
-        private async Task<IEnumerable<ProvaTurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmas(long ueId, ProvaBoletimEscolarDto prova)
+        private async Task<IEnumerable<ProvaTurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmas(long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
         {
             var provaTurmasBoletim = new List<ProvaTurmaBoletimEscolarDto>();
-            var turmasBoletim =  await mediator.Send(new ObterBoletinsEscolaresTurmasPorUeIdProvaIdQuery(ueId, prova.Id));
+            var turmasBoletim =  await mediator.Send(new ObterBoletinsEscolaresTurmasPorUeIdProvaIdQuery(ueId, prova.Id, filtros));
 
             if (turmasBoletim?.Any() ?? false)
             {

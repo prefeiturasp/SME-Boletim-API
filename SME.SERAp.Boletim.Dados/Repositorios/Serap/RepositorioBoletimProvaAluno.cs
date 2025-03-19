@@ -1,8 +1,11 @@
 ﻿using Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
+using System.Data;
+using System.Text;
 
 namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 {
@@ -12,12 +15,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         {
         }
 
-        public async Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long ueId, long provaId)
+        public async Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
-                var query = @"select 
+                var query = new StringBuilder(@"
+                            SELECT 
                                 ue.id,
                                 bpa.prova_id,
                                 bpa.turma,
@@ -31,19 +35,38 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                 ROUND((COUNT(CASE WHEN bpa.nivel_codigo = 4 THEN 1 END) * 100.0) / COUNT(*), 2) AS avancadoPorcentagem,
                                 count(*) as total,
                                 ROUND(AVG(bpa.proficiencia), 2) AS mediaProficiencia
-                            from
+                            FROM
                                 boletim_prova_aluno bpa
-                            inner join ue on
+                            INNER JOIN ue ON
                                 ue.ue_id = bpa.ue_codigo
-                            where
+                            WHERE
                                 bpa.prova_id = @provaId and
-                                ue.id = @ueId
-                            group by
-                                ue.id,
-                                bpa.prova_id,
-                                bpa.turma;";
+                                ue.id = @ueId");
 
-                return await conn.QueryAsync<TurmaBoletimEscolarDto>(query, new { ueId, provaId });
+                var parameters = new DynamicParameters();
+                parameters.Add("ueId", ueId);
+                parameters.Add("provaId", provaId);
+
+                if (filtros?.ComponentesCurriculares?.Any() ?? false)
+                {
+                    var componentesCorrigidos = filtros.ComponentesCurriculares.ToArray();
+                    query.Append(" AND bpa.disciplina_id = ANY(@componentesCurriculares)");
+                    parameters.Add("componentesCurriculares", componentesCorrigidos, DbType.Object);
+                }
+
+                if (filtros?.Ano?.Any() ?? false)
+                {
+                    var anos = filtros.Ano.ToArray();
+                    query.Append(@" AND bpa.ano_escolar = ANY(@anos)");
+                    parameters.Add("anos", anos, DbType.Object);
+                }
+
+                query.Append(@" GROUP BY
+                                    ue.id,
+                                    bpa.prova_id,
+                                    bpa.turma;");
+
+                return await conn.QueryAsync<TurmaBoletimEscolarDto>(query.ToString(), parameters);
             }
             finally
             {
@@ -91,12 +114,80 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         }
 
         public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
-            ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, int pagina, int tamanhoPagina)
+            ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, FiltroBoletimEstudantePaginadoDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
-                var query = @"SELECT 
+                var where = new StringBuilder(@" WHERE u.id = @ueId");
+
+                var parameters = new DynamicParameters();
+                parameters.Add("ueId", ueId);
+
+                if (filtros?.ComponentesCurriculares?.Any() ?? false)
+                {
+                    var componentesCorrigidos = filtros.ComponentesCurriculares.ToArray();
+                    where.Append(" AND bpa.disciplina_id = ANY(@componentesCurriculares)");
+                    parameters.Add("componentesCurriculares", componentesCorrigidos, DbType.Object);
+                }
+
+                if (filtros?.Ano?.Any() ?? false)
+                {
+                    var anos = filtros.Ano.ToArray();
+                    where.Append(@" AND bpa.ano_escolar = ANY(@anos)");
+                    parameters.Add("anos", anos, DbType.Object);
+                }
+
+                if (filtros?.Turma?.Any() ?? false)
+                {
+                    var turmas = filtros.Turma.ToArray();
+                    where.Append(@" AND RIGHT(bpa.turma, 1) = ANY(@turmas)");
+                    parameters.Add("turmas", turmas, DbType.Object);
+                }
+
+                if (filtros?.NivelProficiencia?.Any() ?? false)
+                {
+                    var niveisProficiencia = filtros.NivelProficiencia.ToArray();
+                    where.Append(@" AND bpa.nivel_codigo = ANY(@niveisProficiencia)");
+                    parameters.Add("niveisProficiencia", niveisProficiencia, DbType.Object);
+                }
+
+                if (filtros.NivelMinimo > 0)
+                {
+                    where.Append(@" AND bpa.proficiencia >= @nivelMinimo");
+                    parameters.Add("nivelMinimo", filtros.NivelMinimo, DbType.Decimal);
+                }
+
+                if (filtros.NivelMaximo > 0)
+                {
+                    where.Append(@" AND bpa.proficiencia <= @nivelMaximo");
+                    parameters.Add("nivelMaximo", filtros.NivelMaximo, DbType.Decimal);
+                }
+
+                if (!string.IsNullOrWhiteSpace(filtros.NomeEstudante))
+                {
+                    where.Append(@" AND bpa.aluno_nome ilike @nomeEstudante");
+                    parameters.Add("nomeEstudante", $"%{filtros.NomeEstudante}%", DbType.String);
+                }
+
+                if (filtros.EolEstudante > 0)
+                {
+                    where.Append(@" AND bpa.aluno_ra = @eolEstudante");
+                    parameters.Add("eolEstudante", filtros.EolEstudante, DbType.Int64);
+                }
+
+                var totalQuery = new StringBuilder(@"SELECT 
+                                        COUNT(*) 
+                                    FROM 
+                                        boletim_prova_aluno bpa
+                                    INNER JOIN ue u ON
+	                                    u.ue_id = bpa.ue_codigo");
+
+                totalQuery.Append(where);
+                var totalRegistros = await conn
+                    .ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+
+                var query = new StringBuilder(@"SELECT 
                                     bpa.disciplina as disciplina,
                                     bpa.ano_escolar as anoescolar,
                                     bpa.turma as turma,
@@ -106,28 +197,16 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     bpa.nivel_codigo as nivelcodigo
                               FROM boletim_prova_aluno bpa
                               INNER JOIN ue u ON
-	                            u.ue_id = bpa.ue_codigo
-                              WHERE u.id = @ueId
-                              ORDER BY bpa.aluno_nome
-                              LIMIT @TamanhoPagina OFFSET @Offset";
+	                            u.ue_id = bpa.ue_codigo");
 
-                var totalQuery = @"SELECT 
-                                        COUNT(*) 
-                                    FROM 
-                                        boletim_prova_aluno bpa
-                                    INNER JOIN ue u ON
-	                                    u.ue_id = bpa.ue_codigo
-                                    WHERE 
-	                                    u.id = @ueId";
+                query.Append(where);
+                query.Append(@" ORDER BY bpa.aluno_nome
+                              LIMIT @TamanhoPagina OFFSET @Offset");
 
-                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery, new { ueId });
-
-                var estudantes = await conn.QueryAsync<AbaEstudanteListaDto>(query, new
-                {
-                    ueId,
-                    TamanhoPagina = tamanhoPagina,
-                    Offset = (pagina - 1) * tamanhoPagina
-                });
+                parameters.Add("TamanhoPagina", filtros.PageSize);
+                parameters.Add("Offset", (filtros.PageNumber - 1) * filtros.PageSize);
+                var estudantes = await conn
+                    .QueryAsync<AbaEstudanteListaDto>(query.ToString(), parameters);
 
                 return (estudantes, totalRegistros);
             }
@@ -279,21 +358,71 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long ueId)
+        public async Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long ueId, FiltroBoletimEstudanteDto filtros)
         {
             using var conn = ObterConexaoLeitura();
 
-            var query = @"SELECT 
-                    bpa.turma,
-                    bpa.disciplina,
-                    bpa.aluno_nome AS Nome,
-                    bpa.proficiencia AS Proficiencia
-                FROM boletim_prova_aluno bpa
-                INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
-                WHERE u.id = @ueId
-                ORDER BY bpa.turma, bpa.disciplina, bpa.aluno_nome";
+            var query = new StringBuilder(@"SELECT 
+                            bpa.turma,
+                            bpa.disciplina,
+                            bpa.aluno_nome AS Nome,
+                            bpa.proficiencia AS Proficiencia
+                        FROM boletim_prova_aluno bpa
+                        INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                        WHERE u.id = @ueId");
 
-            var dados = await conn.QueryAsync<AbaEstudanteGraficoTempDto>(query, new { ueId });
+            var parameters = new DynamicParameters();
+            parameters.Add("ueId", ueId);
+
+            if (filtros?.ComponentesCurriculares?.Any() ?? false)
+            {
+                var componentesCorrigidos = filtros.ComponentesCurriculares.ToArray();
+                query.Append(" AND bpa.disciplina_id = ANY(@componentesCurriculares)");
+                parameters.Add("componentesCurriculares", componentesCorrigidos, DbType.Object);
+            }
+
+            if (filtros?.Ano?.Any() ?? false)
+            {
+                var anos = filtros.Ano.ToArray();
+                query.Append(@" AND bpa.ano_escolar = ANY(@anos)");
+                parameters.Add("anos", anos, DbType.Object);
+            }
+
+            if (filtros?.Turma?.Any() ?? false)
+            {
+                var turmas = filtros.Turma.ToArray();
+                query.Append(@" AND RIGHT(bpa.turma, 1) = ANY(@turmas)");
+                parameters.Add("turmas", turmas, DbType.Object);
+            }
+
+            if (filtros?.NivelProficiencia?.Any() ?? false)
+            {
+                var niveisProficiencia = filtros.NivelProficiencia.ToArray();
+                query.Append(@" AND bpa.nivel_codigo = ANY(@niveisProficiencia)");
+                parameters.Add("niveisProficiencia", niveisProficiencia, DbType.Object);
+            }
+
+            if (filtros.NivelMinimo > 0)
+            {
+                query.Append(@" AND bpa.proficiencia >= @nivelMinimo");
+                parameters.Add("nivelMinimo", filtros.NivelMinimo, DbType.Decimal);
+            }
+
+            if (filtros.NivelMaximo > 0)
+            {
+                query.Append(@" AND bpa.proficiencia <= @nivelMaximo");
+                parameters.Add("nivelMaximo", filtros.NivelMaximo, DbType.Decimal);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filtros.NomeEstudante))
+            {
+                query.Append(@" AND bpa.aluno_nome ilike @nomeEstudante");
+                parameters.Add("nomeEstudante", $"%{filtros.NomeEstudante}%", DbType.String);
+            }
+
+            query.Append(@" ORDER BY bpa.turma, bpa.disciplina, bpa.aluno_nome");
+
+            var dados = await conn.QueryAsync<AbaEstudanteGraficoTempDto>(query.ToString(), parameters);
 
             return dados.GroupBy(d => new { d.Turma, d.Disciplina })
                         .Select(g => new AbaEstudanteGraficoDto

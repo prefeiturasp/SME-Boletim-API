@@ -20,7 +20,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarGra
 
         public async Task<IEnumerable<AbaEstudanteGraficoDto>> Handle(ObterAbaEstudanteGraficoPorUeIdQuery request, CancellationToken cancellationToken)
         {
-            return await _repositorioBoletimProvaAluno.ObterAbaEstudanteGraficoPorUeId(request.UeId);
+            return await _repositorioBoletimProvaAluno.ObterAbaEstudanteGraficoPorUeId(request.UeId, request.Filtros);
         }
     }
 }

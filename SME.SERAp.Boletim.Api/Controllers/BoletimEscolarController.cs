@@ -4,7 +4,6 @@ using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
@@ -13,50 +12,49 @@ namespace SME.SERAp.Boletim.Api.Controllers
     [Authorize]
     public class BoletimEscolarController : ControllerBase
     {
-        [HttpGet("{codigoUe}")]
+        [HttpGet("{ueId}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
-        [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterBoletimPorUe(long codigoUe,
+        [ProducesResponseType(typeof(BoletimEscolarDto), 200)]
+        public async Task<IActionResult> ObterBoletimPorUe(long ueId,
             [FromServices] IObterBoletimEscolarPorUeUseCase obterBoletimEscolarPorUeUseCase, [FromQuery] FiltroBoletimDto filtros)
         {
-            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(codigoUe, filtros));
+            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(ueId, filtros));
         }
 
-        [HttpGet("{codigoUe}/turmas")]
+        [HttpGet("{ueId}/turmas")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
-        [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long codigoUe,
+        [ProducesResponseType(typeof(BoletimEscolarPorTurmaDto), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long ueId, [FromQuery] FiltroBoletimDto filtros,
             [FromServices] IObterBoletimEscolarTurmaPorUeUseCase obterBoletimEscolarTurmaPorUeUseCase)
         {
-            return Ok(await obterBoletimEscolarTurmaPorUeUseCase.Executar(codigoUe));
+            return Ok(await obterBoletimEscolarTurmaPorUeUseCase.Executar(ueId, filtros));
         }
 
         [HttpGet("{ueId}/estudantes")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(BoletimEscolarComDisciplinasDto), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long ueId,
-        [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, [FromQuery] FiltroBoletimEstudantePaginadoDto filtros,
+            [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase)
         {
-            var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(ueId, pageNumber, pageSize);
+            var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(ueId, filtros);
             return Ok(resultado);
         }
 
-        [HttpGet("{codigoUe}/filtros")]
+        [HttpGet("{ueId}/filtros")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
-        [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterOpcoesFiltrosBoletimEscolarPorUe(long codigoUe,
+        [ProducesResponseType(typeof(BoletimEscolarOpcoesFiltrosDto), 200)]
+        public async Task<IActionResult> ObterOpcoesFiltrosBoletimEscolarPorUe(long ueId,
             [FromServices] IObterBoletimEscolarOpcoesFiltrosPorUeUseCase obterBoletimEscolarOpcoesFiltrosPorUeUseCase)
         {
-            return Ok(await obterBoletimEscolarOpcoesFiltrosPorUeUseCase.Executar(codigoUe));
+            return Ok(await obterBoletimEscolarOpcoesFiltrosPorUeUseCase.Executar(ueId));
         }
 
         [HttpGet("{ueId}/estudantes-grafico")]
         [ProducesResponseType(typeof(IEnumerable<AbaEstudanteGraficoDto>), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteGraficoPorUeId(long ueId,
-        [FromServices] IObterAbaEstudanteGraficoPorUeIdUseCase obterAbaEstudanteGraficoPorUeIdUseCase)
+        public async Task<IActionResult> ObterAbaEstudanteGraficoPorUeId(long ueId, [FromQuery] FiltroBoletimEstudanteDto filtros,
+            [FromServices] IObterAbaEstudanteGraficoPorUeIdUseCase obterAbaEstudanteGraficoPorUeIdUseCase)
         {
-            var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(ueId);
+            var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(ueId, filtros);
             return Ok(resultado);
         }
     }
