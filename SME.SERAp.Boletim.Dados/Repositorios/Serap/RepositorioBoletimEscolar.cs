@@ -81,7 +81,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(string ueId)
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
