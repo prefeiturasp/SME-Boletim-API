@@ -56,6 +56,7 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterBoletimEscolarTurmaPorUeUseCase, ObterBoletimEscolarTurmaPorUeUseCase>();
             services.TryAddScoped<IObterAbaEstudanteBoletimEscolarPorUeIdUseCase, ObterAbaEstudanteBoletimEscolarPorUeIdUseCase>();
             services.TryAddScoped<IObterBoletimEscolarOpcoesFiltrosPorUeUseCase, ObterBoletimEscolarOpcoesFiltrosPorUeUseCase>();
+            services.TryAddScoped<IObterAbaEstudanteGraficoPorUeIdUseCase, ObterAbaEstudanteGraficoPorUeIdUseCase>();
         }
     }
 }
