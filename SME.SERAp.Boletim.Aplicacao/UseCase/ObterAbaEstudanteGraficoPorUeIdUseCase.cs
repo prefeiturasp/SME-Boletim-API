@@ -1,15 +1,10 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarGraficoPorUeId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
@@ -22,7 +17,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             _mediator = mediator;
         }
 
-        public async Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long ueId)
+        public async Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long ueId, FiltroBoletimEstudanteDto filtros)
         {
             var abrangenciasUsuarioLogado = await _mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -30,7 +25,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            return await _mediator.Send(new ObterAbaEstudanteGraficoPorUeIdQuery(ueId));
+            return await _mediator.Send(new ObterAbaEstudanteGraficoPorUeIdQuery(ueId, filtros));
         }
     }
 }
