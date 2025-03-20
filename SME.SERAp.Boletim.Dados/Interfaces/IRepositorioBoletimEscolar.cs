@@ -7,7 +7,7 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
     public interface IRepositorioBoletimEscolar : IRepositorioBase<BoletimEscolar>
     {
         Task<IEnumerable<BoletimEscolar>> ObterBoletinsPorUe(long ueId, FiltroBoletimDto filtros);
-        Task<IEnumerable<ProvaBoletimEscolarDto>> ObterProvasBoletimEscolarPorUe(long ueId);
         Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(long ueId);
+        Task<IEnumerable<ProvaBoletimEscolarDto>> ObterProvasBoletimEscolarPorUe(long ueId, FiltroBoletimDto filtros);
     }
 }
