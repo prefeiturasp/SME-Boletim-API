@@ -3,6 +3,7 @@ using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimEscolarPorUe;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Entidades;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -35,12 +36,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test
                 new BoletimEscolar { UeId = ueId, ProvaId = 2, ComponenteCurricular = "Português" }
             };
 
+            FiltroBoletimDto filtros = new FiltroBoletimDto();
+
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterBoletimEscolarPorUeQuery>(), default))
                 .ReturnsAsync(boletinsMock);
 
             // Act
-            var resultado = await _useCase.Executar(ueId);
+            var resultado = await _useCase.Executar(ueId, filtros);
 
             // Assert
             Assert.NotNull(resultado);
@@ -55,12 +58,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test
             // Arrange
             long ueId = 54321;
 
+            FiltroBoletimDto filtros = new FiltroBoletimDto();
+
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterBoletimEscolarPorUeQuery>(), default))
                 .ReturnsAsync((IEnumerable<BoletimEscolar>)null);
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<NegocioException>(() => _useCase.Executar(ueId));
+            var exception = await Assert.ThrowsAsync<NegocioException>(() => _useCase.Executar(ueId, filtros));
             Assert.Equal($"Não foi possível localizar boletins para a UE {ueId}", exception.Message);
 
             _mediatorMock.Verify(m => m.Send(It.Is<ObterBoletimEscolarPorUeQuery>(q => q.UeId == ueId), default), Times.Once);
