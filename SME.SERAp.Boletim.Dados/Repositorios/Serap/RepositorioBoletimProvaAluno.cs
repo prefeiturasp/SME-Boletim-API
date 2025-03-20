@@ -440,7 +440,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 parameters.Add("nomeEstudante", $"%{filtros.NomeEstudante}%", DbType.String);
             }
 
-            query.Append(@" ORDER BY bpa.turma, bpa.disciplina, bpa.aluno_nome");
+            query.Append(@" ORDER BY bpa.disciplina, bpa.turma, bpa.aluno_nome");
 
             var dados = await conn.QueryAsync<AbaEstudanteGraficoTempDto>(query.ToString(), parameters);
 
