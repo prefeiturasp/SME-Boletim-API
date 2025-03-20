@@ -1,26 +1,19 @@
 ﻿using MediatR;
-using SME.SERAp.Boletim.Infra.Dtos;
+using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPorUeId
 {
     class ObterAbaEstudanteBoletimEscolarPorUeIdQuery
     : IRequest<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
     {
-        public ObterAbaEstudanteBoletimEscolarPorUeIdQuery(long ueId, int pagina, int tamanhoPagina)
+        public ObterAbaEstudanteBoletimEscolarPorUeIdQuery(long ueId, FiltroBoletimEstudantePaginadoDto filtros)
         {
             UeId = ueId;
-            Pagina = pagina;
-            TamanhoPagina = tamanhoPagina;
+            Filtros = filtros;
         }
 
         public long UeId { get; set; }
-        public int Pagina { get; set; }
-        public int TamanhoPagina { get; set; }
+        public FiltroBoletimEstudantePaginadoDto Filtros { get; set; }
     }
 }

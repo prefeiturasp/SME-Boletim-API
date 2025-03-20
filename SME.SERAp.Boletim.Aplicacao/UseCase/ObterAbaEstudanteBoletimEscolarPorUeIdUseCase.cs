@@ -1,18 +1,11 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPorUeId;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterAlunoSerapPorRa;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
-using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
@@ -25,7 +18,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<BoletimEscolarComDisciplinasDto> Executar(long ueId, int pagina, int tamanhoPagina)
+        public async Task<BoletimEscolarComDisciplinasDto> Executar(long ueId, FiltroBoletimEstudantePaginadoDto filtros)
         {
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -33,14 +26,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var (estudanteDetalhes, totalRegistros) = await mediator.Send(new ObterAbaEstudanteBoletimEscolarPorUeIdQuery(ueId, pagina, tamanhoPagina));
+            var (estudanteDetalhes, totalRegistros) = await mediator.Send(new ObterAbaEstudanteBoletimEscolarPorUeIdQuery(ueId, filtros));
 
             if (estudanteDetalhes == null || !estudanteDetalhes.Any())
             {
                 return new BoletimEscolarComDisciplinasDto
                 {
                     Disciplinas = new List<string>(), // Retorna uma lista vazia
-                    Estudantes = new PaginacaoDto<AbaEstudanteListaDto>(new List<AbaEstudanteListaDto>(), pagina, tamanhoPagina, 0)
+                    Estudantes = new PaginacaoDto<AbaEstudanteListaDto>(new List<AbaEstudanteListaDto>(), filtros.PageNumber, filtros.PageSize, 0)
                 };
             }
 
@@ -52,7 +45,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return new BoletimEscolarComDisciplinasDto
             {
                 Disciplinas = disciplinas,
-                Estudantes = new PaginacaoDto<AbaEstudanteListaDto>(estudanteDetalhes, pagina, tamanhoPagina, totalRegistros)
+                Estudantes = new PaginacaoDto<AbaEstudanteListaDto>(estudanteDetalhes, filtros.PageNumber, filtros.PageSize, totalRegistros)
             };
         }
     }

@@ -1,4 +1,5 @@
-﻿using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+﻿using SME.SERAp.Boletim.Infra.Dtos.Boletim;
+using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterAbaEstudanteGraficoPorUeIdUseCase
     {
-        Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long ueId);
+        Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long ueId, FiltroBoletimEstudanteDto filtros);
     }
 }
