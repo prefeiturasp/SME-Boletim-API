@@ -35,7 +35,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     var turmas = await ObterBoletinsEscolaresTurmas(ueId, prova, filtros);
                     prova.Turmas = turmas;
 
-                    var niveis = await ObterNiveisProficiencia(ueId, prova);
+                    var niveis = await ObterNiveisProficiencia(ueId, prova, filtros);
                     prova.Niveis = niveis;
                 }
             }
@@ -73,10 +73,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return $"{valor} ({porcentagem:0.##}%)";
         }
 
-        public async Task<IEnumerable<ProvaNivelProficienciaBoletimEscolarDto>> ObterNiveisProficiencia(long ueId, ProvaBoletimEscolarDto prova)
+        public async Task<IEnumerable<ProvaNivelProficienciaBoletimEscolarDto>> ObterNiveisProficiencia(long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
         {
             var provaNiveisProficiencia = new List<ProvaNivelProficienciaBoletimEscolarDto>();
-            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(ueId, prova.Id));
+            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(ueId, prova.Id, filtros));
 
             if (niveisProficiencia?.Any() ?? false)
             {

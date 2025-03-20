@@ -75,12 +75,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long ueId, long provaId)
+        public async Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
-                var query = @"select
+                var query = new StringBuilder(@"select
 	                            bpa.ano_escolar as ano,
 	                            np.codigo,
 	                            np.descricao,
@@ -95,16 +95,36 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             where
                                 bpa.prova_id = @provaId and
                                 ue.id = @ueId
-                            group by
- 	                            bpa.ano_escolar,
-	                            np.codigo,
-	                            np.descricao,
-	                            np.valor_referencia
-                            order by
-	                            bpa.ano_escolar,
-	                            np.codigo";
+                            ");
 
-                return await conn.QueryAsync<NivelProficienciaBoletimEscolarDto>(query, new { ueId, provaId });
+                var parameters = new DynamicParameters();
+                parameters.Add("ueId", ueId);
+                parameters.Add("provaId", provaId);
+
+                if (filtros?.ComponentesCurriculares?.Any() ?? false)
+                {
+                    var componentesCorrigidos = filtros.ComponentesCurriculares.ToArray();
+                    query.Append(" AND bpa.disciplina_id = ANY(@componentesCurriculares)");
+                    parameters.Add("componentesCurriculares", componentesCorrigidos, DbType.Object);
+                }
+
+                if (filtros?.Ano?.Any() ?? false)
+                {
+                    var anos = filtros.Ano.ToArray();
+                    query.Append(@" AND bpa.ano_escolar = ANY(@anos)");
+                    parameters.Add("anos", anos, DbType.Object);
+                }
+
+                query.Append(@" GROUP BY
+ 	                                bpa.ano_escolar,
+	                                np.codigo,
+	                                np.descricao,
+	                                np.valor_referencia
+                                ORDER BY
+	                                bpa.ano_escolar,
+	                                np.codigo");
+
+                return await conn.QueryAsync<NivelProficienciaBoletimEscolarDto>(query.ToString(), parameters);
             }
             finally
             {
@@ -200,7 +220,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            u.ue_id = bpa.ue_codigo");
 
                 query.Append(where);
-                query.Append(@" ORDER BY bpa.aluno_nome
+                query.Append(@" ORDER BY bpa.turma, bpa.aluno_nome
                               LIMIT @TamanhoPagina OFFSET @Offset");
 
                 parameters.Add("TamanhoPagina", filtros.PageSize);
