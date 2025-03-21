@@ -4,6 +4,7 @@ using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Dtos.LoteProva;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
@@ -66,6 +67,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
             [FromServices] IObterAbaEstudanteGraficoPorUeIdUseCase obterAbaEstudanteGraficoPorUeIdUseCase)
         {
             var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(ueId, filtros);
+            return Ok(resultado);
+        }
+
+        [HttpGet("nome-aplicacao")]
+        [ProducesResponseType(typeof(IEnumerable<LoteProvaAtivoDto>), 200)]
+        public async Task<IActionResult> ObterBoletimNomeAplicacaoProva([FromServices] IObterBoletimNomeAplicacaoProvaUseCase obterLoteProvaAtivo)
+        {
+            var resultado = await obterLoteProvaAtivo.Executar();
             return Ok(resultado);
         }
     }
