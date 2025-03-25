@@ -456,5 +456,42 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             }).ToList()
                         });
         }
+
+        public async Task<IEnumerable<ResultadoProbabilidadeDto>> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("ueId", ueId);
+                parameters.Add("disciplinaId", disciplinaId);
+                parameters.Add("anoEscolar", anoEscolar);
+
+                var query = @"
+                    SELECT
+	                    codigo_habilidade AS codigohabilidade,
+	                    habilidade_descricao AS habilidadedescricao,
+	                    turma_descricao AS turmadescricao,
+	                    abaixo_do_basico AS abaixodobasico,
+	                    basico,
+	                    adequado,
+	                    avancado
+                    FROM 
+	                    boletim_resultado_probabilidade
+                    WHERE 
+	                    ue_id = @ueId
+                    AND 
+                        disciplina_id = @disciplinaId
+                    AND
+                        ano_escolar = @anoEscolar";
+
+                return await conn.QueryAsync<ResultadoProbabilidadeDto>(query.ToString(), parameters);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
