@@ -68,5 +68,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(ueId, filtros);
             return Ok(resultado);
         }
+
+        [HttpGet("{ueId}/{disciplinaId}/{anoEscolar}/resultado-probabilidade")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<ResultadoProbabilidadeAgrupadoDto>), 200)]
+        public async Task<IActionResult> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar,
+        [FromServices] IObterResultadoProbabilidadePorUeUseCase obterResultadoProbabilidadePorUeUseCase)
+        {
+            var resultado = await obterResultadoProbabilidadePorUeUseCase.Executar(ueId, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }
