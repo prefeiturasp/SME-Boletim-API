@@ -9,11 +9,6 @@ using SME.SERAp.Boletim.Dados.Repositorios.Serap;
 using SME.SERAp.Boletim.Infra.Interfaces;
 using SME.SERAp.Boletim.Infra.Services;
 using SME.SERAp.Boletim.IoC.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.IoC
 {
@@ -37,6 +32,7 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IRepositorioAbrangencia, RepositorioAbrangencia>();
             services.TryAddScoped<IRepositorioBoletimEscolar, RepositorioBoletimEscolar>();
             services.TryAddScoped<IRepositorioBoletimProvaAluno, RepositorioBoletimProvaAluno>();
+            services.TryAddScoped<IRepositorioLoteProva, RepositorioLoteProva>();
         }
 
         private static void RegistrarServicos(IServiceCollection services)
@@ -58,6 +54,7 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterAbaEstudanteBoletimEscolarPorUeIdUseCase, ObterAbaEstudanteBoletimEscolarPorUeIdUseCase>();
             services.TryAddScoped<IObterBoletimEscolarOpcoesFiltrosPorUeUseCase, ObterBoletimEscolarOpcoesFiltrosPorUeUseCase>();
             services.TryAddScoped<IObterAbaEstudanteGraficoPorUeIdUseCase, ObterAbaEstudanteGraficoPorUeIdUseCase>();
+            services.TryAddScoped<IObterBoletimNomeAplicacaoProvaUseCase, ObterBoletimNomeAplicacaoProvaUseCase>();
 
             services.TryAddScoped<IObterResultadoProbabilidadePorUeUseCase, ObterResultadoProbabilidadePorUeUseCase>();
         }
