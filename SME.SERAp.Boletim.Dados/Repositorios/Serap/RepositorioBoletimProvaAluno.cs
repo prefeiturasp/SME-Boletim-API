@@ -457,7 +457,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                         });
         }
 
-        public async Task<IEnumerable<ResultadoProbabilidadeDto>> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar)
+        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar, int pagina, int tamanhoPagina)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -467,25 +467,45 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 parameters.Add("disciplinaId", disciplinaId);
                 parameters.Add("anoEscolar", anoEscolar);
 
-                var query = @"
-                    SELECT
-	                    codigo_habilidade AS codigohabilidade,
-	                    habilidade_descricao AS habilidadedescricao,
-	                    turma_descricao AS turmadescricao,
-	                    abaixo_do_basico AS abaixodobasico,
-	                    basico,
-	                    adequado,
-	                    avancado
-                    FROM 
-	                    boletim_resultado_probabilidade
-                    WHERE 
-	                    ue_id = @ueId
-                    AND 
-                        disciplina_id = @disciplinaId
-                    AND
-                        ano_escolar = @anoEscolar";
+                // Consulta para obter o total de registros antes da paginação
+                var totalQuery = @"
+                                    SELECT COUNT(DISTINCT codigo_habilidade)
+                                    FROM boletim_resultado_probabilidade
+                                    WHERE ue_id = @ueId 
+                                    AND disciplina_id = @disciplinaId 
+                                    AND ano_escolar = @anoEscolar";
 
-                return await conn.QueryAsync<ResultadoProbabilidadeDto>(query.ToString(), parameters);
+                int totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery, parameters);
+
+                // Adiciona parâmetros de paginação
+                parameters.Add("offset", (pagina - 1) * tamanhoPagina);
+                parameters.Add("limit", tamanhoPagina);
+
+                var query = @"
+                                WITH HabilidadesFiltradas AS (
+                                    SELECT DISTINCT codigo_habilidade, habilidade_descricao
+                                    FROM boletim_resultado_probabilidade
+                                    WHERE ue_id = @ueId 
+                                    AND disciplina_id = @disciplinaId 
+                                    AND ano_escolar = @anoEscolar
+                                    ORDER BY codigo_habilidade
+                                    LIMIT @limit OFFSET @offset
+                                )
+                                SELECT 
+                                    brp.codigo_habilidade AS CodigoHabilidade,
+                                    brp.habilidade_descricao AS HabilidadeDescricao,
+                                    brp.turma_descricao AS TurmaDescricao,
+                                    brp.abaixo_do_basico AS AbaixoDoBasico,
+                                    brp.basico AS Basico,
+                                    brp.adequado AS Adequado,
+                                    brp.avancado AS Avancado
+                                FROM boletim_resultado_probabilidade brp
+                                INNER JOIN HabilidadesFiltradas hf ON brp.codigo_habilidade = hf.codigo_habilidade
+                                ORDER BY brp.codigo_habilidade, brp.turma_descricao;";
+
+                var resultados = await conn.QueryAsync<ResultadoProbabilidadeDto>(query, parameters);
+
+                return (resultados, totalRegistros);
             }
             finally
             {
