@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadePorUeId
 {
-    public class ObterResultadoProbabilidadePorUeIdQueryHandler : IRequestHandler<ObterResultadoProbabilidadePorUeIdQuery, IEnumerable<ResultadoProbabilidadeDto>>
+    public class ObterResultadoProbabilidadePorUeIdQueryHandler : IRequestHandler<ObterResultadoProbabilidadePorUeIdQuery, (IEnumerable<ResultadoProbabilidadeDto>, int)>
     {
         private readonly IRepositorioBoletimProvaAluno repositorioBoletimProvaAluno;
 
@@ -18,9 +18,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadePorUeId
             this.repositorioBoletimProvaAluno = repositorioBoletimResultadoProbabilidade;
         }
 
-        public async Task<IEnumerable<ResultadoProbabilidadeDto>> Handle(ObterResultadoProbabilidadePorUeIdQuery request, CancellationToken cancellationToken)
+        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> Handle(ObterResultadoProbabilidadePorUeIdQuery request, CancellationToken cancellationToken)
         {
-            return await repositorioBoletimProvaAluno.ObterResultadoProbabilidadePorUeAsync(request.UeId, request.DisciplinaId, request.AnoEscolar);
+            return await repositorioBoletimProvaAluno.ObterResultadoProbabilidadePorUeAsync(
+                request.UeId,
+                request.DisciplinaId,
+                request.AnoEscolar,
+                request.Pagina,
+                request.TamanhoPagina
+            );
         }
     }
 }

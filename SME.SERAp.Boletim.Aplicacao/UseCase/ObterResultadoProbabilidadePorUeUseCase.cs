@@ -22,18 +22,25 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<IEnumerable<ResultadoProbabilidadeAgrupadoDto>> Executar(long ueId, long disciplinaId, int anoEscolar)
+        public async Task<ResultadoProbabilidadePaginadoDto> Executar(long ueId, long disciplinaId, int anoEscolar, int pagina, int tamanhoPagina)
         {
             var abrangenciasUsuarioLogado = await mediator.Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var resultadoProbabilidade = await mediator.Send(new ObterResultadoProbabilidadePorUeIdQuery(ueId, disciplinaId, anoEscolar));
+            var (resultadoProbabilidade, totalRegistros) = await mediator.Send(new ObterResultadoProbabilidadePorUeIdQuery(ueId, disciplinaId, anoEscolar, pagina, tamanhoPagina));
 
             if (resultadoProbabilidade == null || !resultadoProbabilidade.Any())
             {
-                return new List<ResultadoProbabilidadeAgrupadoDto>();
+                return new ResultadoProbabilidadePaginadoDto
+                {
+                    PaginaAtual = pagina,
+                    TamanhoPagina = tamanhoPagina,
+                    TotalRegistros = 0,
+                    TotalPaginas = 0,
+                    Resultados = new List<ResultadoProbabilidadeAgrupadoDto>()
+                };
             }
 
             var resultadoAgrupado = resultadoProbabilidade
@@ -49,13 +56,18 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                         Basico = t.Basico,
                         Adequado = t.Adequado,
                         Avancado = t.Avancado
-                    })
-                    .OrderBy(t => t.TurmaDescricao)
-                    .ToList()
+                    }).OrderBy(t => t.TurmaDescricao).ToList()
                 })
                 .ToList();
 
-            return resultadoAgrupado;
-        }
+            return new ResultadoProbabilidadePaginadoDto
+            {
+                PaginaAtual = pagina,
+                TamanhoPagina = tamanhoPagina,
+                TotalRegistros = totalRegistros,
+                TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)tamanhoPagina),
+                Resultados = resultadoAgrupado
+            };
+        } 
     }
 }
