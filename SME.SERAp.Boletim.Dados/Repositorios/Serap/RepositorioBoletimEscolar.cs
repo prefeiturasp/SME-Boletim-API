@@ -23,15 +23,30 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             try
             {
 
-                var query = new StringBuilder(@"
-                     SELECT id, ue_id, prova_id, componente_curricular, 
-                           abaixo_basico, abaixo_basico_porcentagem, 
-                           basico, basico_porcentagem, 
-                           adequado, adequado_porcentagem, 
-                           avancado, avancado_porcentagem, 
-                           total, media_proficiencia  
-                     FROM boletim_escolar 
-                     WHERE ue_id = @ueId
+                var query = new StringBuilder(@"select
+	                        be.id,
+	                        be.ue_id,
+	                        be.prova_id,
+	                        be.componente_curricular,
+	                        be.abaixo_basico,
+	                        be.abaixo_basico_porcentagem,
+	                        be.basico,
+	                        be.basico_porcentagem,
+	                        be.adequado,
+	                        be.adequado_porcentagem,
+	                        be.avancado,
+	                        be.avancado_porcentagem,
+	                        be.total,
+	                        be.media_proficiencia
+                        from
+	                        boletim_escolar be
+                        inner join boletim_lote_prova blp on
+	                        blp.prova_id = be.prova_id 
+                        inner join lote_prova lp on
+	                        lp.id = blp.lote_id and
+                            lp.exibir_no_boletim
+                        where
+	                        ue_id = @ueId
                 ");
 
                 var parameters = new DynamicParameters();
@@ -40,14 +55,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 if (filtros?.ComponentesCurriculares?.Any() ?? false)
                 {
                     var componentesCorrigidos = filtros.ComponentesCurriculares.ToArray();
-                    query.Append(" AND disciplina_id = ANY(@componentesCurriculares)");
+                    query.Append(" AND  be.disciplina_id = ANY(@componentesCurriculares)");
                     parameters.Add("componentesCurriculares", componentesCorrigidos, DbType.Object);
                 }
 
                 if (filtros?.Ano?.Any() ?? false)
                 {
                     var anos = filtros.Ano.ToArray();
-                    query.Append(@" AND CAST(regexp_replace(componente_curricular, '[^0-9]', '', 'g') AS INTEGER) = ANY(@anos)");
+                    query.Append(@" AND CAST(regexp_replace(be.componente_curricular, '[^0-9]', '', 'g') AS INTEGER) = ANY(@anos)");
                     parameters.Add("anos", anos, DbType.Object);
                 }
 
@@ -84,6 +99,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         INNER JOIN nivel_proficiencia np on np.codigo  = bpa.nivel_codigo 
                                             and  np.disciplina_id = bpa.disciplina_id 
                                             and np.ano = bpa.ano_escolar
+                                        INNER JOIN boletim_lote_prova blp ON 
+	                                        blp.prova_id = bpa.prova_id 
+                                        INNER JOIN lote_prova lp ON
+	                                        lp.id = blp.lote_id AND
+	                                        lp.exibir_no_boletim 
                                         WHERE
 	                                        u.id = @ueId;";
 
@@ -108,6 +128,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            boletim_escolar be
                             INNER JOIN prova p ON
 	                            p.id = be.prova_id
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = p.id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             WHERE
 	                            be.ue_id = @ueId");
 
