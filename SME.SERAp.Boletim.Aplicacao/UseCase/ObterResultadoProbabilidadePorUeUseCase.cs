@@ -22,21 +22,21 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<ResultadoProbabilidadePaginadoDto> Executar(long ueId, long disciplinaId, int anoEscolar, int pagina, int tamanhoPagina)
+        public async Task<ResultadoProbabilidadePaginadoDto> Executar(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
             var abrangenciasUsuarioLogado = await mediator.Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var (resultadoProbabilidade, totalRegistros) = await mediator.Send(new ObterResultadoProbabilidadePorUeIdQuery(ueId, disciplinaId, anoEscolar, pagina, tamanhoPagina));
+            var (resultadoProbabilidade, totalRegistros) = await mediator.Send(new ObterResultadoProbabilidadePorUeIdQuery(ueId, disciplinaId, anoEscolar, filtros));
 
             if (resultadoProbabilidade == null || !resultadoProbabilidade.Any())
             {
                 return new ResultadoProbabilidadePaginadoDto
                 {
-                    PaginaAtual = pagina,
-                    TamanhoPagina = tamanhoPagina,
+                    PaginaAtual = filtros.Pagina,
+                    TamanhoPagina = filtros.TamanhoPagina,
                     TotalRegistros = 0,
                     TotalPaginas = 0,
                     Resultados = new List<ResultadoProbabilidadeAgrupadoDto>()
@@ -62,10 +62,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             return new ResultadoProbabilidadePaginadoDto
             {
-                PaginaAtual = pagina,
-                TamanhoPagina = tamanhoPagina,
+                PaginaAtual = filtros.Pagina,
+                TamanhoPagina = filtros.TamanhoPagina,
                 TotalRegistros = totalRegistros,
-                TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)tamanhoPagina),
+                TotalPaginas = (int)Math.Ceiling(totalRegistros / (double)filtros.TamanhoPagina),
                 Resultados = resultadoAgrupado
             };
         } 
