@@ -24,8 +24,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadePorUeId
                 request.UeId,
                 request.DisciplinaId,
                 request.AnoEscolar,
-                request.Pagina,
-                request.TamanhoPagina
+                request.Filtros
             );
         }
     }
