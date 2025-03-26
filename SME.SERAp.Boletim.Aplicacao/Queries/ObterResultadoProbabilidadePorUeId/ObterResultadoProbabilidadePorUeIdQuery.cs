@@ -1,24 +1,22 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadePorUeId
 {
-    public class ObterResultadoProbabilidadePorUeIdQuery : IRequest<IEnumerable<ResultadoProbabilidadeDto>>
+    public class ObterResultadoProbabilidadePorUeIdQuery : IRequest<(IEnumerable<ResultadoProbabilidadeDto>, int)>
     {
-        public ObterResultadoProbabilidadePorUeIdQuery(long ueId, long disciplinaId, int anoEscolar)
+        public long UeId { get; }
+        public long ProvaId { get; }
+        public long DisciplinaId { get; }
+        public int AnoEscolar { get; }
+        public FiltroBoletimResultadoProbabilidadeDto Filtros { get; set; }
+
+        public ObterResultadoProbabilidadePorUeIdQuery(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
             UeId = ueId;
             DisciplinaId = disciplinaId;
             AnoEscolar = anoEscolar;
+            Filtros = filtros;
         }
-
-        public long UeId { get; set; }
-        public long DisciplinaId { get; set; }
-        public int AnoEscolar { get; set; }
     }
 }

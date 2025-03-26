@@ -457,35 +457,79 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                         });
         }
 
-        public async Task<IEnumerable<ResultadoProbabilidadeDto>> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar)
+        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
+                var where = new StringBuilder(@" WHERE ue_id = @ueId 
+                                    AND disciplina_id = @disciplinaId 
+                                    AND ano_escolar = @anoEscolar");
+
+                var whereSelect = new StringBuilder(@" WHERE brp.ue_id = @ueId
+                                          AND brp.disciplina_id = @disciplinaId
+                                          AND brp.ano_escolar = @anoEscolar");
+
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
                 parameters.Add("disciplinaId", disciplinaId);
                 parameters.Add("anoEscolar", anoEscolar);
 
-                var query = @"
-                    SELECT
-	                    codigo_habilidade AS codigohabilidade,
-	                    habilidade_descricao AS habilidadedescricao,
-	                    turma_descricao AS turmadescricao,
-	                    abaixo_do_basico AS abaixodobasico,
-	                    basico,
-	                    adequado,
-	                    avancado
-                    FROM 
-	                    boletim_resultado_probabilidade
-                    WHERE 
-	                    ue_id = @ueId
-                    AND 
-                        disciplina_id = @disciplinaId
-                    AND
-                        ano_escolar = @anoEscolar";
+                if(filtros.Turma?.Any() ?? false)
+                {
+                    var turmas = filtros.Turma.ToArray();
+                    where.Append(@" AND RIGHT(turma_descricao, 1) = ANY(@turmas)");
+                    whereSelect.Append(@" AND RIGHT(brp.turma_descricao, 1) = any(@turmas)");
+                    parameters.Add("turmas", turmas, DbType.Object);
+                }
 
-                return await conn.QueryAsync<ResultadoProbabilidadeDto>(query.ToString(), parameters);
+                if (!string.IsNullOrWhiteSpace(filtros.Habilidade))
+                {
+                    where.Append(@" AND (codigo_habilidade = @codigohabilidade or habilidade_descricao ilike @descricaoHabilidade)");
+                    whereSelect.Append(@" AND (brp.codigo_habilidade = @codigohabilidade or brp.habilidade_descricao ilike @descricaoHabilidade)");
+                    parameters.Add("descricaoHabilidade", $"%{filtros.Habilidade}%", DbType.String);
+                    parameters.Add("codigohabilidade", filtros.Habilidade, DbType.String);
+                }
+
+                var totalQuery = new StringBuilder(@"SELECT 
+                                                        COUNT(DISTINCT codigo_habilidade)
+                                                    FROM 
+                                                        boletim_resultado_probabilidade");
+
+                totalQuery.Append(where);
+                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+
+
+                var query = new StringBuilder(@"
+                                WITH HabilidadesFiltradas AS (
+                                    SELECT DISTINCT codigo_habilidade, habilidade_descricao
+                                    FROM boletim_resultado_probabilidade");
+
+                query.Append(where);
+
+                query.Append(@" ORDER BY codigo_habilidade
+                               LIMIT @limit OFFSET @offset)");
+
+                parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
+                parameters.Add("limit", filtros.TamanhoPagina);
+
+                var selectQuery = new StringBuilder(@" SELECT 
+                                    brp.codigo_habilidade AS CodigoHabilidade,
+                                    brp.habilidade_descricao AS HabilidadeDescricao,
+                                    brp.turma_descricao AS TurmaDescricao,
+                                    ROUND(brp.abaixo_do_basico, 2)  AS AbaixoDoBasico,
+                                    ROUND(brp.basico, 2) AS Basico,
+                                    ROUND(brp.adequado, 2) AS Adequado,
+                                    ROUND(brp.avancado, 2) AS Avancado
+                                FROM boletim_resultado_probabilidade brp
+                                INNER JOIN HabilidadesFiltradas hf ON brp.codigo_habilidade = hf.codigo_habilidade");
+                selectQuery.Append(whereSelect);
+                selectQuery.Append(@" ORDER BY brp.codigo_habilidade, brp.turma_descricao;");
+                query.Append(selectQuery);
+
+                var resultados = await conn.QueryAsync<ResultadoProbabilidadeDto>(query.ToString(), parameters);
+
+                return (resultados, totalRegistros);
             }
             finally
             {
