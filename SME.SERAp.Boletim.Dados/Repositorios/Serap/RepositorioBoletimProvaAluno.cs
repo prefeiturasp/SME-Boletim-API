@@ -39,6 +39,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                 boletim_prova_aluno bpa
                             INNER JOIN ue ON
                                 ue.ue_id = bpa.ue_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+                                blp.prova_id = bpa.prova_id 
+                            INNER JOIN lote_prova lp ON
+                                lp.id = blp.lote_id AND
+                                lp.exibir_no_boletim 
                             WHERE
                                 bpa.prova_id = @provaId and
                                 ue.id = @ueId");
@@ -92,6 +97,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             inner join nivel_proficiencia np on
                                 np.disciplina_id = bpa.disciplina_id and
                                 np.ano = bpa.ano_escolar
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
                                 bpa.prova_id = @provaId and
                                 ue.id = @ueId
@@ -201,7 +211,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     FROM 
                                         boletim_prova_aluno bpa
                                     INNER JOIN ue u ON
-	                                    u.ue_id = bpa.ue_codigo");
+	                                    u.ue_id = bpa.ue_codigo
+                                    INNER JOIN boletim_lote_prova blp ON 
+	                                    blp.prova_id = bpa.prova_id
+                                    INNER JOIN lote_prova lp ON
+	                                    lp.id = blp.lote_id AND
+	                                    lp.exibir_no_boletim");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn
@@ -217,7 +232,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     bpa.nivel_codigo as nivelcodigo
                               FROM boletim_prova_aluno bpa
                               INNER JOIN ue u ON
-	                            u.ue_id = bpa.ue_codigo");
+	                            u.ue_id = bpa.ue_codigo
+                              INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                              INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim");
 
                 query.Append(where);
                 query.Append(@" ORDER BY bpa.turma, bpa.aluno_nome
@@ -250,7 +270,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             inner join ue u on
 	                            u.ue_id = bpa.ue_codigo
                             inner join nivel_proficiencia np on
-	                            np.codigo = bpa.nivel_codigo 
+	                            np.codigo = bpa.nivel_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
 	                            u.id = @ueId
                             group by
@@ -280,6 +305,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            boletim_prova_aluno bpa
                             inner join ue u on
 	                            u.ue_id = bpa.ue_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
 	                            u.id = @ueId
                             group by
@@ -308,6 +338,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            boletim_prova_aluno bpa
                             inner join ue u on
 	                            u.ue_id = bpa.ue_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
 	                            u.id = @ueId
                             group by
@@ -338,6 +373,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            boletim_prova_aluno bpa
                             inner join ue u on
 	                            u.ue_id = bpa.ue_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
 	                            u.id = @ueId
                             group by
@@ -366,6 +406,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            boletim_prova_aluno bpa
                             inner join ue u on
 	                            u.ue_id = bpa.ue_codigo
+                            INNER JOIN boletim_lote_prova blp ON 
+	                            blp.prova_id = bpa.prova_id
+                            INNER JOIN lote_prova lp ON
+	                            lp.id = blp.lote_id AND
+	                            lp.exibir_no_boletim 
                             where
 	                            u.id = @ueId";
 
@@ -389,6 +434,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             bpa.proficiencia AS Proficiencia
                         FROM boletim_prova_aluno bpa
                         INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                        INNER JOIN boletim_lote_prova blp ON 
+	                        blp.prova_id = bpa.prova_id
+                        INNER JOIN lote_prova lp ON
+	                        lp.id = blp.lote_id AND
+	                        lp.exibir_no_boletim 
                         WHERE u.id = @ueId");
 
             var parameters = new DynamicParameters();
@@ -462,13 +512,10 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                var where = new StringBuilder(@" WHERE ue_id = @ueId 
-                                    AND disciplina_id = @disciplinaId 
-                                    AND ano_escolar = @anoEscolar");
+                var where = new StringBuilder(@" WHERE brp.ue_id = @ueId 
+                                    AND brp.disciplina_id = @disciplinaId 
+                                    AND brp.ano_escolar = @anoEscolar");
 
-                var whereSelect = new StringBuilder(@" WHERE brp.ue_id = @ueId
-                                          AND brp.disciplina_id = @disciplinaId
-                                          AND brp.ano_escolar = @anoEscolar");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
@@ -478,23 +525,26 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 if(filtros.Turma?.Any() ?? false)
                 {
                     var turmas = filtros.Turma.ToArray();
-                    where.Append(@" AND RIGHT(turma_descricao, 1) = ANY(@turmas)");
-                    whereSelect.Append(@" AND RIGHT(brp.turma_descricao, 1) = any(@turmas)");
+                    where.Append(@" AND RIGHT(brp.turma_descricao, 1) = ANY(@turmas)");
                     parameters.Add("turmas", turmas, DbType.Object);
                 }
 
                 if (!string.IsNullOrWhiteSpace(filtros.Habilidade))
                 {
-                    where.Append(@" AND (codigo_habilidade = @codigohabilidade or habilidade_descricao ilike @descricaoHabilidade)");
-                    whereSelect.Append(@" AND (brp.codigo_habilidade = @codigohabilidade or brp.habilidade_descricao ilike @descricaoHabilidade)");
+                    where.Append(@" AND (brp.codigo_habilidade = @codigohabilidade or brp.habilidade_descricao ilike @descricaoHabilidade)");
                     parameters.Add("descricaoHabilidade", $"%{filtros.Habilidade}%", DbType.String);
                     parameters.Add("codigohabilidade", filtros.Habilidade, DbType.String);
                 }
 
                 var totalQuery = new StringBuilder(@"SELECT 
-                                                        COUNT(DISTINCT codigo_habilidade)
+                                                        COUNT(DISTINCT brp.codigo_habilidade)
                                                     FROM 
-                                                        boletim_resultado_probabilidade");
+                                                        boletim_resultado_probabilidade brp
+                                                    INNER JOIN boletim_lote_prova blp ON 
+	                                                    blp.prova_id = brp.prova_id
+                                                    INNER JOIN lote_prova lp ON
+	                                                    lp.id = blp.lote_id AND
+	                                                    lp.exibir_no_boletim");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
@@ -502,12 +552,17 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
                 var query = new StringBuilder(@"
                                 WITH HabilidadesFiltradas AS (
-                                    SELECT DISTINCT codigo_habilidade, habilidade_descricao
-                                    FROM boletim_resultado_probabilidade");
+                                    SELECT DISTINCT brp.codigo_habilidade, brp.habilidade_descricao
+                                    FROM boletim_resultado_probabilidade brp
+                                    INNER JOIN boletim_lote_prova blp ON 
+	                                    blp.prova_id = brp.prova_id
+                                    INNER JOIN lote_prova lp ON
+	                                    lp.id = blp.lote_id AND
+	                                    lp.exibir_no_boletim");
 
                 query.Append(where);
 
-                query.Append(@" ORDER BY codigo_habilidade
+                query.Append(@" ORDER BY brp.codigo_habilidade
                                LIMIT @limit OFFSET @offset)");
 
                 parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
@@ -522,8 +577,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     ROUND(brp.adequado, 2) AS Adequado,
                                     ROUND(brp.avancado, 2) AS Avancado
                                 FROM boletim_resultado_probabilidade brp
-                                INNER JOIN HabilidadesFiltradas hf ON brp.codigo_habilidade = hf.codigo_habilidade");
-                selectQuery.Append(whereSelect);
+                                INNER JOIN HabilidadesFiltradas hf ON brp.codigo_habilidade = hf.codigo_habilidade
+                                INNER JOIN boletim_lote_prova blp ON 
+	                                blp.prova_id = brp.prova_id
+                                INNER JOIN lote_prova lp ON
+	                                lp.id = blp.lote_id AND
+	                                lp.exibir_no_boletim");
+                selectQuery.Append(where);
                 selectQuery.Append(@" ORDER BY brp.codigo_habilidade, brp.turma_descricao;");
                 query.Append(selectQuery);
 
