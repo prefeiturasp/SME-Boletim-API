@@ -531,9 +531,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
                 if (!string.IsNullOrWhiteSpace(filtros.Habilidade))
                 {
-                    where.Append(@" AND (brp.codigo_habilidade = @codigohabilidade or brp.habilidade_descricao ilike @descricaoHabilidade)");
-                    parameters.Add("descricaoHabilidade", $"%{filtros.Habilidade}%", DbType.String);
-                    parameters.Add("codigohabilidade", filtros.Habilidade, DbType.String);
+                    where.Append(@" AND (brp.codigo_habilidade ilike @habilidade or brp.habilidade_descricao ilike @habilidade)");
+                    parameters.Add("habilidade", $"%{filtros.Habilidade}%", DbType.String);
                 }
 
                 var totalQuery = new StringBuilder(@"SELECT 
