@@ -83,13 +83,17 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                var query = @"SELECT 
-                                d.id as DreId,
-                                u.Id as UeId ,
-                                d.abreviacao || ' ' || u.nome as Descricao
-                                FROM ue u
-                                INNER JOIN dre d on d.id = u.dre_id
-                                WHERE d.id = @dreId";
+                var query = @"SELECT
+                                d.id AS DreId,
+                                u.id AS UeId,
+                                trim(split_part(d.abreviacao, '-', 1)) || ' ' || 
+                                trim(split_part(d.abreviacao, '-', 2)) || ' - ' || u.nome AS Descricao
+                            FROM
+	                            ue u
+                            INNER JOIN dre d ON
+	                            d.id = u.dre_id
+                            WHERE
+	                            d.id = @dreId";
                 
                 if(ueId is not null)
                 {

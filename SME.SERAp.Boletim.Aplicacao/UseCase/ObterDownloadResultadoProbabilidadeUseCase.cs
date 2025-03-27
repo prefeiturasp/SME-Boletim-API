@@ -1,7 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadResultadoProbabilidade;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +24,12 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<MemoryStream> Executar(long ueId, long disciplinaId, int anoEscolar)
         {
+            var abrangenciasUsuarioLogado = await _mediator
+                .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
+
+            if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == Convert.ToInt64(ueId)) ?? true)
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
+
             var resultados = await _mediator.Send(new ObterDownloadResultadoProbabilidadeQuery(ueId, disciplinaId, anoEscolar));
             return await BuildCSVForExcel(resultados);
         }
