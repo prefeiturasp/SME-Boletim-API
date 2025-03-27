@@ -5,6 +5,7 @@ using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using System.Data;
+using System.Drawing;
 using System.Text;
 
 namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
@@ -158,6 +159,38 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                p.disciplina;");
 
                 return await conn.QueryAsync<ProvaBoletimEscolarDto>(query.ToString(), parameters);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadResultadoProbabilidade(long ueId, long disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"SELECT 
+                                            brp.codigo_habilidade AS CodigoHabilidade,
+                                            brp.habilidade_descricao AS HabilidadeDescricao,
+                                            brp.turma_descricao AS TurmaDescricao,
+                                            ROUND(brp.abaixo_do_basico, 2) AS AbaixoDoBasico,
+                                            ROUND(brp.basico, 2) AS Basico,
+                                            ROUND(brp.adequado, 2) AS Adequado,
+                                            ROUND(brp.avancado, 2) AS Avancado
+                                        FROM boletim_resultado_probabilidade brp
+                                        INNER JOIN boletim_lote_prova blp ON
+	                                        blp.prova_id = brp.prova_id
+	                                    INNER JOIN lote_prova lp ON
+	                                        lp.id = blp.lote_id AND
+	                                        lp.exibir_no_boletim
+                                        WHERE brp.ue_id = @ueId
+                                          AND brp.disciplina_id = @disciplinaId
+                                          AND brp.ano_escolar = @anoEscolar;";
+
+                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { ueId, disciplinaId, anoEscolar });
             }
             finally
             {
