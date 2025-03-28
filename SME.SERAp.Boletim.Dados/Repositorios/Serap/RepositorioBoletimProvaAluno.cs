@@ -596,5 +596,79 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadeListaPorUeAsync(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var where = new StringBuilder(@" WHERE brp.ue_id = @ueId 
+                                    AND brp.disciplina_id = @disciplinaId 
+                                    AND brp.ano_escolar = @anoEscolar");
+
+
+                var parameters = new DynamicParameters();
+                parameters.Add("ueId", ueId);
+                parameters.Add("disciplinaId", disciplinaId);
+                parameters.Add("anoEscolar", anoEscolar);
+
+                if (filtros.Turma?.Any() ?? false)
+                {
+                    var turmas = filtros.Turma.ToArray();
+                    where.Append(@" AND RIGHT(brp.turma_descricao, 1) = ANY(@turmas)");
+                    parameters.Add("turmas", turmas, DbType.Object);
+                }
+
+                if (!string.IsNullOrWhiteSpace(filtros.Habilidade))
+                {
+                    where.Append(@" AND (brp.codigo_habilidade ilike @habilidade or brp.habilidade_descricao ilike @habilidade)");
+                    parameters.Add("habilidade", $"%{filtros.Habilidade}%", DbType.String);
+                }
+
+                var totalQuery = new StringBuilder(@"SELECT 
+                                                        COUNT(*)
+                                                    FROM 
+                                                        boletim_resultado_probabilidade brp
+                                                    INNER JOIN boletim_lote_prova blp ON 
+	                                                    blp.prova_id = brp.prova_id
+                                                    INNER JOIN lote_prova lp ON
+	                                                    lp.id = blp.lote_id AND
+	                                                    lp.exibir_no_boletim");
+
+                totalQuery.Append(where);
+                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+
+                var query = new StringBuilder(@"SELECT 
+                                brp.codigo_habilidade AS CodigoHabilidade,
+                                brp.habilidade_descricao AS HabilidadeDescricao,
+                                brp.turma_descricao AS TurmaDescricao,
+                                ROUND(brp.abaixo_do_basico, 2)  AS AbaixoDoBasico,
+                                ROUND(brp.basico, 2) AS Basico,
+                                ROUND(brp.adequado, 2) AS Adequado,
+                                ROUND(brp.avancado, 2) AS Avancado
+                            FROM boletim_resultado_probabilidade brp
+                            INNER JOIN boletim_lote_prova blp ON 
+                                blp.prova_id = brp.prova_id
+                            INNER JOIN lote_prova lp ON
+                                lp.id = blp.lote_id AND
+                                lp.exibir_no_boletim");
+
+                query.Append(where);
+                query.Append(@" ORDER BY brp.codigo_habilidade, brp.turma_descricao
+                                      LIMIT @limit OFFSET @offset;");
+
+                parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
+                parameters.Add("limit", filtros.TamanhoPagina);
+
+                var resultados = await conn.QueryAsync<ResultadoProbabilidadeDto>(query.ToString(), parameters);
+
+                return (resultados, totalRegistros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
