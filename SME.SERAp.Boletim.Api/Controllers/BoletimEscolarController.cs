@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -100,6 +101,20 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             var file = await useCase.Executar(ueId, disciplinaId, anoEscolar);
             return File(file, "application/vnd.ms-excel", $"resultado_probabilidade_{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
+        }
+
+        [HttpGet("{ueId}/{disciplinaId}/{anoEscolar}/resultado-probabilidade/lista")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<ResultadoProbabilidadeListaPaginadoDto>), 200)]
+        public async Task<IActionResult> ObterResultadoProbabilidadePorUeListaAsync(long ueId, long disciplinaId, int anoEscolar,
+            [FromQuery] FiltroBoletimResultadoProbabilidadeDto filtros,
+            [FromServices] IObterResultadoProbabilidadePorUeListaUseCase obterResultadoProbabilidadePorUeListaUseCase)
+        {
+            if (filtros.Pagina < 1 || filtros.TamanhoPagina < 1)
+                return BadRequest("Página e tamanho da página devem ser maiores que zero.");
+
+            var resultado = await obterResultadoProbabilidadePorUeListaUseCase.Executar(ueId, disciplinaId, anoEscolar, filtros);
+            return Ok(resultado);
         }
     }
 }
