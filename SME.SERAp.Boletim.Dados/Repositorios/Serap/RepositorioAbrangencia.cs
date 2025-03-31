@@ -86,8 +86,9 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 var query = @"SELECT
                                 d.id AS DreId,
                                 u.id AS UeId,
-                                trim(split_part(d.abreviacao, '-', 1)) || ' ' || 
-                                trim(split_part(d.abreviacao, '-', 2)) || ' - ' || u.nome AS Descricao
+                                d.abreviacao as DreAbreviacao,
+                                u.nome as UeNome,
+                                u.tipo_escola as UeTipo
                             FROM
 	                            ue u
                             INNER JOIN dre d ON
