@@ -1,6 +1,7 @@
 using Elastic.Apm.Api;
 using Microsoft.ApplicationInsights;
 using RabbitMQ.Client;
+using SME.SERAp.Boletim.Api.Configurations;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using SME.SERAp.Boletim.Infra.Services;
 using SME.SERAp.Boletim.IoC;
@@ -43,7 +44,7 @@ builder.Services.AddSingleton(_ =>
         VirtualHost = rabbitOptions.VirtualHost
     };
 
-    return factory.CreateConnection();
+    return factory.CreateConnectionAsync().Result;
 });
 
 var configuracaoRabbitLogOptions = new RabbitLogOptions();
@@ -65,19 +66,34 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(muxer);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationInsightsTelemetry(builder.Configuration);
 
+RegistraAutenticacao.Registrar(builder.Services, builder.Configuration);
+RegistraDocumentacaoSwagger.Registrar(builder.Services);
 RegistraDependencias.Registrar(builder.Services);
+
+// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAllOrigins");
 app.UseAuthorization();
 
 app.MapControllers();

@@ -9,6 +9,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AlunoController : ControllerBase
     {
         [HttpGet("{alunoRA}")]

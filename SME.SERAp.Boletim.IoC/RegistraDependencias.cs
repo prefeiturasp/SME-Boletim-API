@@ -9,11 +9,6 @@ using SME.SERAp.Boletim.Dados.Repositorios.Serap;
 using SME.SERAp.Boletim.Infra.Interfaces;
 using SME.SERAp.Boletim.Infra.Services;
 using SME.SERAp.Boletim.IoC.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.IoC
 {
@@ -34,6 +29,10 @@ namespace SME.SERAp.Boletim.IoC
         {
             services.TryAddScoped<IRepositorioCache, RepositorioCache>();
             services.TryAddScoped<IRepositorioAluno, RepositorioAluno>();
+            services.TryAddScoped<IRepositorioAbrangencia, RepositorioAbrangencia>();
+            services.TryAddScoped<IRepositorioBoletimEscolar, RepositorioBoletimEscolar>();
+            services.TryAddScoped<IRepositorioBoletimProvaAluno, RepositorioBoletimProvaAluno>();
+            services.TryAddScoped<IRepositorioLoteProva, RepositorioLoteProva>();
         }
 
         private static void RegistrarServicos(IServiceCollection services)
@@ -46,6 +45,20 @@ namespace SME.SERAp.Boletim.IoC
         private static void RegistrarCasosDeUso(IServiceCollection services)
         {
             services.TryAddScoped<IObterAlunoPorRaUseCase, ObterAlunoPorRaUseCase>();
+            services.TryAddScoped<IObterUesAbrangenciaUsuarioLogadoUseCase, ObterUesAbrangenciaUsuarioLogadoUseCase>();
+            services.TryAddScoped<IAutenticacaoUseCase, AutenticacaoUseCase>();
+            services.TryAddScoped<IAutenticacaoValidarUseCase, AutenticacaoValidarUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarPorUeUseCase, ObterBoletimEscolarPorUeUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarTurmaPorUeUseCase, ObterBoletimEscolarTurmaPorUeUseCase>();
+            services.TryAddScoped<IObterDownloadBoletimProvaEscolarUseCase, ObterDownloadBoletimProvaEscolarUseCase>();
+            services.TryAddScoped<IObterAbaEstudanteBoletimEscolarPorUeIdUseCase, ObterAbaEstudanteBoletimEscolarPorUeIdUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarOpcoesFiltrosPorUeUseCase, ObterBoletimEscolarOpcoesFiltrosPorUeUseCase>();
+            services.TryAddScoped<IObterAbaEstudanteGraficoPorUeIdUseCase, ObterAbaEstudanteGraficoPorUeIdUseCase>();
+            services.TryAddScoped<IObterBoletimNomeAplicacaoProvaUseCase, ObterBoletimNomeAplicacaoProvaUseCase>();
+            services.TryAddScoped<IObterResultadoProbabilidadePorUeUseCase, ObterResultadoProbabilidadePorUeUseCase>();
+            services.TryAddScoped<IObterResultadoProbabilidadePorUeListaUseCase, ObterResultadoProbabilidadePorUeListaUseCase>();
+
+            services.TryAddScoped<IObterDownloadResultadoProbabilidadeUseCase, ObterDownloadResultadoProbabilidadeUseCase>();
         }
     }
 }
