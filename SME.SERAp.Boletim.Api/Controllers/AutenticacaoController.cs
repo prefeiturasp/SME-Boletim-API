@@ -8,7 +8,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
     [Route("api/v1/[controller]")]
     public class AutenticacaoController : ControllerBase
     {
-        [HttpPost("autenticacao")]
+        [HttpPost]
         //[ChaveAutenticacaoApi]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
