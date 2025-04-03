@@ -2,6 +2,8 @@
 using SME.SERAp.Boletim.Api.Filters;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
+using SME.SERAp.Boletim.Infra.Dtos.LoteProva;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
@@ -30,6 +32,30 @@ namespace SME.SERAp.Boletim.Api.Controllers
            [FromBody] AutenticacaoValidarDto autenticacaoValidarDto)
         {
             return Ok(await autenticacaoValidarUseCase.Executar(autenticacaoValidarDto));
+        }
+
+        [HttpGet("/validacao-api")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(bool), 200)]
+        public async Task<IActionResult> ValidacaoController()
+        {
+            return Ok(true);
+        }
+
+        [HttpGet("/validacao-banco")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(LoteProvaAtivoDto), 200)]
+        public async Task<IActionResult> ValidacaoBancoController([FromServices] IObterBoletimNomeAplicacaoProvaUseCase obterLoteProvaAtivo)
+        {
+            try
+            {
+                var resultado = await obterLoteProvaAtivo.Executar();
+                return Ok(resultado);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
