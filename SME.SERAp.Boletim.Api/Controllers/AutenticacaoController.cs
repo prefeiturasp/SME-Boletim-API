@@ -8,10 +8,10 @@ using SME.SERAp.Boletim.Infra.Dtos.LoteProva;
 namespace SME.SERAp.Boletim.Api.Controllers
 {
     [ApiController]
-    [Route("/api/v1/autenticacao")]
+    [Route("api/v1/[controller]")]
     public class AutenticacaoController : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("autenticacao")]
         //[ChaveAutenticacaoApi]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
@@ -34,7 +34,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(await autenticacaoValidarUseCase.Executar(autenticacaoValidarDto));
         }
 
-        [HttpGet("/validacao-api")]
+        [HttpGet("validacao-api")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
         public async Task<IActionResult> ValidacaoController()
@@ -42,7 +42,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(true);
         }
 
-        [HttpGet("/validacao-banco")]
+        [HttpGet("validacao-banco")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(LoteProvaAtivoDto), 200)]
         public async Task<IActionResult> ValidacaoBancoController([FromServices] IObterBoletimNomeAplicacaoProvaUseCase obterLoteProvaAtivo)
