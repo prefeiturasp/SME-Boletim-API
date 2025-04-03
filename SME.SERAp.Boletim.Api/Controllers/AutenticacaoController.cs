@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SME.SERAp.Boletim.Api.Filters;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 
 namespace SME.SERAp.Boletim.Api.Controllers
 {
     [ApiController]
-    [Route("/api/v1/autenticacao")]
+    [Route("api/v1/[controller]")]
     public class AutenticacaoController : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("autenticacao")]
         //[ChaveAutenticacaoApi]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
