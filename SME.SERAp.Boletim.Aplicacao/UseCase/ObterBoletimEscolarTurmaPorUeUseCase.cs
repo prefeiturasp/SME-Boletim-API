@@ -38,6 +38,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     var niveis = await ObterNiveisProficiencia(ueId, prova, filtros);
                     prova.Niveis = niveis;
                 }
+
+                provasBoletimEscola = provasBoletimEscola
+                    .OrderBy(x => x.Descricao)
+                    .ThenBy(x => x.Niveis?.Select(n => n.AnoEscolar)?.Min() ?? 0)
+                    .ToList();
             }
 
             return new BoletimEscolarPorTurmaDto(provasBoletimEscola);
