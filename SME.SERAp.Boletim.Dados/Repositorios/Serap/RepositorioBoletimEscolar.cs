@@ -48,6 +48,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             lp.exibir_no_boletim
                         where
 	                        ue_id = @ueId
+                        order by be.componente_curricular asc
                 ");
 
                 var parameters = new DynamicParameters();
@@ -135,7 +136,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            lp.id = blp.lote_id AND
 	                            lp.exibir_no_boletim 
                             WHERE
-	                            be.ue_id = @ueId");
+	                            be.ue_id = @ueId
+                            order by p.disciplina, p.id");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
