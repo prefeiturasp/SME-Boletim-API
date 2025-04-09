@@ -48,7 +48,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             lp.exibir_no_boletim
                         where
 	                        ue_id = @ueId
-                        order by be.componente_curricular asc
                 ");
 
                 var parameters = new DynamicParameters();
@@ -67,6 +66,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     query.Append(@" AND CAST(regexp_replace(be.componente_curricular, '[^0-9]', '', 'g') AS INTEGER) = ANY(@anos)");
                     parameters.Add("anos", anos, DbType.Object);
                 }
+
+                query.Append(" order by be.componente_curricular asc");
 
                 return await conn.QueryAsync<BoletimEscolar>(query.ToString(), parameters);
 
@@ -136,8 +137,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            lp.id = blp.lote_id AND
 	                            lp.exibir_no_boletim 
                             WHERE
-	                            be.ue_id = @ueId
-                            order by p.disciplina, p.id");
+	                            be.ue_id = @ueId");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
@@ -158,7 +158,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
                 query.Append(@" GROUP BY
 	                                be.prova_id,
-	                                p.disciplina;");
+	                                p.disciplina
+                                order by p.disciplina, be.prova_id;");
 
                 return await conn.QueryAsync<ProvaBoletimEscolarDto>(query.ToString(), parameters);
             }
