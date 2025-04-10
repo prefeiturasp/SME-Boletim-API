@@ -67,6 +67,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     parameters.Add("anos", anos, DbType.Object);
                 }
 
+                query.Append(" order by be.componente_curricular asc");
+
                 return await conn.QueryAsync<BoletimEscolar>(query.ToString(), parameters);
 
             }
@@ -156,7 +158,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
                 query.Append(@" GROUP BY
 	                                be.prova_id,
-	                                p.disciplina;");
+	                                p.disciplina
+                                order by p.disciplina, be.prova_id;");
 
                 return await conn.QueryAsync<ProvaBoletimEscolarDto>(query.ToString(), parameters);
             }
