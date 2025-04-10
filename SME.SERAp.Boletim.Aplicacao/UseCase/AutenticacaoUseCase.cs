@@ -1,5 +1,4 @@
-﻿using Elastic.Apm.Api;
-using MediatR;
+﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Commands.GerarCodigoValidacaoAutenticacao;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAbrangenciaPorLoginGrupo;
