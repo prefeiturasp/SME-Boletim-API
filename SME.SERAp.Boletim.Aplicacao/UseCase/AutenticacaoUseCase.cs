@@ -9,13 +9,20 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
     public class AutenticacaoUseCase : AbstractUseCase, IAutenticacaoUseCase
     {
-
+        private const string ChaveEnvironmentVariableName = "ChaveSerapProvaApi";
         public AutenticacaoUseCase(IMediator mediator) : base(mediator)
         {
         }
 
         public async Task<AutenticacaoValidarDto> Executar(AutenticacaoDto autenticacaoDto)
         {
+            var chaveApi = Environment.GetEnvironmentVariable(ChaveEnvironmentVariableName);
+            if (!string.IsNullOrWhiteSpace(chaveApi))
+            {
+                if (string.IsNullOrWhiteSpace(autenticacaoDto.ChaveApi) || !autenticacaoDto.ChaveApi.Equals(chaveApi))
+                    throw new NaoAutorizadoException($"Chave api: {autenticacaoDto.ChaveApi} inválida.", 401);
+            }
+
             var abrangencias = await mediator.Send(new ObterAbrangenciaPorLoginGrupoQuery(autenticacaoDto.Login, autenticacaoDto.Perfil));
 
             if (abrangencias == null || !abrangencias.Any())
