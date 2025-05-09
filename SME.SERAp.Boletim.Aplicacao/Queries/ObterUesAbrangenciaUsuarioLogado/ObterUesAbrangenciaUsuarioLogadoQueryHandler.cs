@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using SME.SERAp.Boletim.Dados.Interfaces;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Cache;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 
@@ -25,12 +26,19 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado
             if (loginUsuarioLogado is null)
                 return default;
 
+            var perfilUsuarioLogadoString = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(a => a.Type == "PERFIL")?.Value;
+            if (perfilUsuarioLogadoString is null || !Guid.TryParse(perfilUsuarioLogadoString, out var perfilUsuarioLogado))
+                return default;
+
             var chaveUsuarioLoginUeAbrangencia = string.Format(CacheChave.UsuarioLoginUeAbrangencia, loginUsuarioLogado);
-            return await _repositorioCache.ObterRedisAsync(chaveUsuarioLoginUeAbrangencia, async () => await ObterUesUsuarioLogado(loginUsuarioLogado));
+            return await _repositorioCache.ObterRedisAsync(chaveUsuarioLoginUeAbrangencia, async () => await ObterUesUsuarioLogado(loginUsuarioLogado, perfilUsuarioLogado));
         }
 
-        private async Task<List<AbrangenciaUeDto>> ObterUesUsuarioLogado(string loginUsuarioLogado)
+        private async Task<IEnumerable<AbrangenciaUeDto>> ObterUesUsuarioLogado(string loginUsuarioLogado, Guid perfilUsuarioLogado)
         {
+            if (Perfis.PerfilEhAdministrador(perfilUsuarioLogado))
+                return await _repositorioAbrangencia.ObterUesAdministrador();
+
             var abrangenciasUsuarioLogado = await _repositorioAbrangencia.ObterAbrangenciaPorLogin(loginUsuarioLogado);
             if (!abrangenciasUsuarioLogado?.Any() ?? true)
                 return default;

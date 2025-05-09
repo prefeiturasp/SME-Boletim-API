@@ -56,7 +56,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                 usc.login as Login,
                                 usc.nome as Usuario,
                                 a.grupo_id as GrupoId,
-                                gsc.id_coresso as IdCoreSSO,
+                                gsc.id_coresso as perfil,
                                 gsc.nome as Grupo,
                                 a.dre_id as DreId,
                                 a.ue_id as UeId,
@@ -95,7 +95,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            d.id = u.dre_id
                             WHERE
 	                            d.id = @dreId";
-                
                 if(ueId is not null)
                 {
                     query += " AND u.id = @ueId";
@@ -104,6 +103,32 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 query += ";";
 
                 var resultado = await conn.QueryAsync<AbrangenciaUeDto>(query, new { dreId, ueId });
+                return resultado;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AbrangenciaUeDto>> ObterUesAdministrador()
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"SELECT
+                                d.id AS DreId,
+                                u.id AS UeId,
+                                d.abreviacao as DreAbreviacao,
+                                u.nome as UeNome,
+                                u.tipo_escola as UeTipo
+                            FROM
+	                            ue u
+                            INNER JOIN dre d ON
+	                            d.id = u.dre_id;";
+
+                var resultado = await conn.QueryAsync<AbrangenciaUeDto>(query);
                 return resultado;
             }
             finally
