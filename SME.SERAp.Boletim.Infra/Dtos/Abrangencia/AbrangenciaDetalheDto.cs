@@ -12,7 +12,7 @@
 
         public long GrupoId { get; set; }
 
-        public Guid IdCoreSSO { get; set; }
+        public Guid Perfil { get; set; }
 
         public string Grupo {  get; set; }
 
@@ -25,5 +25,19 @@
         public DateTime Inicio { get; set; }
 
         public DateTime Fim {  get; set; }
+
+        public AbrangenciaDetalheDto()
+        {
+            
+        }
+
+        public AbrangenciaDetalheDto(string login, Guid perfil): this()
+        {
+            Login = login;
+            Perfil = perfil;
+            DreId = 0;
+            UeId = 0;
+            TurmaId = 0;
+        }
     }
 }

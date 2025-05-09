@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.IdentityModel.Tokens;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,19 +20,20 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterTokenJwt
         public Task<AutenticacaoRetornoDto> Handle(ObterTokenJwtQuery request, CancellationToken cancellationToken)
         {
             var now = DateTime.Now;
+            var abrangenciaPadrao = request.Abrangencias.FirstOrDefault();
             var claims = new List<Claim>
             {
-                new Claim("LOGIN", request.Abrangencias.FirstOrDefault().Login),
-                new Claim("USUARIOID", request.Abrangencias.FirstOrDefault().UsuarioId.ToString()),
-                new Claim("USUARIO", request.Abrangencias.FirstOrDefault().Usuario),
-                new Claim("GRUPOID", request.Abrangencias.FirstOrDefault().GrupoId.ToString()),
-                new Claim("GRUPO", request.Abrangencias.FirstOrDefault().Grupo),
-                //new Claim("PERMITECONSULTAR", request.Abrangencias.FirstOrDefault().PermiteConsultar.ToString()),
-                //new Claim("PERMITEALTERAR", request.Abrangencias.FirstOrDefault().PermiteAlterar.ToString())
+                new Claim("LOGIN", abrangenciaPadrao.Login),
+                new Claim("USUARIOID", abrangenciaPadrao.UsuarioId.ToString()),
+                new Claim("USUARIO", abrangenciaPadrao.Usuario ?? string.Empty),
+                new Claim("GRUPOID", abrangenciaPadrao.GrupoId.ToString()),
+                new Claim("GRUPO", abrangenciaPadrao.Grupo ?? string.Empty),
+                new Claim("PERFIL", abrangenciaPadrao.Perfil.ToString())
             };
 
-            foreach (var abrangencia in request.Abrangencias)
-                claims.Add(new Claim("DRE-UE-TURMA", $"{abrangencia.DreId}-{abrangencia.UeId}-{abrangencia.TurmaId}"));
+            if(!Perfis.PerfilEhAdministrador(abrangenciaPadrao.Perfil))
+                foreach (var abrangencia in request.Abrangencias)
+                    claims.Add(new Claim("DRE-UE-TURMA", $"{abrangencia.DreId}-{abrangencia.UeId}-{abrangencia.TurmaId}"));
 
             var dataHoraExpiracao = now.AddMinutes(double.Parse(jwtOptions.ExpiresInMinutes));
 

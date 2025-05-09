@@ -7,10 +7,17 @@ namespace SME.SERAp.Boletim.Infra.Extensions
         public static TAttribute GetAttribute<TAttribute>(this Enum enumValue)
             where TAttribute : Attribute
         {
-            return enumValue.GetType()
+            try
+            {
+                return enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .First()
                             .GetCustomAttribute<TAttribute>();
+            }
+            catch
+            {
+                return default;
+            }
         }
     }
 }
