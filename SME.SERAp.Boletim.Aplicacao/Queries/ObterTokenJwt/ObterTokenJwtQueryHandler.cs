@@ -28,10 +28,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterTokenJwt
                 new Claim("USUARIO", abrangenciaPadrao.Usuario ?? string.Empty),
                 new Claim("GRUPOID", abrangenciaPadrao.GrupoId.ToString()),
                 new Claim("GRUPO", abrangenciaPadrao.Grupo ?? string.Empty),
-                new Claim("PERFIL", abrangenciaPadrao.Pefil.ToString())
+                new Claim("PERFIL", abrangenciaPadrao.Perfil.ToString())
             };
 
-            if(!Perfis.PerfilEhAdministrador(abrangenciaPadrao.Pefil))
+            if(!Perfis.PerfilEhAdministrador(abrangenciaPadrao.Perfil))
                 foreach (var abrangencia in request.Abrangencias)
                     claims.Add(new Claim("DRE-UE-TURMA", $"{abrangencia.DreId}-{abrangencia.UeId}-{abrangencia.TurmaId}"));
 

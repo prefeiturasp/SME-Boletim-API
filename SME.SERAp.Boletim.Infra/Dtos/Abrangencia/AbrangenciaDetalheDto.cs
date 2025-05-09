@@ -12,7 +12,7 @@
 
         public long GrupoId { get; set; }
 
-        public Guid Pefil { get; set; }
+        public Guid Perfil { get; set; }
 
         public string Grupo {  get; set; }
 
@@ -34,7 +34,7 @@
         public AbrangenciaDetalheDto(string login, Guid perfil): this()
         {
             Login = login;
-            Pefil = perfil;
+            Perfil = perfil;
             DreId = 0;
             UeId = 0;
             TurmaId = 0;
