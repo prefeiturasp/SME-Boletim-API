@@ -10,5 +10,7 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<AbrangenciaDetalheDto>> ObterAbrangenciaPorLoginGrupo(string login, Guid perfil);
 
         Task<IEnumerable<AbrangenciaUeDto>> ObterUesPorAbrangenciaDre(long dreId, long? ueId);
+
+        Task<IEnumerable<AbrangenciaUeDto>> ObterUesAdministrador();
     }
 }
