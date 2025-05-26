@@ -52,16 +52,21 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             if (boletimValoresProficiencia is not null)
             {
-                boletimValoresProficiencia.ValorMinimo = TratarValorProficiencia(boletimValoresProficiencia.ValorMinimo);
-                boletimValoresProficiencia.ValorMaximo = TratarValorProficiencia(boletimValoresProficiencia.ValorMaximo);
+                boletimValoresProficiencia.ValorMinimo = TratarValorProficienciaMinima(boletimValoresProficiencia.ValorMinimo);
+                boletimValoresProficiencia.ValorMaximo = TratarValorProficienciaMaxima(boletimValoresProficiencia.ValorMaximo);
             }
 
             return boletimValoresProficiencia ?? new();
         }
 
-        private decimal TratarValorProficiencia(decimal valorMinimo)
+        private decimal TratarValorProficienciaMinima(decimal valorMinimo)
         {
             return (int)(Math.Floor(valorMinimo / 25) * 25);
+        }
+
+        private decimal TratarValorProficienciaMaxima(decimal valorMaxima)
+        {
+            return (int)(Math.Ceiling(valorMaxima / 25) * 25);
         }
 
         private async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterTurmas(long ueId)
