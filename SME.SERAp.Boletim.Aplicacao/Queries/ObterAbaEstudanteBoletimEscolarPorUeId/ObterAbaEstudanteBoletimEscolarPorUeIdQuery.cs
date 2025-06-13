@@ -4,7 +4,7 @@ using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPorUeId
 {
-    class ObterAbaEstudanteBoletimEscolarPorUeIdQuery
+    public class ObterAbaEstudanteBoletimEscolarPorUeIdQuery
     : IRequest<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
     {
         public ObterAbaEstudanteBoletimEscolarPorUeIdQuery(long ueId, FiltroBoletimEstudantePaginadoDto filtros)
