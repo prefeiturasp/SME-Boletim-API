@@ -71,11 +71,11 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-        [HttpGet("nome-aplicacao")]
-        [ProducesResponseType(typeof(IEnumerable<LoteProvaAtivoDto>), 200)]
-        public async Task<IActionResult> ObterBoletimNomeAplicacaoProva([FromServices] IObterBoletimNomeAplicacaoProvaUseCase obterLoteProvaAtivo)
+        [HttpGet("aplicacoes-prova")]
+        [ProducesResponseType(typeof(IEnumerable<LoteProvaDto>), 200)]
+        public async Task<IActionResult> ObterBoletimAplicacoesProva([FromServices] IObterBoletimAplicacoesProvaUseCase obterAplicacoesProva)
         {
-            var resultado = await obterLoteProvaAtivo.Executar();
+            var resultado = await obterAplicacoesProva.Executar();
             return Ok(resultado);
         }
 

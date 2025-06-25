@@ -2,8 +2,8 @@
 
 namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
-    public interface IObterBoletimNomeAplicacaoProvaUseCase
+    public interface IObterBoletimAplicacoesProvaUseCase
     {
-        Task<LoteProvaAtivoDto> Executar();
+        Task<IEnumerable<LoteProvaDto>> Executar();
     }
 }

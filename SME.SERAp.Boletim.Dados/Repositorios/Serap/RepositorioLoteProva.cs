@@ -13,7 +13,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         {
         }
 
-        public async Task<LoteProvaAtivoDto> ObterLoteProvaAtivo()
+        public async Task<IEnumerable<LoteProvaDto>> ObterLotesProva()
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -22,14 +22,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            lp.id,
 	                            lp.nome,
 	                            lp.tipo_tai as tipoTai,
+                                lp.exibir_no_boletim as exibirNoBoletim,
 	                            lp.data_inicio_lote as dataInicioLote
                             from 
-	                            lote_prova lp 
-                            where 
-	                            lp.exibir_no_boletim
-                            limit 1;";
+	                            lote_prova lp
+                            order by lp.id desc";
 
-                return await conn.QueryFirstAsync<LoteProvaAtivoDto>(query);
+                return await conn.QueryAsync<LoteProvaDto>(query);
             }
             finally
             {
