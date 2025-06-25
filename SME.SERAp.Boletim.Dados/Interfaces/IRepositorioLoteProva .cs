@@ -5,6 +5,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
 {
     public interface IRepositorioLoteProva : IRepositorioBase<LoteProva>
     {
-        Task<LoteProvaAtivoDto> ObterLoteProvaAtivo();
+        Task<IEnumerable<LoteProvaDto>> ObterLotesProva();
     }
 }
