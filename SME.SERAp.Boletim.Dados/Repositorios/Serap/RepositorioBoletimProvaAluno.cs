@@ -422,7 +422,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long ueId, FiltroBoletimEstudanteDto filtros)
+        public async Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long loteId, long ueId, FiltroBoletimEstudanteDto filtros)
         {
             using var conn = ObterConexaoLeitura();
 
@@ -436,12 +436,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                         INNER JOIN boletim_lote_prova blp ON 
 	                        blp.prova_id = bpa.prova_id
                         INNER JOIN lote_prova lp ON
-	                        lp.id = blp.lote_id AND
-	                        lp.exibir_no_boletim 
-                        WHERE u.id = @ueId");
+	                        lp.id = blp.lote_id
+                        WHERE u.id = @ueId
+                        AND lp.id = @loteId");
 
             var parameters = new DynamicParameters();
             parameters.Add("ueId", ueId);
+            parameters.Add("loteId", loteId);
 
             if (filtros?.ComponentesCurriculares?.Any() ?? false)
             {

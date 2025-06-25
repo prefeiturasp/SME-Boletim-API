@@ -62,12 +62,12 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(await obterBoletimEscolarOpcoesFiltrosPorUeUseCase.Executar(ueId));
         }
 
-        [HttpGet("{ueId}/estudantes-grafico")]
+        [HttpGet("{loteId}/{ueId}/estudantes-grafico")]
         [ProducesResponseType(typeof(IEnumerable<AbaEstudanteGraficoDto>), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteGraficoPorUeId(long ueId, [FromQuery] FiltroBoletimEstudanteDto filtros,
+        public async Task<IActionResult> ObterAbaEstudanteGraficoPorUeId(long loteId, long ueId, [FromQuery] FiltroBoletimEstudanteDto filtros,
             [FromServices] IObterAbaEstudanteGraficoPorUeIdUseCase obterAbaEstudanteGraficoPorUeIdUseCase)
         {
-            var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(ueId, filtros);
+            var resultado = await obterAbaEstudanteGraficoPorUeIdUseCase.Executar(loteId, ueId, filtros);
             return Ok(resultado);
         }
 
