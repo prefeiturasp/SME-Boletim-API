@@ -16,7 +16,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         {
         }
 
-        public async Task<IEnumerable<BoletimEscolar>> ObterBoletinsPorUe(long ueId, FiltroBoletimDto filtros)
+        public async Task<IEnumerable<BoletimEscolar>> ObterBoletinsPorUe(long loteId, long ueId, FiltroBoletimDto filtros)
 
         {
             using var conn = ObterConexaoLeitura();
@@ -44,13 +44,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                         inner join boletim_lote_prova blp on
 	                        blp.prova_id = be.prova_id 
                         inner join lote_prova lp on
-	                        lp.id = blp.lote_id and
-                            lp.exibir_no_boletim
+	                        lp.id = blp.lote_id
                         where
-	                        ue_id = @ueId
+	                        be.ue_id = @ueId and lp.id = @loteId 
                 ");
 
                 var parameters = new DynamicParameters();
+                parameters.Add("loteId", loteId);
                 parameters.Add("ueId", ueId);
 
                 if (filtros?.ComponentesCurriculares?.Any() ?? false)

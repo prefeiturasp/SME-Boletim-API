@@ -11,11 +11,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimEscolarPorUe
 {
     public class ObterBoletimEscolarPorUeQuery : IRequest<IEnumerable<BoletimEscolar>>
     {
-        public ObterBoletimEscolarPorUeQuery(long ueId, FiltroBoletimDto filtros)
+        public ObterBoletimEscolarPorUeQuery(long loteId, long ueId, FiltroBoletimDto filtros)
         {
+            LoteId = loteId;
             UeId = ueId;
             Filtros = filtros;
         }
+
+        public long LoteId { get; set; }
+
         public long UeId { get; set; }
 
         public FiltroBoletimDto Filtros { get; set; }

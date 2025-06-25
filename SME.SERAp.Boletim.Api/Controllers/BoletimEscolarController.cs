@@ -14,13 +14,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
     [Authorize]
     public class BoletimEscolarController : ControllerBase
     {
-        [HttpGet("{ueId}")]
+        [HttpGet("{loteId}/{ueId}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(BoletimEscolarDto), 200)]
-        public async Task<IActionResult> ObterBoletimPorUe(long ueId,
+        public async Task<IActionResult> ObterBoletimPorUe(long ueId, long loteId,
             [FromServices] IObterBoletimEscolarPorUeUseCase obterBoletimEscolarPorUeUseCase, [FromQuery] FiltroBoletimDto filtros)
         {
-            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(ueId, filtros));
+            return Ok(await obterBoletimEscolarPorUeUseCase.Executar(loteId, ueId, filtros));
         }
 
         [HttpGet("{ueId}/turmas")]
