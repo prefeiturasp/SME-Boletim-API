@@ -31,6 +31,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCases
         {
             // Arrange
             var ueId = 123;
+            var loteId = 1;
             var filtros = new FiltroBoletimEstudantePaginadoDto { PageNumber = 1, PageSize = 10 };
 
             var abrangencias = new List<AbrangenciaUeDto>
@@ -52,7 +53,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCases
                 .ReturnsAsync((estudantes, estudantes.Count));
 
             // Act
-            var resultado = await _useCase.Executar(ueId, filtros);
+            var resultado = await _useCase.Executar(loteId, ueId, filtros);
 
             // Assert
             resultado.Should().NotBeNull();
@@ -64,6 +65,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCases
         public async Task Deve_Lancar_Excecao_Se_UeId_Nao_Estiver_Nas_Abrangencias()
         {
             // Arrange
+            var loteId = 1;
             var ueId = 999;
             var filtros = new FiltroBoletimEstudantePaginadoDto();
 
@@ -74,13 +76,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCases
                 });
 
             // Act & Assert
-            await Assert.ThrowsAsync<NaoAutorizadoException>(() => _useCase.Executar(ueId, filtros));
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => _useCase.Executar(loteId, ueId, filtros));
         }
 
         [Fact]
         public async Task Deve_Retornar_Listas_Vazias_Quando_Nao_Houver_Estudantes()
         {
             // Arrange
+            var loteId = 1;
             var ueId = 123;
             var filtros = new FiltroBoletimEstudantePaginadoDto();
 
@@ -94,7 +97,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCases
                 .ReturnsAsync((Enumerable.Empty<AbaEstudanteListaDto>(), 0));
 
             // Act
-            var resultado = await _useCase.Executar(ueId, filtros);
+            var resultado = await _useCase.Executar(loteId, ueId, filtros);
 
             // Assert
             resultado.Should().NotBeNull();

@@ -144,15 +144,16 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         }
 
         public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
-            ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, FiltroBoletimEstudantePaginadoDto filtros)
+            ObterAbaEstudanteBoletimEscolarPorUeId(long loteId, long ueId, FiltroBoletimEstudantePaginadoDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
-                var where = new StringBuilder(@" WHERE u.id = @ueId");
+                var where = new StringBuilder(@" WHERE u.id = @ueId AND lp.id = @loteId");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
+                parameters.Add("loteId", loteId);
 
                 if (filtros?.ComponentesCurriculares?.Any() ?? false)
                 {
@@ -215,8 +216,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     INNER JOIN boletim_lote_prova blp ON 
 	                                    blp.prova_id = bpa.prova_id
                                     INNER JOIN lote_prova lp ON
-	                                    lp.id = blp.lote_id AND
-	                                    lp.exibir_no_boletim");
+	                                    lp.id = blp.lote_id");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn
@@ -236,8 +236,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                               INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                               INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim");
+	                            lp.id = blp.lote_id");
 
                 query.Append(where);
                 query.Append(@" ORDER BY bpa.turma, bpa.aluno_nome
