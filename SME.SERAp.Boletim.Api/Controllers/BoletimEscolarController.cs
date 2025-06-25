@@ -43,13 +43,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return File(file, "application/vnd.ms-excel", "relatorio.xls", enableRangeProcessing: true);
         }
 
-        [HttpGet("{ueId}/estudantes")]
+        [HttpGet("{loteId}/{ueId}/estudantes")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(BoletimEscolarComDisciplinasDto), 200)]
-        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long ueId, [FromQuery] FiltroBoletimEstudantePaginadoDto filtros,
+        public async Task<IActionResult> ObterAbaEstudanteBoletimEscolarPorUeId(long loteId, long ueId, [FromQuery] FiltroBoletimEstudantePaginadoDto filtros,
             [FromServices] IObterAbaEstudanteBoletimEscolarPorUeIdUseCase obterAbaEstudanteBoletimEscolarPorUeIdUseCase)
         {
-            var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(ueId, filtros);
+            var resultado = await obterAbaEstudanteBoletimEscolarPorUeIdUseCase.Executar(loteId, ueId, filtros);
             return Ok(resultado);
         }
 
