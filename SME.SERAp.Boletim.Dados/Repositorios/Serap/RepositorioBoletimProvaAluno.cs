@@ -592,17 +592,19 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadeListaPorUeAsync(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
+        public async Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadeListaPorUeAsync(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
                 var where = new StringBuilder(@" WHERE brp.ue_id = @ueId 
+                                    AND lp.id = @loteId 
                                     AND brp.disciplina_id = @disciplinaId 
                                     AND brp.ano_escolar = @anoEscolar");
 
 
                 var parameters = new DynamicParameters();
+                parameters.Add("loteId", loteId);
                 parameters.Add("ueId", ueId);
                 parameters.Add("disciplinaId", disciplinaId);
                 parameters.Add("anoEscolar", anoEscolar);
@@ -627,8 +629,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                                     INNER JOIN boletim_lote_prova blp ON 
 	                                                    blp.prova_id = brp.prova_id
                                                     INNER JOIN lote_prova lp ON
-	                                                    lp.id = blp.lote_id AND
-	                                                    lp.exibir_no_boletim");
+	                                                    lp.id = blp.lote_id");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
@@ -645,8 +646,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
                                 blp.prova_id = brp.prova_id
                             INNER JOIN lote_prova lp ON
-                                lp.id = blp.lote_id AND
-                                lp.exibir_no_boletim");
+                                lp.id = blp.lote_id");
 
                 query.Append(where);
                 query.Append(@" ORDER BY brp.codigo_habilidade, brp.turma_descricao

@@ -5,13 +5,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadeListaPo
 {
     public class ObterResultadoProbabilidadeListaPorUeIdQuery : IRequest<(IEnumerable<ResultadoProbabilidadeDto>, int)>
     {
+        public long LoteId { get; }
         public long UeId { get; }
         public long DisciplinaId { get; }
         public int AnoEscolar { get; }
         public FiltroBoletimResultadoProbabilidadeDto Filtros { get; set; }
 
-        public ObterResultadoProbabilidadeListaPorUeIdQuery(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
+        public ObterResultadoProbabilidadeListaPorUeIdQuery(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
+            LoteId = loteId;
             UeId = ueId;
             DisciplinaId = disciplinaId;
             AnoEscolar = anoEscolar;

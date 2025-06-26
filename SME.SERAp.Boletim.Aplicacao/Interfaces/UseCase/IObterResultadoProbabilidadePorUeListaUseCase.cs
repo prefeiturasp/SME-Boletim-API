@@ -5,6 +5,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterResultadoProbabilidadePorUeListaUseCase
     {
-        Task<ResultadoProbabilidadeListaPaginadoDto> Executar(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros);
+        Task<ResultadoProbabilidadeListaPaginadoDto> Executar(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros);
     }
 }
