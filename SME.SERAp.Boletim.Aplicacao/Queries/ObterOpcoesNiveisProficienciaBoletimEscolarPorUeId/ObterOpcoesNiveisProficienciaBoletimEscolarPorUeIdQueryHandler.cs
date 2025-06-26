@@ -20,9 +20,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterOpcoesNiveisProficienciaBolet
         public async Task<IEnumerable<OpcaoFiltroDto<int>>> Handle(ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery request, CancellationToken cancellationToken)
         {
             var chaveCacheOpcoesFiltrosNivelProficiencia = string
-                .Format(CacheChave.BolemtimEscolarUeOpcoesFiltrosNivelProficiencia, request.UeId);
+                .Format(CacheChave.BolemtimEscolarUeOpcoesFiltrosNivelProficiencia, request.LoteId, request.UeId);
             return await repositorioCache
-                .ObterRedisAsync(chaveCacheOpcoesFiltrosNivelProficiencia, async () => await repositorioBoletimProvaAluno.ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(request.UeId));
+                .ObterRedisAsync(chaveCacheOpcoesFiltrosNivelProficiencia, async () => await repositorioBoletimProvaAluno.ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(request.LoteId, request.UeId));
         }
     }
 }
