@@ -79,17 +79,17 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-        [HttpGet("{ueId}/{disciplinaId}/{anoEscolar}/resultado-probabilidade")]
+        [HttpGet("{loteId}/{ueId}/{disciplinaId}/{anoEscolar}/resultado-probabilidade")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(IEnumerable<ResultadoProbabilidadeAgrupadoDto>), 200)]
-        public async Task<IActionResult> ObterResultadoProbabilidadePorUeAsync(long ueId, long disciplinaId, int anoEscolar,
+        public async Task<IActionResult> ObterResultadoProbabilidadePorUeAsync(long loteId, long ueId, long disciplinaId, int anoEscolar,
         [FromQuery] FiltroBoletimResultadoProbabilidadeDto filtros,
         [FromServices] IObterResultadoProbabilidadePorUeUseCase obterResultadoProbabilidadePorUeUseCase)
         {
             if (filtros.Pagina < 1 || filtros.TamanhoPagina < 1)
                 return BadRequest("Página e tamanho da página devem ser maiores que zero.");
 
-            var resultado = await obterResultadoProbabilidadePorUeUseCase.Executar(ueId, disciplinaId, anoEscolar, filtros);
+            var resultado = await obterResultadoProbabilidadePorUeUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar, filtros);
             return Ok(resultado);
         }
 
