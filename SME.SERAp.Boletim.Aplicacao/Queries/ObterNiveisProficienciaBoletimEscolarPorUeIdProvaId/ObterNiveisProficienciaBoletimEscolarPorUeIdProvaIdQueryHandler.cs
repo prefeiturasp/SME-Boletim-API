@@ -15,7 +15,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaBoletimEsco
 
         public Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> Handle(ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery request, CancellationToken cancellationToken)
         {
-            return repositorioBoletimProvaAluno.ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(request.UeId, request.ProvaId, request.Filtros);
+            return repositorioBoletimProvaAluno.ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(request.LoteId, request.UeId, request.ProvaId, request.Filtros);
         }
     }
 }

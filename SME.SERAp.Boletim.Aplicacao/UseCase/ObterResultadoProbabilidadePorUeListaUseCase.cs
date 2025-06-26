@@ -17,14 +17,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<ResultadoProbabilidadeListaPaginadoDto> Executar(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
+        public async Task<ResultadoProbabilidadeListaPaginadoDto> Executar(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros)
         {
             var abrangenciasUsuarioLogado = await mediator.Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var (resultadoProbabilidade, totalRegistros) = await mediator.Send(new ObterResultadoProbabilidadeListaPorUeIdQuery(ueId, disciplinaId, anoEscolar, filtros));
+            var (resultadoProbabilidade, totalRegistros) = await mediator.Send(new ObterResultadoProbabilidadeListaPorUeIdQuery(loteId, ueId, disciplinaId, anoEscolar, filtros));
 
             if (resultadoProbabilidade == null || !resultadoProbabilidade.Any())
             {

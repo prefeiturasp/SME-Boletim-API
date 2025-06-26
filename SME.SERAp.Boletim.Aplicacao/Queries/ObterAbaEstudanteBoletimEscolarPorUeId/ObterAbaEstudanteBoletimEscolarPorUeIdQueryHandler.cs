@@ -23,7 +23,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPor
         public Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
             Handle(ObterAbaEstudanteBoletimEscolarPorUeIdQuery request, CancellationToken cancellationToken)
         {
-            return repositorioBoletimProvaAluno.ObterAbaEstudanteBoletimEscolarPorUeId(request.UeId, request.Filtros);
+            return repositorioBoletimProvaAluno.ObterAbaEstudanteBoletimEscolarPorUeId(request.LoteId, request.UeId, request.Filtros);
         }
     }
 }

@@ -8,6 +8,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterDownloadResultadoProbabilidadeUseCase
     {
-        Task<MemoryStream> Executar(long ueId, long disciplinaId, int anoEscolar);
+        Task<MemoryStream> Executar(long loteId, long ueId, long disciplinaId, int anoEscolar);
     }
 }

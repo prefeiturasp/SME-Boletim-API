@@ -6,11 +6,13 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterOpcoesAnoEscolarBoletimEscola
     public class ObterOpcoesAnoEscolarBoletimEscolarPorUeIdQuery
         : IRequest<IEnumerable<OpcaoFiltroDto<int>>>
     {
-        public ObterOpcoesAnoEscolarBoletimEscolarPorUeIdQuery(long ueId)
+        public ObterOpcoesAnoEscolarBoletimEscolarPorUeIdQuery(long loteId, long ueId)
         {
+            LoteId = loteId;
             UeId = ueId;
         }
 
+        public long LoteId { get; set; }
         public long UeId { get; set; }
     }
 }
