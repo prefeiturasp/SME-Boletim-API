@@ -169,7 +169,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadResultadoProbabilidade(long ueId, long disciplinaId, int anoEscolar)
+        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadResultadoProbabilidade(long loteId, long ueId, long disciplinaId, int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -186,13 +186,13 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         INNER JOIN boletim_lote_prova blp ON
 	                                        blp.prova_id = brp.prova_id
 	                                    INNER JOIN lote_prova lp ON
-	                                        lp.id = blp.lote_id AND
-	                                        lp.exibir_no_boletim
+	                                        lp.id = blp.lote_id
                                         WHERE brp.ue_id = @ueId
+                                          AND lp.id = @loteId
                                           AND brp.disciplina_id = @disciplinaId
                                           AND brp.ano_escolar = @anoEscolar;";
 
-                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { ueId, disciplinaId, anoEscolar });
+                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { loteId, ueId, disciplinaId, anoEscolar });
             }
             finally
             {

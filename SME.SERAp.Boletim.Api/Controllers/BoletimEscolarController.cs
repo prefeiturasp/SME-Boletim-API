@@ -93,13 +93,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-        [HttpGet("download-probabilidade/{ueId}/{disciplinaId}/{anoEscolar}")]
+        [HttpGet("download-probabilidade/{loteId}/{ueId}/{disciplinaId}/{anoEscolar}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterDownloadResultadoProbabilidade(long ueId, long disciplinaId, int anoEscolar,
-        [FromServices] IObterDownloadResultadoProbabilidadeUseCase useCase)
+        public async Task<IActionResult> ObterDownloadResultadoProbabilidade(long loteId, long ueId, long disciplinaId, int anoEscolar,
+        [FromServices] IObterDownloadResultadoProbabilidadeUseCase obterDownloadResultadoProbabilidadeUseCase)
         {
-            var file = await useCase.Executar(ueId, disciplinaId, anoEscolar);
+            var file = await obterDownloadResultadoProbabilidadeUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar);
             return File(file, "application/vnd.ms-excel", $"resultado_probabilidade_{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
         }
 
