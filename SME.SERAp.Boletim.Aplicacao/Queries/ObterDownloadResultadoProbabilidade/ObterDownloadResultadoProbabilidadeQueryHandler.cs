@@ -20,7 +20,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadResultadoProbabilidad
 
         public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> Handle(ObterDownloadResultadoProbabilidadeQuery request, CancellationToken cancellationToken)
         {
-            return await _repositorio.ObterDownloadResultadoProbabilidade(request.UeId, request.DisciplinaId, request.AnoEscolar);
+            return await _repositorio.ObterDownloadResultadoProbabilidade(request.LoteId, request.UeId, request.DisciplinaId, request.AnoEscolar);
         }
     }
 }

@@ -5,11 +5,13 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterOpcoesNiveisProficienciaBolet
 {
     public class ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery : IRequest<IEnumerable<OpcaoFiltroDto<int>>>
     {
-        public ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery(long ueId)
+        public ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery(long loteId, long ueId)
         {
+            LoteId = loteId;
             UeId = ueId;
         }
 
+        public long LoteId { get; set; }
         public long UeId { get; set; }
     }
 }

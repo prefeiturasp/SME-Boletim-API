@@ -23,7 +23,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimEscolarPorUe
 
         public async Task<IEnumerable<BoletimEscolar>> Handle(ObterBoletimEscolarPorUeQuery request, CancellationToken cancellationToken)
         {
-            return await repositorioBoletimEscolar.ObterBoletinsPorUe(request.UeId, request.Filtros);
+            return await repositorioBoletimEscolar.ObterBoletinsPorUe(request.LoteId, request.UeId, request.Filtros);
 
 
             //var chaveBoletimUe = string.Format(CacheChave.BoletimUe, request.UeId);

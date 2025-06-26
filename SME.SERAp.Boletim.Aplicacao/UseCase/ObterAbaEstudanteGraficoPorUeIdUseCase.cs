@@ -17,7 +17,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             _mediator = mediator;
         }
 
-        public async Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long ueId, FiltroBoletimEstudanteDto filtros)
+        public async Task<IEnumerable<AbaEstudanteGraficoDto>> Executar(long loteId, long ueId, FiltroBoletimEstudanteDto filtros)
         {
             var abrangenciasUsuarioLogado = await _mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -25,7 +25,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            return await _mediator.Send(new ObterAbaEstudanteGraficoPorUeIdQuery(ueId, filtros));
+            return await _mediator.Send(new ObterAbaEstudanteGraficoPorUeIdQuery(loteId, ueId, filtros));
         }
     }
 }

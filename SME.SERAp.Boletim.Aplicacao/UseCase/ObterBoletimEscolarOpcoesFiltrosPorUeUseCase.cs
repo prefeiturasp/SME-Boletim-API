@@ -18,7 +18,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         {
         }
 
-        public async Task<BoletimEscolarOpcoesFiltrosDto> Executar(long ueId)
+        public async Task<BoletimEscolarOpcoesFiltrosDto> Executar(long loteId, long ueId)
         {
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -26,11 +26,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var niveis = await ObterNiveis(ueId);
-            var anosEscolares = await ObterAnosEscolares(ueId);
-            var componentesCurriculares = await ObterComponentesCurriculares(ueId);
-            var turmas = await ObterTurmas(ueId);
-            var boletimValoresProficiencia = await ObterBoletimValoresProficiencia(ueId);
+            var niveis = await ObterNiveis(loteId, ueId);
+            var anosEscolares = await ObterAnosEscolares(loteId, ueId);
+            var componentesCurriculares = await ObterComponentesCurriculares(loteId, ueId);
+            var turmas = await ObterTurmas(loteId, ueId);
+            var boletimValoresProficiencia = await ObterBoletimValoresProficiencia(loteId, ueId);
 
             var opcoesFiltros = new BoletimEscolarOpcoesFiltrosDto
             {
@@ -45,10 +45,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return opcoesFiltros;
         }
 
-        private async Task<BoletimEscolarValoresNivelProficienciaDto> ObterBoletimValoresProficiencia(long ueId)
+        private async Task<BoletimEscolarValoresNivelProficienciaDto> ObterBoletimValoresProficiencia(long loteId, long ueId)
         {
             var boletimValoresProficiencia = await mediator
-                            .Send(new ObterValoresNivelProficienciaBoletimEscolarPorUeIdQuery(ueId));
+                            .Send(new ObterValoresNivelProficienciaBoletimEscolarPorUeIdQuery(loteId, ueId));
 
             if (boletimValoresProficiencia is not null)
             {
@@ -69,31 +69,31 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return (int)(Math.Ceiling(valorMaxima / 25) * 25);
         }
 
-        private async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterTurmas(long ueId)
+        private async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterTurmas(long loteId, long ueId)
         {
             return await mediator
-                            .Send(new ObterOpcoesTurmaBoletimEscolarPorUeIdQuery(ueId))
+                            .Send(new ObterOpcoesTurmaBoletimEscolarPorUeIdQuery(loteId, ueId))
                             ?? new List<OpcaoFiltroDto<string>>();
         }
 
-        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterComponentesCurriculares(long ueId)
+        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterComponentesCurriculares(long loteId, long ueId)
         {
             return await mediator
-                            .Send(new ObterOpcoesComponenteCurricularBoletimEscolarPorUeIdQuery(ueId))
+                            .Send(new ObterOpcoesComponenteCurricularBoletimEscolarPorUeIdQuery(loteId, ueId))
                             ?? new List<OpcaoFiltroDto<int>>();
         }
 
-        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterAnosEscolares(long ueId)
+        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterAnosEscolares(long loteId, long ueId)
         {
             return await mediator
-                            .Send(new ObterOpcoesAnoEscolarBoletimEscolarPorUeIdQuery(ueId))
+                            .Send(new ObterOpcoesAnoEscolarBoletimEscolarPorUeIdQuery(loteId, ueId))
                             ?? new List<OpcaoFiltroDto<int>>();
         }
 
-        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterNiveis(long ueId)
+        private async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterNiveis(long loteId, long ueId)
         {
             return await mediator
-                            .Send(new ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery(ueId))
+                            .Send(new ObterOpcoesNiveisProficienciaBoletimEscolarPorUeIdQuery(loteId, ueId))
                             ?? new List<OpcaoFiltroDto<int>>();
         }
     }

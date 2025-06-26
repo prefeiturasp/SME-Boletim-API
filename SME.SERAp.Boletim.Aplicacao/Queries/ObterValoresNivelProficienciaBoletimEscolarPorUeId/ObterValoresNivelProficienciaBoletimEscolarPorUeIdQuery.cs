@@ -6,11 +6,13 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterValoresNivelProficienciaBolet
     public class ObterValoresNivelProficienciaBoletimEscolarPorUeIdQuery
         : IRequest<BoletimEscolarValoresNivelProficienciaDto>
     {
-        public ObterValoresNivelProficienciaBoletimEscolarPorUeIdQuery(long ueId)
+        public ObterValoresNivelProficienciaBoletimEscolarPorUeIdQuery(long loteId, long ueId)
         {
+            LoteId = loteId;
             UeId = ueId;
         }
 
+        public long LoteId { get; set; }
         public long UeId { get; set; }
     }
 }
