@@ -32,13 +32,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(await obterBoletimEscolarTurmaPorUeUseCase.Executar(loteId, ueId, filtros));
         }
 
-        [HttpGet("download/{ueId}")]
+        [HttpGet("download/{loteId}/{ueId}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(bool), 200)]
-        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long ueId,
+        public async Task<IActionResult> ObterBoletimEscolarTurmaPorUe(long ueId, long loteId,
           [FromServices] IObterDownloadBoletimProvaEscolarUseCase obterDownloadBoletimProvaEscolarUseCase)
         {
-            var file = await obterDownloadBoletimProvaEscolarUseCase.Executar(ueId);
+            var file = await obterDownloadBoletimProvaEscolarUseCase.Executar(loteId, ueId);
 
             return File(file, "application/vnd.ms-excel", "relatorio.xls", enableRangeProcessing: true);
         }
