@@ -17,6 +17,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<BoletimEscolarValoresNivelProficienciaDto> ObterValoresNivelProficienciaBoletimEscolarPorUeId(long loteId, long ueId);
         Task<IEnumerable<AbaEstudanteGraficoDto>> ObterAbaEstudanteGraficoPorUeId(long loteId, long ueId, FiltroBoletimEstudanteDto filtros);
         Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadePorUeAsync(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros);
-        Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadeListaPorUeAsync(long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros);
+        Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> ObterResultadoProbabilidadeListaPorUeAsync(long loteId, long ueId, long disciplinaId, int anoEscolar, FiltroBoletimResultadoProbabilidadeDto filtros);
     }
 }
