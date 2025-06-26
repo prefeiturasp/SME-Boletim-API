@@ -257,7 +257,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(long ueId)
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -274,17 +274,16 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id
                             where
-	                            u.id = @ueId
+	                            u.id = @ueId and lp.id = @loteId
                             group by
 	                            np.codigo,
 	                            np.descricao
                             order by  
 	                            np.codigo";
 
-                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId, loteId });
             }
             finally
             {
@@ -293,7 +292,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesAnoEscolarBoletimEscolarPorUeId(long ueId)
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesAnoEscolarBoletimEscolarPorUeId(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -308,16 +307,15 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id
                             where
-	                            u.id = @ueId
+	                            u.id = @ueId and lp.id = @loteId
                             group by
 	                            bpa.ano_escolar
                             order by
 	                            bpa.ano_escolar";
 
-                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { loteId, ueId });
             }
             finally
             {
@@ -326,7 +324,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesComponenteCurricularBoletimEscolarPorUeId(long ueId)
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesComponenteCurricularBoletimEscolarPorUeId(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -341,10 +339,9 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id
                             where
-	                            u.id = @ueId
+	                            u.id = @ueId and lp.id = @loteId
                             group by
 	                            bpa.disciplina_id,
 	                            bpa.disciplina
@@ -352,7 +349,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                            bpa.disciplina_id,
 	                            bpa.disciplina";
 
-                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { ueId });
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { loteId, ueId });
             }
             finally
             {
@@ -361,7 +358,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterOpcoesTurmaBoletimEscolarPorUeId(long ueId)
+        public async Task<IEnumerable<OpcaoFiltroDto<string>>> ObterOpcoesTurmaBoletimEscolarPorUeId(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -376,16 +373,15 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id
                             where
-	                            u.id = @ueId
+	                            u.id = @ueId and lp.id = @loteId
                             group by
 	                            REGEXP_REPLACE(bpa.turma, '^\d', '')
                             order by
 	                            valor";
 
-                return await conn.QueryAsync<OpcaoFiltroDto<string>>(query, new { ueId });
+                return await conn.QueryAsync<OpcaoFiltroDto<string>>(query, new { loteId, ueId });
             }
             finally
             {
@@ -394,7 +390,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<BoletimEscolarValoresNivelProficienciaDto> ObterValoresNivelProficienciaBoletimEscolarPorUeId(long ueId)
+        public async Task<BoletimEscolarValoresNivelProficienciaDto> ObterValoresNivelProficienciaBoletimEscolarPorUeId(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -409,12 +405,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id 
                             where
-	                            u.id = @ueId";
+	                            u.id = @ueId and lp.id = @loteId";
 
-                return await conn.QueryFirstAsync<BoletimEscolarValoresNivelProficienciaDto>(query, new { ueId });
+                return await conn.QueryFirstAsync<BoletimEscolarValoresNivelProficienciaDto>(query, new { loteId, ueId });
             }
             finally
             {

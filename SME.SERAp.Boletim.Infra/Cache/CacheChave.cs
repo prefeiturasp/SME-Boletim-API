@@ -175,33 +175,38 @@ namespace SME.SERAp.Boletim.Infra.Cache
 
         /// <summary>
         /// Opções de filtros de nível de proficiência do boletim escolar por UE
-        /// 0 - ID da UE
+        /// 0 - ID do Lote
+        /// 1 - ID da UE
         /// </summary>
-        public const string BolemtimEscolarUeOpcoesFiltrosNivelProficiencia = "bol-ue-opcoes-filtros-nivel-proficiencia-{0}";
+        public const string BolemtimEscolarUeOpcoesFiltrosNivelProficiencia = "bol-ue-opcoes-filtros-nivel-proficiencia-{0}-{1}";
 
         /// <summary>
         /// Opções de filtros de ano escolar do boletim escolar por UE
-        /// 0 - ID da UE
+        /// 0 - ID do Lote
+        /// 1 - ID da UE
         /// </summary>
-        public const string BolemtimEscolarUeOpcoesFiltrosAnoEscolar = "bol-ue-opcoes-filtros-ano-escolar-{0}";
+        public const string BolemtimEscolarUeOpcoesFiltrosAnoEscolar = "bol-ue-opcoes-filtros-ano-escolar-{0}-{1}";
 
         /// <summary>
         /// Opções de filtros de componente curricular do boletim escolar por UE
-        /// 0 - ID da UE
+        /// 0 - ID do Lote
+        /// 1 - ID da UE
         /// </summary>
-        public const string BolemtimEscolarUeOpcoesFiltrosComponenteCurricular = "bol-ue-opcoes-filtros-componente-curricular-{0}";
+        public const string BolemtimEscolarUeOpcoesFiltrosComponenteCurricular = "bol-ue-opcoes-filtros-componente-curricular-{0}-{1}";
 
         /// <summary>
         /// Opções de filtros de turma do boletim escolar por UE
-        /// 0 - ID da UE
+        /// 0 - ID do Lote
+        /// 1 - ID da UE
         /// </summary>
-        public const string BolemtimEscolarUeOpcoesFiltrosTurma = "bol-ue-opcoes-filtros-turma-{0}";
+        public const string BolemtimEscolarUeOpcoesFiltrosTurma = "bol-ue-opcoes-filtros-turma-{0}-{1}";
 
 
         /// <summary>
         /// Opções de filtros de valor de proficiência do boletim escolar por UE
-        /// 0 - ID da UE
+        /// 0 - ID do Lote
+        /// 1 - ID da UE
         /// </summary>
-        public const string BolemtimEscolarUeOpcoesFiltrosValorProficiencia = "bol-ue-opcoes-filtros-valor-proficiencia-{0}";
+        public const string BolemtimEscolarUeOpcoesFiltrosValorProficiencia = "bol-ue-opcoes-filtros-valor-proficiencia-{0}-{1}";
     }
 }
