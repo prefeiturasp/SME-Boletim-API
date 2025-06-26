@@ -7,8 +7,8 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
 {
     public interface IRepositorioBoletimProvaAluno : IRepositorioBase<BoletimProvaAluno>
     {
-        Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros);
-        Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros);
+        Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long loteId, long ueId, long provaId, FiltroBoletimDto filtros);
+        Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long loteId, long ueId, long provaId, FiltroBoletimDto filtros);
         Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)> ObterAbaEstudanteBoletimEscolarPorUeId(long loteId, long ueId, FiltroBoletimEstudantePaginadoDto filtros);
         Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesNiveisProficienciaBoletimEscolarPorUeId(long ueId);
         Task<IEnumerable<OpcaoFiltroDto<int>>> ObterOpcoesAnoEscolarBoletimEscolarPorUeId(long ueId);

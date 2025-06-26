@@ -5,6 +5,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterBoletimEscolarTurmaPorUeUseCase
     {
-        Task<BoletimEscolarPorTurmaDto> Executar(long ueId, FiltroBoletimDto filtros);
+        Task<BoletimEscolarPorTurmaDto> Executar(long loteId, long ueId, FiltroBoletimDto filtros);
     }
 }
