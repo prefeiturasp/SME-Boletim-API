@@ -7,12 +7,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaBoletimEsco
     public class ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery
         : IRequest<IEnumerable<NivelProficienciaBoletimEscolarDto>>
     {
-        public ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(long ueId, long provaId, FiltroBoletimDto filtros)
+        public ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(long loteId, long ueId, long provaId, FiltroBoletimDto filtros)
         {
+            LoteId = loteId;
             UeId = ueId;
             ProvaId = provaId;
             Filtros = filtros;
         }
+
+        public long LoteId { get; set; }
 
         public long UeId { get; set; }
 

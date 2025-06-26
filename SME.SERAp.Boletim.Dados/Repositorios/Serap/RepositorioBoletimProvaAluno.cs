@@ -15,7 +15,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         {
         }
 
-        public async Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros)
+        public async Task<IEnumerable<TurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmasPorUeIdProvaId(long loteId, long ueId, long provaId, FiltroBoletimDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -42,14 +42,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
                                 blp.prova_id = bpa.prova_id 
                             INNER JOIN lote_prova lp ON
-                                lp.id = blp.lote_id AND
-                                lp.exibir_no_boletim 
+                                lp.id = blp.lote_id
                             WHERE
                                 bpa.prova_id = @provaId and
-                                ue.id = @ueId");
+                                ue.id = @ueId and lp.id = @loteId");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
+                parameters.Add("loteId", loteId);
                 parameters.Add("provaId", provaId);
 
                 if (filtros?.ComponentesCurriculares?.Any() ?? false)
@@ -80,7 +80,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long ueId, long provaId, FiltroBoletimDto filtros)
+        public async Task<IEnumerable<NivelProficienciaBoletimEscolarDto>> ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId(long loteId, long ueId, long provaId, FiltroBoletimDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -100,16 +100,17 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                             INNER JOIN boletim_lote_prova blp ON 
 	                            blp.prova_id = bpa.prova_id
                             INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id AND
-	                            lp.exibir_no_boletim 
+	                            lp.id = blp.lote_id
                             where
                                 bpa.prova_id = @provaId and
-                                ue.id = @ueId
+                                ue.id = @ueId and
+                                lp.id = @loteId
                             ");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
                 parameters.Add("provaId", provaId);
+                parameters.Add("loteId", loteId);
 
                 if (filtros?.ComponentesCurriculares?.Any() ?? false)
                 {
