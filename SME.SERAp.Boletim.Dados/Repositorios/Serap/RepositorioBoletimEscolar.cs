@@ -80,7 +80,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(long ueId)
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarDto>> ObterDownloadProvasBoletimEscolar(long loteId, long ueId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -105,12 +105,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         INNER JOIN boletim_lote_prova blp ON 
 	                                        blp.prova_id = bpa.prova_id 
                                         INNER JOIN lote_prova lp ON
-	                                        lp.id = blp.lote_id AND
-	                                        lp.exibir_no_boletim 
+	                                        lp.id = blp.lote_id
                                         WHERE
-	                                        u.id = @ueId;";
+	                                        u.id = @ueId and lp.id = @loteId;";
 
-                return await conn.QueryAsync<DownloadProvasBoletimEscolarDto>(query, new { ueId });
+                return await conn.QueryAsync<DownloadProvasBoletimEscolarDto>(query, new { loteId, ueId });
             }
             finally
             {
