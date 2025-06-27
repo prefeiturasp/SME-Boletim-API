@@ -50,8 +50,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterTokenJwt
                 );
 
             var tokenGerado = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return Task.FromResult(new AutenticacaoRetornoDto(tokenGerado, dataHoraExpiracao));
+            var tipoPerfil = Perfis.ObterTipoPerfil(abrangenciaPadrao.Perfil);
+            return Task.FromResult(new AutenticacaoRetornoDto(tokenGerado, dataHoraExpiracao, tipoPerfil));
         }
     }
 }
