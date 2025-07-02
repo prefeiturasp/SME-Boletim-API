@@ -11,6 +11,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterAbaEstudanteBoletimEscolarPorUeIdUseCase
     {
-        Task<BoletimEscolarComDisciplinasDto> Executar(long ueId, FiltroBoletimEstudantePaginadoDto filtros);
+        Task<BoletimEscolarComDisciplinasDto> Executar(long loteId, long ueId, FiltroBoletimEstudantePaginadoDto filtros);
     }
 }

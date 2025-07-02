@@ -22,7 +22,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             _mediator = mediator;
         }
 
-        public async Task<MemoryStream> Executar(long ueId, long disciplinaId, int anoEscolar)
+        public async Task<MemoryStream> Executar(long loteId, long ueId, long disciplinaId, int anoEscolar)
         {
             var abrangenciasUsuarioLogado = await _mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -30,7 +30,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == Convert.ToInt64(ueId)) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var resultados = await _mediator.Send(new ObterDownloadResultadoProbabilidadeQuery(ueId, disciplinaId, anoEscolar));
+            var resultados = await _mediator.Send(new ObterDownloadResultadoProbabilidadeQuery(loteId, ueId, disciplinaId, anoEscolar));
             return await BuildCSVForExcel(resultados);
         }
 

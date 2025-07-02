@@ -15,7 +15,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProvasBoletimEscolarPorUe
 
         public Task<IEnumerable<ProvaBoletimEscolarDto>> Handle(ObterProvasBoletimEscolarPorUeQuery request, CancellationToken cancellationToken)
         {
-            return repositorioBoletimEscolar.ObterProvasBoletimEscolarPorUe(request.UeId, request.Filtros);
+            return repositorioBoletimEscolar.ObterProvasBoletimEscolarPorUe(request.LoteId, request.UeId, request.Filtros);
         }
     }
 }

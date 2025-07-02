@@ -14,7 +14,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadeListaPo
 
         public Task<(IEnumerable<ResultadoProbabilidadeDto>, int)> Handle(ObterResultadoProbabilidadeListaPorUeIdQuery request, CancellationToken cancellationToken)
         {
-            return repositorioBoletimProvaAluno.ObterResultadoProbabilidadeListaPorUeAsync(request.UeId, request.DisciplinaId, request.AnoEscolar, request.Filtros);
+            return repositorioBoletimProvaAluno.ObterResultadoProbabilidadeListaPorUeAsync(request.LoteId, request.UeId, request.DisciplinaId, request.AnoEscolar, request.Filtros);
         }
     }
 }

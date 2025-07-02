@@ -20,9 +20,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterOpcoesTurmaBoletimEscolarPorU
         public async Task<IEnumerable<OpcaoFiltroDto<string>>> Handle(ObterOpcoesTurmaBoletimEscolarPorUeIdQuery request, CancellationToken cancellationToken)
         {
             var chaveCacheOpcoesFiltrosTurma = string
-                .Format(CacheChave.BolemtimEscolarUeOpcoesFiltrosTurma, request.UeId);
+                .Format(CacheChave.BolemtimEscolarUeOpcoesFiltrosTurma, request.LoteId, request.UeId);
             return await repositorioCache
-                .ObterRedisAsync(chaveCacheOpcoesFiltrosTurma, async () => await repositorioBoletimProvaAluno.ObterOpcoesTurmaBoletimEscolarPorUeId(request.UeId));
+                .ObterRedisAsync(chaveCacheOpcoesFiltrosTurma, async () => await repositorioBoletimProvaAluno.ObterOpcoesTurmaBoletimEscolarPorUeId(request.LoteId, request.UeId));
         }
     }
 }

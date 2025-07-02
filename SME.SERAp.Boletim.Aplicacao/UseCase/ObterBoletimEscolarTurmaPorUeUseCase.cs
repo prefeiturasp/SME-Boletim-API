@@ -19,7 +19,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<BoletimEscolarPorTurmaDto> Executar(long ueId, FiltroBoletimDto filtros)
+        public async Task<BoletimEscolarPorTurmaDto> Executar(long loteId, long ueId, FiltroBoletimDto filtros)
         {
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -27,15 +27,15 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            var provasBoletimEscola = await mediator.Send(new ObterProvasBoletimEscolarPorUeQuery(ueId, filtros));
+            var provasBoletimEscola = await mediator.Send(new ObterProvasBoletimEscolarPorUeQuery(loteId, ueId, filtros));
             if (provasBoletimEscola?.Any() ?? false)
             {
                 foreach (var prova in provasBoletimEscola)
                 {
-                    var turmas = await ObterBoletinsEscolaresTurmas(ueId, prova, filtros);
+                    var turmas = await ObterBoletinsEscolaresTurmas(loteId, ueId, prova, filtros);
                     prova.Turmas = turmas;
 
-                    var niveis = await ObterNiveisProficiencia(ueId, prova, filtros);
+                    var niveis = await ObterNiveisProficiencia(loteId, ueId, prova, filtros);
                     prova.Niveis = niveis;
                 }
 
@@ -48,10 +48,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return new BoletimEscolarPorTurmaDto(provasBoletimEscola);
         }
 
-        private async Task<IEnumerable<ProvaTurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmas(long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
+        private async Task<IEnumerable<ProvaTurmaBoletimEscolarDto>> ObterBoletinsEscolaresTurmas(long loteId, long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
         {
             var provaTurmasBoletim = new List<ProvaTurmaBoletimEscolarDto>();
-            var turmasBoletim =  await mediator.Send(new ObterBoletinsEscolaresTurmasPorUeIdProvaIdQuery(ueId, prova.Id, filtros));
+            var turmasBoletim =  await mediator.Send(new ObterBoletinsEscolaresTurmasPorUeIdProvaIdQuery(loteId, ueId, prova.Id, filtros));
 
             if (turmasBoletim?.Any() ?? false)
             {
@@ -78,10 +78,10 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return $"{valor} ({porcentagem:0.##}%)";
         }
 
-        public async Task<IEnumerable<ProvaNivelProficienciaBoletimEscolarDto>> ObterNiveisProficiencia(long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
+        public async Task<IEnumerable<ProvaNivelProficienciaBoletimEscolarDto>> ObterNiveisProficiencia(long loteId, long ueId, ProvaBoletimEscolarDto prova, FiltroBoletimDto filtros)
         {
             var provaNiveisProficiencia = new List<ProvaNivelProficienciaBoletimEscolarDto>();
-            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(ueId, prova.Id, filtros));
+            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaBoletimEscolarPorUeIdProvaIdQuery(loteId, ueId, prova.Id, filtros));
 
             if (niveisProficiencia?.Any() ?? false)
             {

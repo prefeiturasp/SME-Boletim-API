@@ -10,12 +10,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadResultadoProbabilidad
 {
     public class ObterDownloadResultadoProbabilidadeQuery : IRequest<IEnumerable<DownloadResultadoProbabilidadeDto>>
     {
+        public long LoteId { get; }
         public long UeId { get; }
         public long DisciplinaId { get; }
         public int AnoEscolar { get; }
 
-        public ObterDownloadResultadoProbabilidadeQuery(long ueId, long disciplinaId, int anoEscolar)
+        public ObterDownloadResultadoProbabilidadeQuery(long loteId, long ueId, long disciplinaId, int anoEscolar)
         {
+            LoteId = loteId;
             UeId = ueId;
             DisciplinaId = disciplinaId;
             AnoEscolar = anoEscolar;
