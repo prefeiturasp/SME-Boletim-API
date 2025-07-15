@@ -137,5 +137,55 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<DreAbragenciaDetalheDto>> ObterDresAbrangenciaPorLoginPerfil(string login, Guid perfil)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                    var query = @"select
+	                                d.id,
+	                                d.dre_id as codigo,
+	                                d.abreviacao,
+	                                d.nome
+                                from abrangencia a
+                                inner join usuario_serap_coresso usc ON usc.id = a.usuario_id
+                                inner join grupo_serap_coresso gsc ON gsc.id = a.grupo_id
+                                inner join dre d on d.id = a.dre_id
+                                where usc.login = @login and gsc.id_coresso = @perfil
+                                order by d.nome";
+
+                var resultado = await conn.QueryAsync<DreAbragenciaDetalheDto>(query, new { login, perfil });
+                return resultado;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreAbragenciaDetalheDto>> ObterDresAdministrador()
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"select
+	                            d.id,
+	                            d.dre_id,
+	                            d.abreviacao,
+	                            d.nome
+                            from dre d
+                            order by d.nome";
+
+                var resultado = await conn.QueryAsync<DreAbragenciaDetalheDto>(query);
+                return resultado;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
