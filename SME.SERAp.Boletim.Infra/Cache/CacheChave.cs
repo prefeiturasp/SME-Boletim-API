@@ -208,5 +208,12 @@ namespace SME.SERAp.Boletim.Infra.Cache
         /// 1 - ID da UE
         /// </summary>
         public const string BolemtimEscolarUeOpcoesFiltrosValorProficiencia = "bol-ue-opcoes-filtros-valor-proficiencia-{0}-{1}";
+
+        /// <summary>
+        /// Ues de abrangência do usuário
+        /// 0 - Login do usuário
+        /// 1 - Perfil do usuário
+        /// </summary>
+        public const string UsuarioLoginPerfilDresAbrangencia = "us-login-ue-abrangencia-{0}-{1}";
     }
 }
