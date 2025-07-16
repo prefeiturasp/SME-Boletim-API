@@ -200,5 +200,77 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<int> ObterTotalUesPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT COUNT(DISTINCT bpa.ue_codigo) 
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunosPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT COUNT(DISTINCT bpa.aluno_ra) 
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<MediaProficienciaDisciplinaDto>> ObterMediaProficienciaPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT 
+                                          bpa.disciplina_id AS DisciplinaId,
+                                          bpa.disciplina AS DisciplinaNome,
+                                          ROUND(AVG(bpa.proficiencia), 2) AS MediaProficiencia
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE 
+                                          bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId
+                                          AND bpa.proficiencia IS NOT NULL
+                                        GROUP BY 
+                                          bpa.disciplina_id, bpa.disciplina
+                                        ORDER BY 
+                                          bpa.disciplina_id;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<MediaProficienciaDisciplinaDto>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
