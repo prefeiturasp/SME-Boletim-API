@@ -116,5 +116,24 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterResultadoProbabilidadePorUeListaUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar, filtros);
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/anos-escolares")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<AnoEscolarDto>), 200)]
+        public async Task<IActionResult> ObterAnosEscolares(long loteId,
+            [FromServices] IObterAnosEscolaresPorLoteIdUseCase obterAnosEscolaresPorLoteIdUseCase)
+        {
+            var resultado = await obterAnosEscolaresPorLoteIdUseCase.Executar(loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/resumo-dre")]
+        [ProducesResponseType(typeof(BoletimEscolarResumoDreDto), 200)]
+        public async Task<IActionResult> ObterResumoDreBoletimEscolar(long loteId, long dreId, int anoEscolar,
+        [FromServices] IObterBoletimEscolarResumoDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, dreId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }

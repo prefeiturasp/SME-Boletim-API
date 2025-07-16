@@ -19,5 +19,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterUesAbrangenciaUsuarioLogadoUseCase.Executar());
         }
+
+        [HttpGet("dres")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<DreAbragenciaDetalheDto>), 200)]
+        public async Task<IActionResult> ObterDresAbrangenciaUsuarioLogado(
+            [FromServices] IObterDresAbrangenciaUsuarioLogadoUseCase obterDresAbrangenciaUsuarioLogadoUseCase)
+        {
+            return Ok(await obterDresAbrangenciaUsuarioLogadoUseCase.Executar());
+        }
     }
 }
