@@ -44,19 +44,30 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
 
         public static TipoPerfil ObterTipoPerfil(Guid perfil)
         {
-            if(PerfilEhAdministrador(perfil) || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA)
+            if (PerfilEhAdministrador(perfil) || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA)
                 return TipoPerfil.Administrador;
 
-            if(perfil == PERFIL_ADMINISTRADOR_DRE || perfil == PERFIL_ADMINISTRADOR_NA_DRE)
+            if (perfil == PERFIL_ADMINISTRADOR_DRE || perfil == PERFIL_ADMINISTRADOR_NA_DRE)
                 return TipoPerfil.Administrador_DRE;
 
-            if(perfil == PERFIL_DIRETOR_ESCOLAR || perfil == PERFIL_ASSISTENTE_DIRETOR_UE)
+            if (perfil == PERFIL_DIRETOR_ESCOLAR || perfil == PERFIL_ASSISTENTE_DIRETOR_UE)
                 return TipoPerfil.Diretor;
 
             if (perfil == PERFIL_COORDENADOR_PEDAGOGICO)
                 return TipoPerfil.Coordenador;
 
             return TipoPerfil.Professor;
+        }
+
+        public static bool PodeVisualizarDre(TipoPerfil tipoPerfil)
+        {
+            var perfisPermitidos = new[]
+            {
+                TipoPerfil.Administrador,
+                TipoPerfil.Administrador_DRE,
+            };
+
+            return perfisPermitidos.Contains(tipoPerfil);
         }
     }
 }

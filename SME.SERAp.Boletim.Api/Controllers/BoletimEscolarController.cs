@@ -126,5 +126,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterAnosEscolaresPorLoteIdUseCase.Executar(loteId);
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/dre/{dreId}/ano-escolar/{anoEscolar}/niveis-proficiencia-disciplina")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
+        public async Task<IActionResult> ObterDreNiveisProficienciaDisciplinasUes(long loteId, long dreId, int anoEscolar,
+            [FromServices] IObterUesPorNivelProficienciaDisciplinaPorDreUseCase obterUesPorNivelProficienciaDisciplinaPorDreUseCase)
+        {
+            var resultado = await obterUesPorNivelProficienciaDisciplinaPorDreUseCase.Executar(loteId, dreId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }
