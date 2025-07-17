@@ -14,5 +14,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<int> ObterTotalUesPorDreAsync(long loteId, long dreId, int anoEscolar);
         Task<int> ObterTotalAlunosPorDreAsync(long loteId, long dreId, int anoEscolar);
         Task<IEnumerable<MediaProficienciaDisciplinaDto>> ObterMediaProficienciaPorDreAsync(long loteId, long dreId, int anoEscolar);
+        Task<IEnumerable<UePorDreDto>> ObterUesPorDreAsync(long dreId, int anoEscolar, long loteId);
     }
 }

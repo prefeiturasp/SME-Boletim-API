@@ -272,5 +272,31 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<UePorDreDto>> ObterUesPorDreAsync(long dreId, int anoEscolar, long loteId)
+        {
+            const string query = @"SELECT u.id as UeId, u.nome as UeNome, u.tipo_escola as TipoEscola,
+                                               d.id as DreId, d.abreviacao as drenomeabreviado, d.nome as DreNome
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                                        INNER JOIN dre d ON d.id = bpa.dre_id
+                                        WHERE bpa.dre_id = @dreId
+                                          AND bpa.ano_escolar = @anoEscolar
+                                          AND blp.lote_id = @loteId
+                                        GROUP BY u.id, u.nome, u.tipo_escola, d.id, d.nome
+                                        ORDER BY d.nome, u.nome";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<UePorDreDto>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
