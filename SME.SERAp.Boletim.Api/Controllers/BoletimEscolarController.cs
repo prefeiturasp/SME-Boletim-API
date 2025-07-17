@@ -127,6 +127,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/resumo-dre")]
+        [ProducesResponseType(typeof(BoletimEscolarResumoDreDto), 200)]
+        public async Task<IActionResult> ObterResumoDreBoletimEscolar(long loteId, long dreId, int anoEscolar,
+        [FromServices] IObterBoletimEscolarResumoDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, dreId, anoEscolar);
+            return Ok(resultado);
+        }
+
         [HttpGet("{loteId}/dre/{dreId}/ano-escolar/{anoEscolar}/niveis-proficiencia-disciplina")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
