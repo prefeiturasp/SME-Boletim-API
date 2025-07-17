@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Enumerados\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SME.SERAp.Boletim.Dominio\SME.SERAp.Boletim.Dominio.csproj" />
   </ItemGroup>
 

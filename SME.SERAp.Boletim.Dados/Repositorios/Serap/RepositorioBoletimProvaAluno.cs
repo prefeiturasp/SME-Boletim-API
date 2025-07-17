@@ -665,5 +665,58 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<UeNivelProficienciaDto>> ObterNiveisProficienciaUes(long dreId, int anoEscolar, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"with ue_proficiencia as (
+	                                        select
+		                                        bpa.ue_codigo as codigo,
+		                                        bpa.ue_nome as nome,
+		                                        bpa.disciplina,
+		                                        bpa.disciplina_id as disciplinaid,
+		                                        bpa.ano_escolar as anoescolar,
+		                                        round(AVG(bpa.proficiencia), 2) as mediaproficiencia
+	                                        from
+		                                        boletim_prova_aluno bpa
+	                                        inner join boletim_lote_prova blp on
+		                                        blp.prova_id = bpa.prova_id
+	                                        where
+		                                        bpa.dre_id = @dreId
+		                                        and bpa.ano_escolar = @anoEscolar
+		                                        and blp.lote_id = @loteId
+		                                        and bpa.proficiencia is not null
+	                                        group by
+		                                        bpa.ue_codigo,
+		                                        bpa.ue_nome ,
+		                                        bpa.disciplina,
+		                                        bpa.disciplina_id,
+		                                        bpa.ano_escolar
+                                        )
+                                        select
+	                                        up.*,
+	                                        coalesce(nivel.codigo, 4) as nivelCodigo,
+	                                        nivel.descricao as nivelDescricao
+                                        from ue_proficiencia up
+                                        left join lateral (
+	                                        select np.codigo, np.descricao
+	                                        from nivel_proficiencia np
+	                                        where np.disciplina_id = up.disciplinaid
+	                                          and np.ano = up.anoescolar
+	                                          and (up.mediaproficiencia < np.valor_referencia or np.valor_referencia is null)
+	                                        order by np.codigo asc
+	                                        limit 1
+                                        ) nivel on true";
+
+                return await conn.QueryAsync<UeNivelProficienciaDto>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
