@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
-namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaUes
+namespace SME.SERAp.Boletim.Aplicacao.Queries
 {
     public class ObterNiveisProficienciaUesQuery : IRequest<IEnumerable<UeNivelProficienciaDto>>
     {

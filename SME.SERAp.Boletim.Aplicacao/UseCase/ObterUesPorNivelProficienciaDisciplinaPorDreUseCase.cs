@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaUes;
 using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
@@ -57,7 +56,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                             Descricao = nivelGrupo.First().NivelDescricao,
                             QuantidadeUes = nivelGrupo.Count()
                         })
-                        .OrderBy(x=> x.Codigo)
+                        .OrderBy(x => x.Codigo)
                         .ToList()
                 };
 

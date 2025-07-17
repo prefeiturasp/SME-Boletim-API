@@ -2,7 +2,7 @@
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
-namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaUes
+namespace SME.SERAp.Boletim.Aplicacao.Queries
 {
     public class ObterNiveisProficienciaUesQueryHandler : IRequestHandler<ObterNiveisProficienciaUesQuery, IEnumerable<UeNivelProficienciaDto>>
     {
