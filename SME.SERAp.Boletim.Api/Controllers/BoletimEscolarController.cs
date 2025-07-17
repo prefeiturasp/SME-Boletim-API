@@ -136,7 +136,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-        [HttpGet("{loteId}/dre/{dreId}/ano-escolar/{anoEscolar}/niveis-proficiencia-disciplina")]
+        [HttpGet("{loteId}/dre/{dreId}/ano-escolar/{anoEscolar}/grafico/niveis-proficiencia-disciplina")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
         public async Task<IActionResult> ObterDreNiveisProficienciaDisciplinasUes(long loteId, long dreId, int anoEscolar,
