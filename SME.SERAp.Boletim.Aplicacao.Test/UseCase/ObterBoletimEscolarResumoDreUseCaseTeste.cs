@@ -1,8 +1,11 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterMediaProficienciaPorDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using System.Collections.Generic;
 using System.Threading;
@@ -30,6 +33,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             };
 
             var mediatorMock = new Mock<IMediator>();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador_DRE;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             mediatorMock
                 .Setup(m => m.Send(It.Is<ObterTotalUesPorDreQuery>(
@@ -74,6 +85,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 
             var mediatorMock = new Mock<IMediator>();
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador_DRE;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterTotalUesPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(0);
@@ -95,6 +114,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             Assert.Equal(0, resultado.TotalUes);
             Assert.Equal(0, resultado.TotalAlunos);
             Assert.Empty(resultado.ProficienciaDisciplina);
+        }
+
+        private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
+        {
+            return new List<DreAbragenciaDetalheDto>
+            {
+                new DreAbragenciaDetalheDto { Id = 10, Abreviacao = "DT1", Codigo = "111", Nome = "Dre teste 1"},
+                new DreAbragenciaDetalheDto { Id = 20, Abreviacao = "DT2", Codigo = "112", Nome = "Dre teste 2"}
+            };
         }
     }
 }
