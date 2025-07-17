@@ -26,9 +26,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var dreId = 5L;
             var anoEscolar = 5;
 
-            var dresAbrangencoa = ObterDresAbrangenciaUsuarioLogado();
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
             mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(dresAbrangencoa);
+                .ReturnsAsync(dresAbrangencia);
 
             var tipoPerfilUsuarioLogado = TipoPerfil.Administrador_DRE;
             mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
@@ -52,9 +52,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var dreId = 4L;
             var anoEscolar = 5;
 
-            var dresAbrangencoa = ObterDresAbrangenciaUsuarioLogado();
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
             mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(dresAbrangencoa);
+                .ReturnsAsync(dresAbrangencia);
 
             mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<TipoPerfil?>(null!));
@@ -77,9 +77,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var dreId = 5L;
             var anoEscolar = 5;
 
-            var dresAbrangencoa = ObterDresAbrangenciaUsuarioLogado();
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
             mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(dresAbrangencoa);
+                .ReturnsAsync(dresAbrangencia);
 
             var tipoPerfilUsuarioLogado = TipoPerfil.Diretor;
             mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
@@ -103,9 +103,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var dreId = 3L;
             var anoEscolar = 5;
 
-            var dresAbrangencoa = ObterDresAbrangenciaUsuarioLogado();
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
             mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(dresAbrangencoa);
+                .ReturnsAsync(dresAbrangencia);
 
             var tipoPerfilUsuarioLogado = TipoPerfil.Administrador_DRE;
             mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
@@ -134,9 +134,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var dreId = 3L;
             var anoEscolar = 5;
 
-            var dresAbrangencoa = ObterDresAbrangenciaUsuarioLogado();
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
             mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(dresAbrangencoa);
+                .ReturnsAsync(dresAbrangencia);
 
             var tipoPerfilUsuarioLogado = TipoPerfil.Administrador_DRE;
             mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
