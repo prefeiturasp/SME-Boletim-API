@@ -298,5 +298,41 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarPorDre(long dreId, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"SELECT 
+                                            d.dre_id as CodigoDre,
+                                            d.abreviacao as NomeDreAbreviacao,
+                                            bpa.ue_codigo CodigoUE,
+                                            bpa.ue_nome NomeUE,
+                                            bpa.ano_escolar AnoEscola,
+                                            bpa.turma Turma,
+                                            bpa.aluno_ra AlunoRA,
+                                            bpa.aluno_nome NomeAluno,
+                                            bpa.disciplina Componente,
+                                            bpa.proficiencia Proficiencia,
+                                            CONCAT(np.codigo, ' - ', np.descricao) Nivel
+                                        FROM 
+                                            boletim_prova_aluno bpa
+                                        INNER JOIN dre d on d.id = bpa.dre_id  
+                                        INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                                        INNER JOIN nivel_proficiencia np on np.codigo = bpa.nivel_codigo 
+                                            and np.disciplina_id = bpa.disciplina_id 
+                                            and np.ano = bpa.ano_escolar
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id 
+                                        INNER JOIN lote_prova lp ON lp.id = blp.lote_id
+                                        WHERE bpa.dre_id = @dreId and lp.id = @loteId;";
+                return await conn.QueryAsync<DownloadProvasBoletimEscolarPorDreDto>(query, new { dreId, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
