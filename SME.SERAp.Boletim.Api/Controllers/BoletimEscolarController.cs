@@ -154,5 +154,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await useCase.Executar(dreId, anoEscolar, loteId);
             return Ok(resultado);
         }
+
+        [HttpGet("download-dre/{loteId}/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(bool), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarTurmaPorDre(long dreId, long loteId,
+        [FromServices] IObterDownloadBoletimProvaEscolarPorDreUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId, dreId);
+            return File(file, "application/vnd.ms-excel", "relatorio-dre.xls", enableRangeProcessing: true);
+        }
     }
 }
