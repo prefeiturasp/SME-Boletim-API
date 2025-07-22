@@ -18,15 +18,12 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimDadosUesPorDre
             if(uesDados?.Itens?.Any() ?? false)
             {
                 var uesIds = uesDados.Itens.Select(x => x.Id);
-                var uesTotalAlunos = await repositorioBoletimEscolar.ObterTotalAlunosPorUes(request.LoteId, request.DreId, request.AnoEscolar, uesIds);
-                var uesTotalAlunosRealizaramProva = await repositorioBoletimEscolar.ObterTotalAlunosRealizaramProvaPorUes(request.LoteId, request.DreId, request.AnoEscolar, uesIds);
                 var uesDisciplinasProficiencia = await repositorioBoletimEscolar.ObterDiciplinaMediaProficienciaProvaPorUes(request.LoteId, request.DreId, request.AnoEscolar, uesIds);
 
                 foreach(var ue in uesDados.Itens)
                 {
-                    ue.TotalEstudantes = uesTotalAlunos?.FirstOrDefault(x => x.UeId == ue.Id)?.TotalAlunos ?? 0;
-                    ue.TotalEstudadesRealizaramProva = uesTotalAlunosRealizaramProva?.FirstOrDefault(x => x.UeId == ue.Id)?.TotalAlunos ?? 0;
                     ue.Disciplinas = uesDisciplinasProficiencia?.Where(x => x.UeId == ue.Id) ?? new List<UeBoletimDisciplinaProficienciaDto>();
+                    ue.PercentualEstudadesRealizaramProva = Math.Round(((decimal)ue.TotalEstudadesRealizaramProva / ue.TotalEstudantes * 100), 2);
                 }
             }
 

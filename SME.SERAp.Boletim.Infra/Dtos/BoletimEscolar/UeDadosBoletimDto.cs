@@ -9,6 +9,7 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public string Nome { get;set; }
 
         public TipoEscola TipoEscola { get;set; }
+
         public int AnoEscolar { get;set; }
         
         public IEnumerable<UeBoletimDisciplinaProficienciaDto> Disciplinas { get; set; }
@@ -17,6 +18,6 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
 
         public int TotalEstudadesRealizaramProva { get; set; }
 
-        public decimal PercentualEstudadesRealizaramProva { get => Math.Round(((decimal)(TotalEstudadesRealizaramProva / TotalEstudantes) * 100), 2); }
+        public decimal PercentualEstudadesRealizaramProva { get; set; }
     }
 }
