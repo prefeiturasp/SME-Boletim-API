@@ -6,6 +6,7 @@ using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 
 namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
@@ -327,6 +328,124 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         INNER JOIN lote_prova lp ON lp.id = blp.lote_id
                                         WHERE bpa.dre_id = @dreId and lp.id = @loteId;";
                 return await conn.QueryAsync<DownloadProvasBoletimEscolarPorDreDto>(query, new { dreId, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<PaginacaoUesBoletimDadosDto> ObterUesPorDre(long loteId, long dreId, int anoEscolar, FiltroUeBoletimDadosDto filtros)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("loteId", loteId);
+                parameters.Add("dreId", dreId);
+                parameters.Add("anoEscolar", anoEscolar);
+
+                var where = new StringBuilder(@"  where
+	                                                blu.dre_id = @dreId
+	                                                and blu.ano_escolar = @anoEscolar
+	                                                and blu.lote_id = @loteId");
+
+                if (filtros?.UesIds?.Any() ?? false)
+                {
+                    where.Append(" and u.id = ANY(@uesIds)");
+                    parameters.Add("uesIds", filtros.UesIds.ToList(), DbType.Object);
+                }
+
+                var totalQuery = new StringBuilder(@"select
+	                                                    count(u.id)
+                                                    from
+	                                                    boletim_lote_ue blu
+                                                    inner join ue u on
+	                                                    u.id = blu.ue_id");
+
+                totalQuery.Append(where);
+                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+
+                var query = new StringBuilder(@"select
+	                                                u.id,
+	                                                u.nome,
+	                                                u.tipo_escola as tipoEscola,
+	                                                blu.ano_escolar as anoEscolar,
+	                                                blu.total_alunos as totalEstudantes,
+                                                    blu.realizaram_prova as totalEstudadesRealizaramProva
+                                                from
+	                                                boletim_lote_ue blu
+                                                inner join ue u on
+	                                                u.id = blu.ue_id");
+                
+                query.Append(where);
+
+                query.Append(@" order by
+	                                u.nome
+                                limit @limit offset @offset;");
+
+                parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
+                parameters.Add("limit", filtros.TamanhoPagina);
+
+                var ues = await conn.QueryAsync<UeDadosBoletimDto>(query.ToString(), parameters);
+
+                return new PaginacaoUesBoletimDadosDto(ues, filtros.Pagina, filtros.TamanhoPagina, totalRegistros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeBoletimDisciplinaProficienciaDto>> ObterDiciplinaMediaProficienciaProvaPorUes(long loteId, long dreId, int anoEscolar, IEnumerable<long> uesIds)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    distinct on
+	                                    (be.ue_id,
+	                                    be.disciplina_id,
+	                                    p.disciplina,
+	                                    pao.ano)
+	                                    be.ue_id  as ueId,
+	                                    p.disciplina,
+	                                    be.disciplina_id as disciplinaid,
+	                                    pao.ano as anoescolar,
+	                                    be.media_proficiencia as mediaproficiencia,
+	                                    be.nivel_ue_codigo as nivelCodigo,
+	                                    be.nivel_ue_descricao as nivelDescricao,
+	                                    blp.lote_id
+                                    from
+	                                    boletim_escolar be
+                                    inner join ue u on u.id = be.ue_id
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = be.prova_id
+                                    inner join prova_ano_original pao on
+	                                    pao.prova_id = be.prova_id
+                                    inner join prova p on p.id = be.prova_id
+                                    where
+	                                    u.dre_id = @dreId
+	                                    and pao.ano::int = @anoEscolar
+	                                    and blp.lote_id = @loteId
+                                        and u.id = ANY(@uesIds)     
+	                                    and be.nivel_ue_codigo is not null
+                                    order by
+	                                    be.ue_id,
+	                                    be.disciplina_id,
+	                                    p.disciplina,
+	                                    pao.ano,
+	                                    be.id desc";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("dreId", dreId);
+                parameters.Add("anoEscolar", anoEscolar);
+                parameters.Add("loteId", loteId);
+                parameters.Add("uesIds", uesIds.ToList(), DbType.Object);
+
+                return await conn.QueryAsync<UeBoletimDisciplinaProficienciaDto>(query, parameters);
             }
             finally
             {
