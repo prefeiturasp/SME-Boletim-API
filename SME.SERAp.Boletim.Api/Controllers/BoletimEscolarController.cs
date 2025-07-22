@@ -164,5 +164,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var file = await useCase.Executar(loteId, dreId);
             return File(file, "application/vnd.ms-excel", "relatorio-dre.xls", enableRangeProcessing: true);
         }
+
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/ue-por-dre-dados")]
+        [ProducesResponseType(typeof(IEnumerable<PaginacaoUesBoletimDadosDto>), 200)]
+        public async Task<IActionResult> ObterBoletimDadosUesPorDre(long loteId, long dreId, int anoEscolar, [FromQuery] FiltroUeBoletimDadosDto filtros,
+        [FromServices] IObterBoletimDadosUesPorDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, dreId, anoEscolar, filtros);
+            return Ok(resultado);
+        }
     }
 }
