@@ -2,14 +2,11 @@
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterMediaProficienciaPorDre;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterTotalAlunosPorDre;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterTotalUesPorDre;
 using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {

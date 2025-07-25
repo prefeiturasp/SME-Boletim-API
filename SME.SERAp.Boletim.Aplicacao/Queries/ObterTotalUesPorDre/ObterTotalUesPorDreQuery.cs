@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterMediaProficienciaPorDre
+namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterTotalUesPorDre
 {
     public class ObterTotalUesPorDreQuery : IRequest<int>
     {

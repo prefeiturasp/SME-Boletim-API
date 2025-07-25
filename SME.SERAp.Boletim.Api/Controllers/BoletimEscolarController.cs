@@ -173,5 +173,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await useCase.Executar(loteId, dreId, anoEscolar, filtros);
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/{anoEscolar}/resumo-sme")]
+        [ProducesResponseType(typeof(BoletimEscolarResumoSmeDto), 200)]
+        public async Task<IActionResult> ObterResumoSmeBoletimEscolar(long loteId, int anoEscolar,
+        [FromServices] IObterBoletimEscolarResumoSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }
