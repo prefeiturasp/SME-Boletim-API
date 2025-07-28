@@ -276,17 +276,26 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
         public async Task<IEnumerable<UePorDreDto>> ObterUesPorDreAsync(long dreId, int anoEscolar, long loteId)
         {
-            const string query = @"SELECT u.id as UeId, u.nome as UeNome, u.tipo_escola as TipoEscola,
-                                               d.id as DreId, d.abreviacao as drenomeabreviado, d.nome as DreNome
-                                        FROM boletim_prova_aluno bpa
-                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
-                                        INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
-                                        INNER JOIN dre d ON d.id = bpa.dre_id
-                                        WHERE bpa.dre_id = @dreId
-                                          AND bpa.ano_escolar = @anoEscolar
-                                          AND blp.lote_id = @loteId
-                                        GROUP BY u.id, u.nome, u.tipo_escola, d.id, d.nome
-                                        ORDER BY d.nome, u.nome";
+            const string query = @"select
+	                                u.id as UeId,
+	                                u.nome as UeNome,
+	                                u.tipo_escola as TipoEscola,
+	                                d.id as DreId,
+	                                d.abreviacao as drenomeabreviado,
+	                                d.nome as DreNome
+                                from
+	                                boletim_lote_ue blu
+                                inner join ue u on
+	                                u.id = blu.ue_id
+                                inner join dre d on
+	                                d.id = blu.dre_id
+                                where
+	                                blu.dre_id = @dreId
+	                                and blu.ano_escolar = @anoEscolar
+	                                and blu.lote_id = @loteId
+                                order by
+	                                d.nome,
+	                                u.nome";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -362,22 +371,29 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                                     from
 	                                                    boletim_lote_ue blu
                                                     inner join ue u on
-	                                                    u.id = blu.ue_id");
+	                                                    u.id = blu.ue_id
+                                                inner join dre d on
+	                                                d.id = blu.dre_id");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"select
-	                                                u.id,
-	                                                u.nome,
-	                                                u.tipo_escola as tipoEscola,
-	                                                blu.ano_escolar as anoEscolar,
-	                                                blu.total_alunos as totalEstudantes,
-                                                    blu.realizaram_prova as totalEstudadesRealizaramProva
+                                                    u.id,
+                                                    u.nome as ueNome,
+                                                    u.tipo_escola as tipoEscola,
+                                                    blu.ano_escolar as anoEscolar,
+                                                    blu.total_alunos as totalEstudantes,
+                                                    blu.realizaram_prova as totalEstudadesRealizaramProva,
+                                                    d.id as DreId,
+	                                                d.abreviacao as drenomeabreviado,
+	                                                d.nome as DreNome
                                                 from
-	                                                boletim_lote_ue blu
+                                                    boletim_lote_ue blu
                                                 inner join ue u on
-	                                                u.id = blu.ue_id");
+                                                    u.id = blu.ue_id
+                                                inner join dre d on
+	                                                d.id = blu.dre_id");
                 
                 query.Append(where);
 
