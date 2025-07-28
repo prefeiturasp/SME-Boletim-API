@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components.Forms;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterMediaProficienciaPorDre;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterTotalAlunosPorDre;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterTotalUesPorDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;

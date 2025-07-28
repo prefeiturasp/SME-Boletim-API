@@ -469,5 +469,109 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<int> ObterTotalUes(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                COUNT(distinct bpa.ue_codigo)
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalDres(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                COUNT(distinct bpa.dre_id)
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunos(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                    COUNT(distinct bpa.aluno_ra)
+                                    from
+	                                    boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = bpa.prova_id
+                                    where
+	                                    bpa.ano_escolar = @anoEscolar
+	                                    and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<MediaProficienciaDisciplinaDto>> ObterMediaProficienciaGeral(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                bpa.disciplina_id as DisciplinaId,
+	                                bpa.disciplina as DisciplinaNome,
+	                                ROUND(AVG(bpa.proficiencia), 2) as MediaProficiencia
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId
+	                                and bpa.proficiencia is not null
+                                group by
+	                                bpa.disciplina_id,
+	                                bpa.disciplina
+                                order by
+	                                bpa.disciplina_id;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<MediaProficienciaDisciplinaDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
