@@ -22,22 +22,7 @@ namespace SME.SERAp.Boletim.Infra.Dtos.Boletim
 
         private string ConstruirDescricao()
         {
-            var dreSiglas = DreNome?.Replace("DIRETORIA REGIONAL DE EDUCACAO", "DRE").Trim();
-
-            var dreNomeAbv = DreNomeAbreviado?.Replace(" - ", " ").Trim();
-
-            var tipoEscolaAbrev = ObterTipoEscolaAbreviado();
-
-            //return $"{dreSiglas}   {tipoEscolaAbrev} {UeNome}";
-            return $"{dreNomeAbv} - {tipoEscolaAbrev} {UeNome}";
-        }
-
-        private string ObterTipoEscolaAbreviado()
-        {
-            if (TipoEscola == TipoEscola.Nenhum) return string.Empty;
-
-            var atributoTipoEscola = TipoEscola.GetAttribute<DisplayAttribute>();
-            return atributoTipoEscola?.ShortName ?? string.Empty;
+            return UeNome?.ObterUeDescricao(TipoEscola, DreNome, DreNomeAbreviado) ?? string.Empty;
         }
     }
 }

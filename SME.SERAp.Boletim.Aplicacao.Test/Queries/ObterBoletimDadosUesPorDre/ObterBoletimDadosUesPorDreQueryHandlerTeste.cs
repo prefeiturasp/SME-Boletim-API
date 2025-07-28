@@ -122,7 +122,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.Queries
                 new UeDadosBoletimDto
                 {
                     Id = 1,
-                    Nome = "Escola A",
+                    UeNome = "Escola A",
                     TotalEstudantes = 100,
                     TotalEstudadesRealizaramProva = 80,
                     Disciplinas = new List<UeBoletimDisciplinaProficienciaDto>()
@@ -130,7 +130,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.Queries
                 new UeDadosBoletimDto
                 {
                     Id = 2,
-                    Nome = "Escola B",
+                    UeNome = "Escola B",
                     TotalEstudantes = 150,
                     TotalEstudadesRealizaramProva = 120,
                     Disciplinas = new List<UeBoletimDisciplinaProficienciaDto>()
