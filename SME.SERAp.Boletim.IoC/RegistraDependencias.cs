@@ -60,12 +60,14 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterAnosEscolaresPorLoteIdUseCase, ObterAnosEscolaresPorLoteIdUseCase>();
             services.TryAddScoped<IObterDresAbrangenciaUsuarioLogadoUseCase, ObterDresAbrangenciaUsuarioLogadoUseCase>();
             services.TryAddScoped<IObterUesPorNivelProficienciaDisciplinaPorDreUseCase, ObterUesPorNivelProficienciaDisciplinaPorDreUseCase>();
-
             services.TryAddScoped<IObterDownloadResultadoProbabilidadeUseCase, ObterDownloadResultadoProbabilidadeUseCase>();
             services.TryAddScoped<IObterBoletimEscolarResumoDreUseCase, ObterBoletimEscolarResumoDreUseCase>();
             services.TryAddScoped<IObterUesPorDreUseCase, ObterUesPorDreUseCase>();
             services.TryAddScoped<IObterDownloadBoletimProvaEscolarPorDreUseCase, ObterDownloadBoletimProvaEscolarPorDreUseCase>();
             services.TryAddScoped<IObterBoletimDadosUesPorDreUseCase, ObterBoletimDadosUesPorDreUseCase>();
+
+            services.TryAddScoped<IObterBoletimEscolarResumoSmeUseCase, ObterBoletimEscolarResumoSmeUseCase>();
+            services.TryAddScoped<IObterDresPorNivelProficienciaDisciplinaUseCase, ObterDresPorNivelProficienciaDisciplinaUseCase>();
         }
     }
 }
