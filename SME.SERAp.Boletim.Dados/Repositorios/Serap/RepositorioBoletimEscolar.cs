@@ -573,5 +573,33 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<DreDto>> ObterDreAsync(int anoEscolar, long loteId)
+        {
+            const string query = @"select distinct
+                                        d.id as DreId,
+                                        d.nome as DreNome,
+                                        d.abreviacao as DreNomeAbreviado
+                                    from
+                                        boletim_lote_ue blu
+                                    inner join dre d on
+                                        d.id = blu.dre_id
+                                    where
+                                        blu.ano_escolar = @anoEscolar
+                                        and blu.lote_id = @loteId
+                                    order by
+                                        d.nome;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<DreDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
