@@ -192,5 +192,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterUesPorNivelProficienciaDisciplinaUseCase.Executar(anoEscolar, loteId);
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/ano-escolar/{anoEscolar}/grafico/media-proficiencia")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarDresMediaProficiencia(long loteId, int anoEscolar, [FromQuery]IEnumerable<long> dresIds,
+            [FromServices] IObterBoletimEscolarDresMediaProficienciaUseCase obterBoletimEscolarDresMediaProficienciaUseCase)
+        {
+            var resultado = await obterBoletimEscolarDresMediaProficienciaUseCase.Executar(loteId, anoEscolar, dresIds);
+            return Ok(resultado);
+        }
     }
 }

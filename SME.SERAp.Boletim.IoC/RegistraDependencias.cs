@@ -68,6 +68,7 @@ namespace SME.SERAp.Boletim.IoC
 
             services.TryAddScoped<IObterBoletimEscolarResumoSmeUseCase, ObterBoletimEscolarResumoSmeUseCase>();
             services.TryAddScoped<IObterDresPorNivelProficienciaDisciplinaUseCase, ObterDresPorNivelProficienciaDisciplinaUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarDresMediaProficienciaUseCase, ObterBoletimEscolarDresMediaProficienciaUseCase>();
         }
     }
 }
