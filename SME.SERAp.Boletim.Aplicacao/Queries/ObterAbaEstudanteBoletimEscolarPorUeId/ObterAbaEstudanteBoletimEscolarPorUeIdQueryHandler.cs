@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterAbaEstudanteBoletimEscolarPorUeId
 {
-    class ObterAbaEstudanteBoletimEscolarPorUeIdQueryHandler
+  public class ObterAbaEstudanteBoletimEscolarPorUeIdQueryHandler
     : IRequestHandler<ObterAbaEstudanteBoletimEscolarPorUeIdQuery, (IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
     {
         private readonly IRepositorioBoletimProvaAluno repositorioBoletimProvaAluno;
