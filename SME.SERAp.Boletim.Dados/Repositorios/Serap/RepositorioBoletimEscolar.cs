@@ -260,7 +260,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         GROUP BY 
                                           bpa.disciplina_id, bpa.disciplina
                                         ORDER BY 
-                                          bpa.disciplina_id;";
+                                          bpa.disciplina;";
 
             using var conn = ObterConexaoLeitura();
             try
