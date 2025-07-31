@@ -57,8 +57,18 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterBoletimAplicacoesProvaUseCase, ObterBoletimAplicacoesProvaUseCase>();
             services.TryAddScoped<IObterResultadoProbabilidadePorUeUseCase, ObterResultadoProbabilidadePorUeUseCase>();
             services.TryAddScoped<IObterResultadoProbabilidadePorUeListaUseCase, ObterResultadoProbabilidadePorUeListaUseCase>();
-
+            services.TryAddScoped<IObterAnosEscolaresPorLoteIdUseCase, ObterAnosEscolaresPorLoteIdUseCase>();
+            services.TryAddScoped<IObterDresAbrangenciaUsuarioLogadoUseCase, ObterDresAbrangenciaUsuarioLogadoUseCase>();
+            services.TryAddScoped<IObterUesPorNivelProficienciaDisciplinaPorDreUseCase, ObterUesPorNivelProficienciaDisciplinaPorDreUseCase>();
             services.TryAddScoped<IObterDownloadResultadoProbabilidadeUseCase, ObterDownloadResultadoProbabilidadeUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarResumoDreUseCase, ObterBoletimEscolarResumoDreUseCase>();
+            services.TryAddScoped<IObterUesPorDreUseCase, ObterUesPorDreUseCase>();
+            services.TryAddScoped<IObterDownloadBoletimProvaEscolarPorDreUseCase, ObterDownloadBoletimProvaEscolarPorDreUseCase>();
+            services.TryAddScoped<IObterBoletimDadosUesPorDreUseCase, ObterBoletimDadosUesPorDreUseCase>();
+
+            services.TryAddScoped<IObterBoletimEscolarResumoSmeUseCase, ObterBoletimEscolarResumoSmeUseCase>();
+            services.TryAddScoped<IObterDresPorNivelProficienciaDisciplinaUseCase, ObterDresPorNivelProficienciaDisciplinaUseCase>();
+            services.TryAddScoped<IObterBoletimEscolarDresMediaProficienciaUseCase, ObterBoletimEscolarDresMediaProficienciaUseCase>();
         }
     }
 }

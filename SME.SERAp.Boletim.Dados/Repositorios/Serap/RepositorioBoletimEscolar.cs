@@ -6,6 +6,7 @@ using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 
 namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
@@ -193,6 +194,458 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                           AND brp.ano_escolar = @anoEscolar;";
 
                 return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { loteId, ueId, disciplinaId, anoEscolar });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalUesPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT COUNT(DISTINCT bpa.ue_codigo) 
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunosPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT COUNT(DISTINCT bpa.aluno_ra) 
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<MediaProficienciaDisciplinaDto>> ObterMediaProficienciaPorDreAsync(long loteId, long dreId, int anoEscolar)
+        {
+            const string query = @"SELECT 
+                                          bpa.disciplina_id AS DisciplinaId,
+                                          bpa.disciplina AS DisciplinaNome,
+                                          ROUND(AVG(bpa.proficiencia), 2) AS MediaProficiencia
+                                        FROM boletim_prova_aluno bpa
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
+                                        WHERE 
+                                          bpa.dre_id = @dreId 
+                                          AND bpa.ano_escolar = @anoEscolar 
+                                          AND blp.lote_id = @loteId
+                                          AND bpa.proficiencia IS NOT NULL
+                                        GROUP BY 
+                                          bpa.disciplina_id, bpa.disciplina
+                                        ORDER BY 
+                                          bpa.disciplina_id;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<MediaProficienciaDisciplinaDto>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UePorDreDto>> ObterUesPorDreAsync(long dreId, int anoEscolar, long loteId)
+        {
+            const string query = @"select
+	                                u.id as UeId,
+	                                u.nome as UeNome,
+	                                u.tipo_escola as TipoEscola,
+	                                d.id as DreId,
+	                                d.abreviacao as drenomeabreviado,
+	                                d.nome as DreNome
+                                from
+	                                boletim_lote_ue blu
+                                inner join ue u on
+	                                u.id = blu.ue_id
+                                inner join dre d on
+	                                d.id = blu.dre_id
+                                where
+	                                blu.dre_id = @dreId
+	                                and blu.ano_escolar = @anoEscolar
+	                                and blu.lote_id = @loteId
+                                order by
+	                                d.nome,
+	                                u.nome";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<UePorDreDto>(query, new { dreId, anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarPorDre(long dreId, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"SELECT 
+                                            d.dre_id as CodigoDre,
+                                            d.abreviacao as NomeDreAbreviacao,
+                                            bpa.ue_codigo CodigoUE,
+                                            bpa.ue_nome NomeUE,
+                                            bpa.ano_escolar AnoEscola,
+                                            bpa.turma Turma,
+                                            bpa.aluno_ra AlunoRA,
+                                            bpa.aluno_nome NomeAluno,
+                                            bpa.disciplina Componente,
+                                            bpa.proficiencia Proficiencia,
+                                            CONCAT(np.codigo, ' - ', np.descricao) Nivel
+                                        FROM 
+                                            boletim_prova_aluno bpa
+                                        INNER JOIN dre d on d.id = bpa.dre_id  
+                                        INNER JOIN ue u ON u.ue_id = bpa.ue_codigo
+                                        INNER JOIN nivel_proficiencia np on np.codigo = bpa.nivel_codigo 
+                                            and np.disciplina_id = bpa.disciplina_id 
+                                            and np.ano = bpa.ano_escolar
+                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id 
+                                        INNER JOIN lote_prova lp ON lp.id = blp.lote_id
+                                        WHERE bpa.dre_id = @dreId and lp.id = @loteId;";
+                return await conn.QueryAsync<DownloadProvasBoletimEscolarPorDreDto>(query, new { dreId, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<PaginacaoUesBoletimDadosDto> ObterUesPorDre(long loteId, long dreId, int anoEscolar, FiltroUeBoletimDadosDto filtros)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("loteId", loteId);
+                parameters.Add("dreId", dreId);
+                parameters.Add("anoEscolar", anoEscolar);
+
+                var where = new StringBuilder(@"  where
+	                                                blu.dre_id = @dreId
+	                                                and blu.ano_escolar = @anoEscolar
+	                                                and blu.lote_id = @loteId");
+
+                if (filtros?.UesIds?.Any() ?? false)
+                {
+                    where.Append(" and u.id = ANY(@uesIds)");
+                    parameters.Add("uesIds", filtros.UesIds.ToList(), DbType.Object);
+                }
+
+                var totalQuery = new StringBuilder(@"select
+	                                                    count(u.id)
+                                                    from
+	                                                    boletim_lote_ue blu
+                                                    inner join ue u on
+	                                                    u.id = blu.ue_id
+                                                inner join dre d on
+	                                                d.id = blu.dre_id");
+
+                totalQuery.Append(where);
+                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+
+                var query = new StringBuilder(@"select
+                                                    u.id,
+                                                    u.nome as ueNome,
+                                                    u.tipo_escola as tipoEscola,
+                                                    blu.ano_escolar as anoEscolar,
+                                                    blu.total_alunos as totalEstudantes,
+                                                    blu.realizaram_prova as totalEstudadesRealizaramProva,
+                                                    d.id as DreId,
+	                                                d.abreviacao as drenomeabreviado,
+	                                                d.nome as DreNome
+                                                from
+                                                    boletim_lote_ue blu
+                                                inner join ue u on
+                                                    u.id = blu.ue_id
+                                                inner join dre d on
+	                                                d.id = blu.dre_id");
+                
+                query.Append(where);
+
+                query.Append(@" order by
+	                                u.nome
+                                limit @limit offset @offset;");
+
+                parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
+                parameters.Add("limit", filtros.TamanhoPagina);
+
+                var ues = await conn.QueryAsync<UeDadosBoletimDto>(query.ToString(), parameters);
+
+                return new PaginacaoUesBoletimDadosDto(ues, filtros.Pagina, filtros.TamanhoPagina, totalRegistros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeBoletimDisciplinaProficienciaDto>> ObterDiciplinaMediaProficienciaProvaPorUes(long loteId, long dreId, int anoEscolar, IEnumerable<long> uesIds)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    distinct on
+	                                    (be.ue_id,
+	                                    be.disciplina_id,
+	                                    p.disciplina,
+	                                    pao.ano)
+	                                    be.ue_id  as ueId,
+	                                    p.disciplina,
+	                                    be.disciplina_id as disciplinaid,
+	                                    pao.ano as anoescolar,
+	                                    be.media_proficiencia as mediaproficiencia,
+	                                    be.nivel_ue_codigo as nivelCodigo,
+	                                    be.nivel_ue_descricao as nivelDescricao,
+	                                    blp.lote_id
+                                    from
+	                                    boletim_escolar be
+                                    inner join ue u on u.id = be.ue_id
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = be.prova_id
+                                    inner join prova_ano_original pao on
+	                                    pao.prova_id = be.prova_id
+                                    inner join prova p on p.id = be.prova_id
+                                    where
+	                                    u.dre_id = @dreId
+	                                    and pao.ano::int = @anoEscolar
+	                                    and blp.lote_id = @loteId
+                                        and u.id = ANY(@uesIds)     
+	                                    and be.nivel_ue_codigo is not null
+                                    order by
+	                                    be.ue_id,
+	                                    be.disciplina_id,
+	                                    p.disciplina,
+	                                    pao.ano,
+	                                    be.id desc";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("dreId", dreId);
+                parameters.Add("anoEscolar", anoEscolar);
+                parameters.Add("loteId", loteId);
+                parameters.Add("uesIds", uesIds.ToList(), DbType.Object);
+
+                return await conn.QueryAsync<UeBoletimDisciplinaProficienciaDto>(query, parameters);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalUes(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                COUNT(distinct bpa.ue_codigo)
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalDres(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                COUNT(distinct bpa.dre_id)
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunos(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                    COUNT(distinct bpa.aluno_ra)
+                                    from
+	                                    boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = bpa.prova_id
+                                    where
+	                                    bpa.ano_escolar = @anoEscolar
+	                                    and blp.lote_id = @loteId;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<MediaProficienciaDisciplinaDto>> ObterMediaProficienciaGeral(long loteId, int anoEscolar)
+        {
+            const string query = @"select
+	                                bpa.disciplina_id as DisciplinaId,
+	                                bpa.disciplina as DisciplinaNome,
+	                                ROUND(AVG(bpa.proficiencia), 2) as MediaProficiencia
+                                from
+	                                boletim_prova_aluno bpa
+                                inner join boletim_lote_prova blp on
+	                                blp.prova_id = bpa.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blp.lote_id = @loteId
+	                                and bpa.proficiencia is not null
+                                group by
+	                                bpa.disciplina_id,
+	                                bpa.disciplina
+                                order by
+	                                bpa.disciplina_id;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<MediaProficienciaDisciplinaDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreDisciplinaMediaProficienciaDto>> ObterDresMediaProficienciaPorDisciplina(long loteId, long anoEscolar, IEnumerable<long> dresIds)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("loteId", loteId);
+                parameters.Add("anoEscolar", anoEscolar);
+
+                var query = new StringBuilder(@$"with uesDisciplinas as (
+                                select
+	                                d.id as dreid,
+	                                d.nome as drenome,
+	                                bpa.disciplina_id,
+	                                bpa.disciplina,
+	                                blp.prova_id,
+	                                bpa.ano_escolar
+                                from
+	                                boletim_lote_ue blu
+                                join dre d 
+                                        on
+	                                d.id = blu.dre_id
+                                join boletim_lote_prova blp 
+                                        on
+	                                blp.lote_id = blu.lote_id
+                                join boletim_prova_aluno bpa 
+                                        on
+	                                bpa.prova_id = blp.prova_id
+                                where
+	                                bpa.ano_escolar = @anoEscolar
+	                                and blu.lote_id = @loteId
+                                group by
+	                                d.id,
+	                                d.nome,
+	                                bpa.disciplina_id,
+	                                bpa.disciplina,
+	                                blp.prova_id,
+	                                bpa.ano_escolar
+                            )
+                            select
+	                            ud.dreid,
+	                            ud.drenome,
+	                            ud.disciplina_id as disciplinaid,
+	                            ud.disciplina,
+	                            ud.prova_id as provaid,
+	                            coalesce(ROUND(AVG(bpa.proficiencia), 2), 0) as mediaproficiencia
+                            from
+	                            uesDisciplinas ud
+                            left join boletim_prova_aluno bpa 
+                                on
+	                            bpa.disciplina_id = ud.disciplina_id
+	                            and bpa.prova_id = ud.prova_id
+	                            and bpa.dre_id = ud.dreid
+	                            and bpa.ano_escolar = ud.ano_escolar");
+
+                if (dresIds?.Any() ?? false)
+                {
+                    query.Append(" where ud.dreid = ANY(@dresIds)");
+                    parameters.Add("dresIds", dresIds.ToArray(), DbType.Object);
+                }
+
+                query.Append(@" group by
+	                                ud.dreid,
+	                                ud.drenome,
+	                                ud.disciplina_id,
+	                                ud.disciplina,
+	                                ud.prova_id
+                                order by
+	                                ud.drenome,
+	                                ud.disciplina_id;");
+
+                return await conn.QueryAsync<DreDisciplinaMediaProficienciaDto>(query.ToString(), parameters);
             }
             finally
             {

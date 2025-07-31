@@ -116,5 +116,91 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterResultadoProbabilidadePorUeListaUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar, filtros);
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/anos-escolares")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<AnoEscolarDto>), 200)]
+        public async Task<IActionResult> ObterAnosEscolares(long loteId,
+            [FromServices] IObterAnosEscolaresPorLoteIdUseCase obterAnosEscolaresPorLoteIdUseCase)
+        {
+            var resultado = await obterAnosEscolaresPorLoteIdUseCase.Executar(loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/resumo-dre")]
+        [ProducesResponseType(typeof(BoletimEscolarResumoDreDto), 200)]
+        public async Task<IActionResult> ObterResumoDreBoletimEscolar(long loteId, long dreId, int anoEscolar,
+        [FromServices] IObterBoletimEscolarResumoDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, dreId, anoEscolar);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/dre/{dreId}/ano-escolar/{anoEscolar}/grafico/niveis-proficiencia-disciplina")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
+        public async Task<IActionResult> ObterDreNiveisProficienciaDisciplinasUes(long loteId, long dreId, int anoEscolar,
+            [FromServices] IObterUesPorNivelProficienciaDisciplinaPorDreUseCase obterUesPorNivelProficienciaDisciplinaPorDreUseCase)
+        {
+            var resultado = await obterUesPorNivelProficienciaDisciplinaPorDreUseCase.Executar(loteId, dreId, anoEscolar);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/ues-por-dre")]
+        [ProducesResponseType(typeof(IEnumerable<UePorDreDto>), 200)]
+        public async Task<IActionResult> ObterUesPorDre(long loteId, long dreId, int anoEscolar,
+        [FromServices] IObterUesPorDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(dreId, anoEscolar, loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("download-dre/{loteId}/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(bool), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarTurmaPorDre(long dreId, long loteId,
+        [FromServices] IObterDownloadBoletimProvaEscolarPorDreUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId, dreId);
+            return File(file, "application/vnd.ms-excel", "relatorio-dre.xls", enableRangeProcessing: true);
+        }
+
+        [HttpGet("{loteId}/{dreId}/{anoEscolar}/ue-por-dre-dados")]
+        [ProducesResponseType(typeof(IEnumerable<PaginacaoUesBoletimDadosDto>), 200)]
+        public async Task<IActionResult> ObterBoletimDadosUesPorDre(long loteId, long dreId, int anoEscolar, [FromQuery] FiltroUeBoletimDadosDto filtros,
+        [FromServices] IObterBoletimDadosUesPorDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, dreId, anoEscolar, filtros);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/{anoEscolar}/resumo-sme")]
+        [ProducesResponseType(typeof(BoletimEscolarResumoSmeDto), 200)]
+        public async Task<IActionResult> ObterResumoSmeBoletimEscolar(long loteId, int anoEscolar,
+        [FromServices] IObterBoletimEscolarResumoSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, anoEscolar);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{anoEscolar}/{loteId}/grafico/niveis-proficiencia-disciplina")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(ResumoDresNivelProficienciaDto), 200)]
+        public async Task<IActionResult> ObterNiveisProficienciaDisciplinasUes(int anoEscolar,  long loteId,
+            [FromServices] IObterDresPorNivelProficienciaDisciplinaUseCase obterUesPorNivelProficienciaDisciplinaUseCase)
+        {
+            var resultado = await obterUesPorNivelProficienciaDisciplinaUseCase.Executar(anoEscolar, loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{loteId}/ano-escolar/{anoEscolar}/grafico/media-proficiencia")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(DreResumoUesNivelProficienciaDto), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarDresMediaProficiencia(long loteId, int anoEscolar, [FromQuery]IEnumerable<long> dresIds,
+            [FromServices] IObterBoletimEscolarDresMediaProficienciaUseCase obterBoletimEscolarDresMediaProficienciaUseCase)
+        {
+            var resultado = await obterBoletimEscolarDresMediaProficienciaUseCase.Executar(loteId, anoEscolar, dresIds);
+            return Ok(resultado);
+        }
     }
 }

@@ -24,6 +24,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SME.SERAp.Boletim.Aplicacao\SME.SERAp.Boletim.Aplicacao.csproj" />
+    <ProjectReference Include="..\SME.SERAp.Boletim.Dados\SME.SERAp.Boletim.Dados.csproj" />
+    <ProjectReference Include="..\SME.SERAp.Boletim.Infra\SME.SERAp.Boletim.Infra.csproj" />
+  
   </ItemGroup>
 
   <ItemGroup>
