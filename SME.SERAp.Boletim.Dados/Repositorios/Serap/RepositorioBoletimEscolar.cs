@@ -260,7 +260,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         GROUP BY 
                                           bpa.disciplina_id, bpa.disciplina
                                         ORDER BY 
-                                          bpa.disciplina_id;";
+                                          bpa.disciplina;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -423,8 +423,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 const string query = @"select
 	                                    distinct on
 	                                    (be.ue_id,
-	                                    be.disciplina_id,
 	                                    p.disciplina,
+	                                    be.disciplina_id,
 	                                    pao.ano)
 	                                    be.ue_id  as ueId,
 	                                    p.disciplina,
@@ -450,8 +450,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                    and be.nivel_ue_codigo is not null
                                     order by
 	                                    be.ue_id,
-	                                    be.disciplina_id,
 	                                    p.disciplina,
+	                                    be.disciplina_id,
 	                                    pao.ano,
 	                                    be.id desc";
 
