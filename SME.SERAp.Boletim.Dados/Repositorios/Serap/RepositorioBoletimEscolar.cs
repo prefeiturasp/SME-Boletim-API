@@ -653,5 +653,96 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarSme(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    d.dre_id as CodigoDre,
+	                                    d.abreviacao as NomeDreAbreviacao,
+	                                    bpa.ue_codigo CodigoUE,
+	                                    bpa.ue_nome NomeUE,
+	                                    bpa.ano_escolar AnoEscola,
+	                                    bpa.turma Turma,
+	                                    bpa.aluno_ra AlunoRA,
+	                                    bpa.aluno_nome NomeAluno,
+	                                    bpa.disciplina Componente,
+	                                    bpa.proficiencia Proficiencia,
+	                                    CONCAT(np.codigo, ' - ', np.descricao) Nivel
+                                    from
+	                                    boletim_prova_aluno bpa
+                                    inner join dre d on
+	                                    d.id = bpa.dre_id
+                                    inner join ue u on
+	                                    u.ue_id = bpa.ue_codigo
+                                    inner join nivel_proficiencia np on
+	                                    np.codigo = bpa.nivel_codigo
+	                                    and np.disciplina_id = bpa.disciplina_id
+	                                    and np.ano = bpa.ano_escolar
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = bpa.prova_id
+                                    inner join lote_prova lp on
+	                                    lp.id = blp.lote_id
+                                    where
+	                                    lp.id = @loteId;";
+                return await conn.QueryAsync<DownloadProvasBoletimEscolarPorDreDto>(query, new { loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadSmeResultadoProbabilidade(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    d.dre_id as CodigoDre,
+	                                    d.abreviacao as NomeDreAbreviacao,
+	                                    u.ue_id as CodigoUE,
+	                                    u.nome as NomeUE,
+	                                    brp.ano_escolar as AnoEscola,
+	                                    brp.turma_descricao as TurmaDescricao,
+	                                    p.disciplina as componente,
+	                                    brp.codigo_habilidade as CodigoHabilidade,
+	                                    brp.habilidade_descricao as HabilidadeDescricao,
+	                                    ROUND(brp.abaixo_do_basico, 2) as AbaixoDoBasico,
+	                                    ROUND(brp.basico, 2) as Basico,
+	                                    ROUND(brp.adequado, 2) as Adequado,
+	                                    ROUND(brp.avancado, 2) as Avancado
+                                    from
+	                                    boletim_resultado_probabilidade brp
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = brp.prova_id
+                                    inner join lote_prova lp on
+	                                    lp.id = blp.lote_id
+                                    inner join ue u on
+	                                    u.id = brp.ue_id
+                                    inner join dre d on
+	                                    d.id = u.dre_id
+                                    inner join prova p on
+	                                    p.id = brp.prova_id 
+                                    where
+	                                    lp.id = @loteId
+                                    order by
+	                                    p.disciplina,
+	                                    d.abreviacao,
+	                                    u.nome,
+	                                    brp.codigo_habilidade,
+	                                    brp.turma_descricao";
+
+                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
