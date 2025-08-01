@@ -1,0 +1,68 @@
+﻿using MediatR;
+using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
+using System.Text;
+
+namespace SME.SERAp.Boletim.Aplicacao.UseCase
+{
+    public class ObterDownloadSmeResultadoProbabilidadeUseCase : IObterDownloadSmeResultadoProbabilidadeUseCase
+    {
+        private readonly IMediator mediator;
+        public ObterDownloadSmeResultadoProbabilidadeUseCase(IMediator mediator)
+        {
+            this.mediator = mediator;
+        }
+
+        public async Task<MemoryStream> Executar(long loteId)
+        {
+            var tipoPerfilUsuarioLogado = await mediator
+                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+
+            if (tipoPerfilUsuarioLogado is null || tipoPerfilUsuarioLogado.Value != TipoPerfil.Administrador)
+                throw new NaoAutorizadoException("Usuário sem permissão.");
+
+            var resultados = await mediator.Send(new ObterDownloadSmeResultadoProbabilidadeQuery(loteId));
+            return await BuildCSVForExcel(resultados);
+        }
+
+        private static async Task<MemoryStream> BuildCSVForExcel(IEnumerable<DownloadResultadoProbabilidadeDto> resultados)
+        {
+            var memoryStream = new MemoryStream();
+            using (var writer = new StreamWriter(memoryStream, Encoding.UTF8, leaveOpen: true))
+            {
+                await writer.WriteLineAsync("<html><head>");
+                await writer.WriteLineAsync("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
+                await writer.WriteLineAsync("<style>th { font-weight: bold; }</style>");
+                await writer.WriteLineAsync("</head><body>");
+                await writer.WriteLineAsync("<table border='1'>");
+                await writer.WriteLineAsync("<tr><th>Componente</th><th>Nome DRE</th><th>Codigo UE</th><th>Nome UE</th><th>Ano Escola</th><th>Turma</th><th>Código Habilidade</th><th>Habilidade</th><th>Abaixo do Básico</th><th>Básico</th><th>Adequado</th><th>Avançado</th></tr>");
+
+                foreach (var item in resultados)
+                {
+                    await writer.WriteLineAsync("<tr>" +
+                         $"<td>{item.Componente}</td>" +
+                         $"<td>{item.NomeDreAbreviacao}</td>" +
+                        $"<td class=\"numero\">{item.CodigoUe}</td>" +
+                        $"<td>{item.NomeUe}</td>" +
+                        $"<td class=\"numero\">{item.AnoEscolar}</td>" +
+                        $"<td>{item.TurmaDescricao}</td>" +
+                        $"<td>{item.CodigoHabilidade}</td>" +
+                        $"<td>{item.HabilidadeDescricao}</td>" +
+                        $"<td>{item.AbaixoDoBasico}</td>" +
+                        $"<td>{item.Basico}</td>" +
+                        $"<td>{item.Adequado}</td>" +
+                        $"<td>{item.Avancado}</td>" +
+                        "</tr>");
+                }
+
+                await writer.WriteLineAsync("</table></body></html>");
+                await writer.FlushAsync();
+                memoryStream.Position = 0;
+                return memoryStream;
+            }
+        }
+    }
+}
