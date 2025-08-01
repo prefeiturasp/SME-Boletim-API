@@ -205,12 +205,22 @@ namespace SME.SERAp.Boletim.Api.Controllers
 
         [HttpGet("download-sme/{loteId}")]
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
-        [ProducesResponseType(typeof(bool), 200)]
+        [ProducesResponseType(typeof(File), 200)]
         public async Task<IActionResult> ObterBoletimEscolarSmeDownload(long loteId,
             [FromServices] IObterDownloadBoletimProvaEscolarSmeUseCase useCase)
         {
             var file = await useCase.Executar(loteId);
             return File(file, "application/vnd.ms-excel", "relatorio-sme.xls", enableRangeProcessing: true);
+        }
+
+        [HttpGet("download-sme-probabilidade/{loteId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(File), 200)]
+        public async Task<IActionResult> ObterDownloadSmeResultadoProbabilidade(long loteId,
+        [FromServices] IObterDownloadSmeResultadoProbabilidadeUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId);
+            return File(file, "application/vnd.ms-excel", $"resultado-sme-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
         }
     }
 }
