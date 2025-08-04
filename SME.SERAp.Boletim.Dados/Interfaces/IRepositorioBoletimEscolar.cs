@@ -26,5 +26,7 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<DreDisciplinaMediaProficienciaDto>> ObterDresMediaProficienciaPorDisciplina(long loteId, long anoEscolar, IEnumerable<long> dresIds);
         Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarSme(long loteId);
         Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadSmeResultadoProbabilidade(long loteId);
+        Task<IEnumerable<DreDto>> ObterDreAsync(int anoEscolar, long loteId);
+        Task<IEnumerable<DreDisciplinaProficienciaDto>> ObterProficienciaDreAsync(int anoEscolar, long loteId);
     }
 }

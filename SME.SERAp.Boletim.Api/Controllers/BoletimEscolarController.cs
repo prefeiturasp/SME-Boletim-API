@@ -222,5 +222,32 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var file = await useCase.Executar(loteId);
             return File(file, "application/vnd.ms-excel", $"resultado-sme-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
         }
+
+        [HttpGet("{anoEscolar}/{loteId}/dres")]
+        [ProducesResponseType(typeof(IEnumerable<DreDto>), 200)]
+        public async Task<IActionResult> ObterDres(int anoEscolar, long loteId,
+        [FromServices] IObterDresUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoEscolar, loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{anoEscolar}/{loteId}/dres/proficiencia")]
+        [ProducesResponseType(typeof(ProficienciaDreCompletoDto), 200)]
+        public async Task<IActionResult> ObterProficienciaDre(
+            int anoEscolar,
+            long loteId,
+            [FromServices] IObterProficienciaDreUseCase useCase,
+            [FromQuery] IEnumerable<long>? dreIds = null)
+        {
+            var resultado = await useCase.Executar(anoEscolar, loteId, dreIds);
+
+            if (resultado == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(resultado);
+        }
     }
 }
