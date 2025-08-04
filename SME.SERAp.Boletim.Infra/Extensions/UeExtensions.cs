@@ -14,6 +14,13 @@ namespace SME.SERAp.Boletim.Infra.Extensions
             return $"{dreNomeAbv} - {tipoEscolaAbrev} {ueNome}";
         }
 
+        public static string ObterNomeDreAbreviado(this string dreNome)
+        {
+            var dreNomeAbreviado = dreNome?.Replace("DIRETORIA REGIONAL DE EDUCACAO", "DRE");
+
+            return $"{dreNomeAbreviado}";
+        }
+
         private static string ObterTipoEscolaAbreviado(TipoEscola tipoEscola)
         {
             if (tipoEscola == TipoEscola.Nenhum) return string.Empty;
