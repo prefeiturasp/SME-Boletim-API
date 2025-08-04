@@ -601,5 +601,23 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<DreDisciplinaProficienciaDto>> ObterProficienciaDreAsync(int anoEscolar, long loteId)
+        {
+            const string query = @"
+                                    SELECT *
+                                    FROM obter_proficiencia_dre(@anoEscolar, @loteId);";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<DreDisciplinaProficienciaDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
