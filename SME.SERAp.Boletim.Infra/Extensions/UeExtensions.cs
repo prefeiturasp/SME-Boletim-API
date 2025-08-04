@@ -7,8 +7,6 @@ namespace SME.SERAp.Boletim.Infra.Extensions
     {
         public static string ObterUeDescricao(this string ueNome, TipoEscola tipoEscola, string dreNome, string dreAbreviacao)
         {
-            var dreSiglas = dreNome?.Replace("DIRETORIA REGIONAL DE EDUCACAO", "DRE").Trim();
-
             var dreNomeAbv = dreAbreviacao?.Replace(" - ", " ").Trim();
 
             var tipoEscolaAbrev = ObterTipoEscolaAbreviado(tipoEscola);
