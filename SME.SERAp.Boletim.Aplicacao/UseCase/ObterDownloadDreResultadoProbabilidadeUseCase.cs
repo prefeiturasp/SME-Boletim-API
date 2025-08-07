@@ -2,6 +2,7 @@
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadDreResultadoProbabilidade;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
@@ -23,11 +24,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<MemoryStream> Executar(long loteId, int dreId)
         {
+            var dresAbrangenciaUsuarioLogado = await mediator
+                .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
+
             var tipoPerfilUsuarioLogado = await mediator
                 .Send(new ObterTipoPerfilUsuarioLogadoQuery());
 
-            if (tipoPerfilUsuarioLogado is null || tipoPerfilUsuarioLogado.Value != TipoPerfil.Administrador)
-                throw new NaoAutorizadoException("Usuário sem permissão.");
+            if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
 
             var resultados = await mediator.Send(new ObterDownloadDreResultadoProbabilidadeQuery(loteId, dreId));
             return await BuildCSVForExcel(resultados);
