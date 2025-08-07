@@ -249,5 +249,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
 
             return Ok(resultado);
         }
+
+        [HttpGet("download-dre-probabilidade/{loteId}/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(File), 200)]
+        public async Task<IActionResult> ObterDownloadDreResultadoProbabilidade(long loteId, int dreId,
+        [FromServices] IObterDownloadDreResultadoProbabilidadeUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId, dreId);
+            return File(file, "application/vnd.ms-excel", $"resultado-dre-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
+        }
     }
 }
