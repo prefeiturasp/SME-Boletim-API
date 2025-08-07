@@ -1,6 +1,7 @@
 ﻿using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Dados.Interfaces
 {
@@ -28,5 +29,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadSmeResultadoProbabilidade(long loteId);
         Task<IEnumerable<DreDto>> ObterDreAsync(int anoEscolar, long loteId);
         Task<IEnumerable<DreDisciplinaProficienciaDto>> ObterProficienciaDreAsync(int anoEscolar, long loteId);
+        Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadDreResultadoProbabilidade(long loteId, int dreId);
     }
 }
