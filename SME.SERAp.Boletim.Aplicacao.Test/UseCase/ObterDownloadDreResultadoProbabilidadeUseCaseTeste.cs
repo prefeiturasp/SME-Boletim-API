@@ -94,8 +94,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterDownloadDreResultadoProbabilidadeQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        [Fact(DisplayName = "Deve lançar exceção quando o usuário não é Administrador")]
-        public async Task Deve_Lancar_Excecao_Quando_Usuario_Nao_Eh_Administrador()
+        [Fact(DisplayName = "Deve lançar exceção quando o usuário não possuir permissão")]
+        public async Task Deve_Lancar_Excecao_Quando_Usuario_Nao_Possuir_Permissao()
         {
             var loteId = 1L;
             var dreId = 1;
