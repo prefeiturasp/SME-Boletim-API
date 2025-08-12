@@ -28,7 +28,10 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarSme(long loteId);
         Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadSmeResultadoProbabilidade(long loteId);
         Task<IEnumerable<DreDto>> ObterDreAsync(int anoEscolar, long loteId);
-        Task<IEnumerable<DreDisciplinaProficienciaDto>> ObterProficienciaDreAsync(int anoEscolar, long loteId);
         Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadDreResultadoProbabilidade(long loteId, int dreId);
+
+        Task<IEnumerable<DreResumoDto>> ObterResumoDreAsync(int anoEscolar, long loteId);
+        Task<IEnumerable<DreMediaProficienciaDto>> ObterMediaProficienciaDreAsync(int anoEscolar, long loteId);
+        Task<IEnumerable<DreNivelProficienciaDto>> ObterNiveisProficienciaAsync(int anoEscolar);
     }
 }
