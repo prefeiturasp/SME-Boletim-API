@@ -1,8 +1,11 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimDadosUesPorDre;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
@@ -14,9 +17,18 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public Task<PaginacaoUesBoletimDadosDto> Executar(long loteId, long dreId, int anoEscolar, FiltroUeBoletimDadosDto filtros)
+        public async Task<PaginacaoUesBoletimDadosDto> Executar(long loteId, long dreId, int anoEscolar, FiltroUeBoletimDadosDto filtros)
         {
-            return mediator.Send(new ObterBoletimDadosUesPorDreQuery(loteId, dreId, anoEscolar, filtros));
+            var dresAbrangenciaUsuarioLogado = await mediator
+                .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
+
+            var tipoPerfilUsuarioLogado = await mediator
+                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+
+            if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
+
+            return await mediator.Send(new ObterBoletimDadosUesPorDreQuery(loteId, dreId, anoEscolar, filtros));
         }
     }
 }
