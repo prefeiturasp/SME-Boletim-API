@@ -38,19 +38,19 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                 await writer.WriteLineAsync("<style>th { font-weight: bold; }</style>");
                 await writer.WriteLineAsync("</head><body>");
                 await writer.WriteLineAsync("<table border='1'>");
-                await writer.WriteLineAsync("<tr><th>Componente</th><th>Nome DRE</th><th>Codigo UE</th><th>Nome UE</th><th>Ano Escola</th><th>Turma</th><th>Código Habilidade</th><th>Habilidade</th><th>Abaixo do Básico</th><th>Básico</th><th>Adequado</th><th>Avançado</th></tr>");
+                await writer.WriteLineAsync("<tr><th>Nome DRE</th><th>Codigo UE</th><th>Nome UE</th><th>Componente</th><th>Código Habilidade</th><th>Habilidade</th><th>Turma</th><th>Abaixo do Básico</th><th>Básico</th><th>Adequado</th><th>Avançado</th></tr>");
 
                 foreach (var item in resultados)
                 {
                     await writer.WriteLineAsync("<tr>" +
-                         $"<td>{item.Componente}</td>" +
-                         $"<td>{item.NomeDreAbreviacao}</td>" +
+                        
+                        $"<td>{item.NomeDreAbreviacao}</td>" +
                         $"<td class=\"numero\">{item.CodigoUe}</td>" +
                         $"<td>{item.NomeUe}</td>" +
-                        $"<td class=\"numero\">{item.AnoEscolar}</td>" +
-                        $"<td>{item.TurmaDescricao}</td>" +
+                        $"<td>{item.Componente}</td>" +
                         $"<td>{item.CodigoHabilidade}</td>" +
                         $"<td>{item.HabilidadeDescricao}</td>" +
+                        $"<td>{item.TurmaDescricao}</td>" +
                         $"<td>{item.AbaixoDoBasico}</td>" +
                         $"<td>{item.Basico}</td>" +
                         $"<td>{item.Adequado}</td>" +
