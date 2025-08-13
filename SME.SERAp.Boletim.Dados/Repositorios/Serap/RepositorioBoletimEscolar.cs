@@ -479,12 +479,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         public async Task<int> ObterTotalUes(long loteId, int anoEscolar)
         {
             const string query = @"select
-	                                    count(distinct blu.ue_id) 
+                                        COUNT(distinct bpa.ue_codigo)
                                     from
-	                                    boletim_lote_ue blu
+                                        boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = bpa.prova_id
                                     where
-	                                     blu.ano_escolar = @anoEscolar
-	                                    and blu.lote_id = @loteId;";
+                                        bpa.ano_escolar = @anoEscolar
+                                        and blp.lote_id = @loteId;";
 
             using var conn = ObterConexaoLeitura();
             try
