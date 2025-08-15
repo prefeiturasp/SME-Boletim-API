@@ -1,7 +1,10 @@
 ﻿using MediatR;
 using Moq;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletimDadosUesPorDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
@@ -41,9 +44,17 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             };
 
             var loteId = 1L;
-            var dreId = 2L;
+            var dreId = 10L;
             var anoEscolar = 5;
             var filtros = new FiltroUeBoletimDadosDto() { TamanhoPagina = 10 };
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             mediator
                 .Setup(m => m.Send(It.IsAny<ObterBoletimDadosUesPorDreQuery>(), It.IsAny<CancellationToken>()))
@@ -62,13 +73,22 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
         {
 
             var loteId = 1L;
-            var dreId = 2L;
+            var dreId = 20L;
             var anoEscolar = 5;
             var filtros = new FiltroUeBoletimDadosDto() { TamanhoPagina = 2 };
 
             mediator
                 .Setup(m => m.Send(It.IsAny<ObterBoletimDadosUesPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PaginacaoUesBoletimDadosDto(new List<UeDadosBoletimDto>() , filtros.Pagina, filtros.TamanhoPagina, 0));
+                .ReturnsAsync(new PaginacaoUesBoletimDadosDto(new List<UeDadosBoletimDto>(), filtros.Pagina, filtros.TamanhoPagina, 0));
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             var resultado = await useCase.Executar(loteId, dreId, anoEscolar, filtros);
 
             Assert.NotNull(resultado);
@@ -76,6 +96,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             Assert.Equal(resultado.TamanhoPagina, filtros.TamanhoPagina);
             Assert.Empty(resultado.Itens);
             mediator.Verify(m => m.Send(It.IsAny<ObterBoletimDadosUesPorDreQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
+        {
+            return new List<DreAbragenciaDetalheDto>
+            {
+                new DreAbragenciaDetalheDto { Id = 10, Abreviacao = "DT1", Codigo = "111", Nome = "Dre teste 1"},
+                new DreAbragenciaDetalheDto { Id = 20, Abreviacao = "DT2", Codigo = "112", Nome = "Dre teste 2"}
+            };
         }
     }
 }

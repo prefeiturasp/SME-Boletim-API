@@ -1,8 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +39,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.Is<ObterProficienciaDreQuery>(q => q.AnoEscolar == anoEscolar && q.LoteId == loteId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(listaEsperada);
 
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act
             var resultado = await useCase.Executar(anoEscolar, loteId);
 
@@ -61,6 +69,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterProficienciaDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(resultadoEsperado);
 
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act
             var resultado = await useCase.Executar(5, 1);
 
@@ -79,6 +91,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterProficienciaDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ProficienciaDreCompletoDto)null);
 
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act
             var resultado = await useCase.Executar(5, 1);
 
@@ -94,6 +110,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterProficienciaDreQuery>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new System.Exception("Erro simulado do MediatR"));
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             // Act & Assert
             await Assert.ThrowsAsync<System.Exception>(() => useCase.Executar(5, 1));
@@ -112,6 +132,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             mediatorMock
                 .Setup(m => m.Send(It.Is<ObterProficienciaDreQuery>(q => q.AnoEscolar == anoEscolar && q.LoteId == loteId && q.DreIds.Contains(dreId.First())), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(resultadoEsperado);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             // Act
             await useCase.Executar(anoEscolar, loteId, dreId);
@@ -132,6 +156,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             mediatorMock
                 .Setup(m => m.Send(It.Is<ObterProficienciaDreQuery>(q => q.AnoEscolar == anoEscolar && q.LoteId == loteId && q.DreIds.SequenceEqual(dreIds)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(resultadoEsperado);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             // Act
             await useCase.Executar(anoEscolar, loteId, dreIds);
