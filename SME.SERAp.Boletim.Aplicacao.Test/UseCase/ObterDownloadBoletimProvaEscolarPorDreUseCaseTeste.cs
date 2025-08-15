@@ -1,18 +1,15 @@
 ﻿using FluentAssertions;
 using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Moq;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadProvasBoletimEscolarPorDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
 {
@@ -52,8 +49,16 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterDownloadProvasBoletimEscolarPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dados);
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act
-            var result = await useCase.Executar(1, 2);
+            var result = await useCase.Executar(1, 10);
 
             // Assert
             result.Should().NotBeNull();
@@ -94,6 +99,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterDownloadProvasBoletimEscolarPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dados);
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act
             var result = await useCase.Executar(10, 20);
 
@@ -118,8 +131,16 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterDownloadProvasBoletimEscolarPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Erro ao buscar dados"));
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => useCase.Executar(99, 99));
+            await Assert.ThrowsAsync<Exception>(() => useCase.Executar(1, 10));
         }
 
         [Fact(DisplayName = "Deve chamar mediator.Send com parâmetros corretos")]
@@ -128,11 +149,19 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             // Arrange
             var dados = new List<DownloadProvasBoletimEscolarPorDreDto>();
             long loteId = 3;
-            long dreId = 4;
+            long dreId = 10;
 
             mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterDownloadProvasBoletimEscolarPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dados);
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
 
             // Act
             await useCase.Executar(loteId, dreId);
@@ -140,6 +169,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             // Assert
             mediatorMock.Verify(m => m.Send(It.Is<ObterDownloadProvasBoletimEscolarPorDreQuery>(
                 x => x.LoteId == loteId && x.DreId == dreId), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
+        {
+            return new List<DreAbragenciaDetalheDto>
+            {
+                new DreAbragenciaDetalheDto { Id = 10, Abreviacao = "DT1", Codigo = "111", Nome = "Dre teste 1"},
+                new DreAbragenciaDetalheDto { Id = 20, Abreviacao = "DT2", Codigo = "112", Nome = "Dre teste 2"}
+            };
         }
     }
 }

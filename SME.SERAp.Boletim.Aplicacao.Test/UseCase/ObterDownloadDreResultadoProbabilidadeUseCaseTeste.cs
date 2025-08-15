@@ -1,9 +1,11 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Moq;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadDreResultadoProbabilidade;
 using SME.SERAp.Boletim.Aplicacao.Queries;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadDreResultadoProbabilidade;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
         public async Task Deve_Gerar_Download_Com_Conteudo_HTML_E_Dados_Corretos()
         {
             var loteId = 1L;
-            var dreId = 1;
+            var dreId = 10;
             var tipoPerfil = TipoPerfil.Administrador;
             var dadosDeTeste = ObterDadosDeTeste();
 
@@ -42,6 +44,11 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterDownloadDreResultadoProbabilidadeQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dadosDeTeste);
+
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
 
             var resultado = await useCase.Executar(loteId, dreId);
 
@@ -67,7 +74,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
         public async Task Deve_Gerar_Download_Com_Apenas_Cabecalho_Quando_Nao_Ha_Dados()
         {
             var loteId = 1L;
-            var dreId = 1;
+            var dreId = 10;
             var tipoPerfil = TipoPerfil.Administrador;
 
             mediatorMock
@@ -78,6 +85,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
                 .Setup(m => m.Send(It.IsAny<ObterDownloadDreResultadoProbabilidadeQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<DownloadResultadoProbabilidadeDto>());
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
             var resultado = await useCase.Executar(loteId, dreId);
 
             Assert.NotNull(resultado);
@@ -87,7 +98,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             var conteudo = await reader.ReadToEndAsync();
 
             Assert.Contains("<table border='1'>", conteudo);
-            Assert.Contains("<tr><th>Componente</th><th>Nome DRE</th><th>Codigo UE</th><th>Nome UE</th><th>Ano Escola</th><th>Turma</th><th>Código Habilidade</th><th>Habilidade</th><th>Abaixo do Básico</th><th>Básico</th><th>Adequado</th><th>Avançado</th></tr>", conteudo);
+            Assert.Contains("<tr><th>Nome DRE</th><th>Codigo UE</th><th>Nome UE</th><th>Componente</th><th>Código Habilidade</th><th>Habilidade</th><th>Turma</th><th>Abaixo do Básico</th><th>Básico</th><th>Adequado</th><th>Avançado</th></tr", conteudo);
             Assert.DoesNotContain("<td>Língua Portuguesa</td>", conteudo);
 
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -98,15 +109,19 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
         public async Task Deve_Lancar_Excecao_Quando_Usuario_Nao_Possuir_Permissao()
         {
             var loteId = 1L;
-            var dreId = 1;
+            var dreId = 10;
             var tipoPerfil = TipoPerfil.Professor;
 
             mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tipoPerfil);
 
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
             var excecao = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId));
-            Assert.Equal("Usuário sem permissão.", excecao.Message);
+            Assert.Equal("Usuário não possui abrangências para essa DRE.", excecao.Message);
 
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()), Times.Once);
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterDownloadDreResultadoProbabilidadeQuery>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -148,6 +163,15 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
                     NomeUe = "Escola 2",
                     TurmaDescricao = "Turma 5B"
                 }
+            };
+        }
+
+        private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
+        {
+            return new List<DreAbragenciaDetalheDto>
+            {
+                new DreAbragenciaDetalheDto { Id = 10, Abreviacao = "DT1", Codigo = "111", Nome = "Dre teste 1"},
+                new DreAbragenciaDetalheDto { Id = 20, Abreviacao = "DT2", Codigo = "112", Nome = "Dre teste 2"}
             };
         }
     }
