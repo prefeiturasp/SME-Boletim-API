@@ -202,5 +202,62 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await obterBoletimEscolarDresMediaProficienciaUseCase.Executar(loteId, anoEscolar, dresIds);
             return Ok(resultado);
         }
+
+        [HttpGet("download-sme/{loteId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(File), 200)]
+        public async Task<IActionResult> ObterBoletimEscolarSmeDownload(long loteId,
+            [FromServices] IObterDownloadBoletimProvaEscolarSmeUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId);
+            return File(file, "application/vnd.ms-excel", "relatorio-sme.xls", enableRangeProcessing: true);
+        }
+
+        [HttpGet("download-sme-probabilidade/{loteId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(File), 200)]
+        public async Task<IActionResult> ObterDownloadSmeResultadoProbabilidade(long loteId,
+        [FromServices] IObterDownloadSmeResultadoProbabilidadeUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId);
+            return File(file, "application/vnd.ms-excel", $"resultado-sme-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
+        }
+
+        [HttpGet("{anoEscolar}/{loteId}/dres")]
+        [ProducesResponseType(typeof(IEnumerable<DreDto>), 200)]
+        public async Task<IActionResult> ObterDres(int anoEscolar, long loteId,
+        [FromServices] IObterDresUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoEscolar, loteId);
+            return Ok(resultado);
+        }
+
+        [HttpGet("{anoEscolar}/{loteId}/dres/proficiencia")]
+        [ProducesResponseType(typeof(ProficienciaDreCompletoDto), 200)]
+        public async Task<IActionResult> ObterProficienciaDre(
+            int anoEscolar,
+            long loteId,
+            [FromServices] IObterProficienciaDreUseCase useCase,
+            [FromQuery] IEnumerable<long>? dreIds = null)
+        {
+            var resultado = await useCase.Executar(anoEscolar, loteId, dreIds);
+
+            if (resultado == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(resultado);
+        }
+
+        [HttpGet("download-dre-probabilidade/{loteId}/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(File), 200)]
+        public async Task<IActionResult> ObterDownloadDreResultadoProbabilidade(long loteId, int dreId,
+        [FromServices] IObterDownloadDreResultadoProbabilidadeUseCase useCase)
+        {
+            var file = await useCase.Executar(loteId, dreId);
+            return File(file, "application/vnd.ms-excel", $"resultado-dre-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
+        }
     }
 }

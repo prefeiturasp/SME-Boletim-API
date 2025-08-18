@@ -26,28 +26,28 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             {
 
                 var query = new StringBuilder(@"select
-	                        be.id,
-	                        be.ue_id,
-	                        be.prova_id,
-	                        be.componente_curricular,
-	                        be.abaixo_basico,
-	                        be.abaixo_basico_porcentagem,
-	                        be.basico,
-	                        be.basico_porcentagem,
-	                        be.adequado,
-	                        be.adequado_porcentagem,
-	                        be.avancado,
-	                        be.avancado_porcentagem,
-	                        be.total,
-	                        be.media_proficiencia
-                        from
-	                        boletim_escolar be
-                        inner join boletim_lote_prova blp on
-	                        blp.prova_id = be.prova_id 
-                        inner join lote_prova lp on
-	                        lp.id = blp.lote_id
-                        where
-	                        be.ue_id = @ueId and lp.id = @loteId 
+	                                                be.id,
+	                                                be.ue_id,
+	                                                be.prova_id,
+	                                                be.componente_curricular,
+	                                                be.abaixo_basico,
+	                                                be.abaixo_basico_porcentagem,
+	                                                be.basico,
+	                                                be.basico_porcentagem,
+	                                                be.adequado,
+	                                                be.adequado_porcentagem,
+	                                                be.avancado,
+	                                                be.avancado_porcentagem,
+	                                                be.total,
+	                                                be.media_proficiencia
+                                                from
+	                                                boletim_escolar be
+                                                inner join boletim_lote_prova blp on
+	                                                blp.prova_id = be.prova_id 
+                                                inner join lote_prova lp on
+	                                                lp.id = blp.lote_id
+                                                where
+	                                                be.ue_id = @ueId and lp.id = @loteId 
                 ");
 
                 var parameters = new DynamicParameters();
@@ -125,18 +125,18 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             try
             {
                 var query = new StringBuilder(@"SELECT 
-	                            be.prova_id as Id,
-	                            p.disciplina as Descricao
-                            FROM 
-	                            boletim_escolar be
-                            INNER JOIN prova p ON
-	                            p.id = be.prova_id
-                            INNER JOIN boletim_lote_prova blp ON 
-	                            blp.prova_id = p.id
-                            INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id
-                            WHERE
-	                            be.ue_id = @ueId and lp.id = @loteId");
+	                                                be.prova_id as Id,
+	                                                p.disciplina as Descricao
+                                                FROM 
+	                                                boletim_escolar be
+                                                INNER JOIN prova p ON
+	                                                p.id = be.prova_id
+                                                INNER JOIN boletim_lote_prova blp ON 
+	                                                blp.prova_id = p.id
+                                                INNER JOIN lote_prova lp ON
+	                                                lp.id = blp.lote_id
+                                                WHERE
+	                                                be.ue_id = @ueId and lp.id = @loteId");
 
                 var parameters = new DynamicParameters();
                 parameters.Add("ueId", ueId);
@@ -204,12 +204,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
         public async Task<int> ObterTotalUesPorDreAsync(long loteId, long dreId, int anoEscolar)
         {
-            const string query = @"SELECT COUNT(DISTINCT bpa.ue_codigo) 
-                                        FROM boletim_prova_aluno bpa
-                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
-                                        WHERE bpa.dre_id = @dreId 
-                                          AND bpa.ano_escolar = @anoEscolar 
-                                          AND blp.lote_id = @loteId;";
+            const string query = @"select
+	                                    count(distinct blu.ue_id) 
+                                    from
+	                                    boletim_lote_ue blu
+                                    where
+	                                    blu.dre_id = @dreId
+	                                    and blu.ano_escolar = @anoEscolar
+	                                    and blu.lote_id = @loteId;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -225,12 +227,16 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
         public async Task<int> ObterTotalAlunosPorDreAsync(long loteId, long dreId, int anoEscolar)
         {
-            const string query = @"SELECT COUNT(DISTINCT bpa.aluno_ra) 
-                                        FROM boletim_prova_aluno bpa
-                                        INNER JOIN boletim_lote_prova blp ON blp.prova_id = bpa.prova_id
-                                        WHERE bpa.dre_id = @dreId 
-                                          AND bpa.ano_escolar = @anoEscolar 
-                                          AND blp.lote_id = @loteId;";
+            const string query = @"select
+	                                    sum(blu.realizaram_prova)
+                                    from
+	                                    boletim_lote_ue blu
+                                    where
+	                                    blu.dre_id = @dreId
+	                                    and BLU.ano_escolar = @anoEscolar
+	                                    and BLU.lote_id = @loteId
+                                    group by
+	                                    blu.dre_id;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -473,14 +479,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         public async Task<int> ObterTotalUes(long loteId, int anoEscolar)
         {
             const string query = @"select
-	                                COUNT(distinct bpa.ue_codigo)
-                                from
-	                                boletim_prova_aluno bpa
-                                inner join boletim_lote_prova blp on
-	                                blp.prova_id = bpa.prova_id
-                                where
-	                                bpa.ano_escolar = @anoEscolar
-	                                and blp.lote_id = @loteId;";
+                                        COUNT(distinct bpa.ue_codigo)
+                                    from
+                                        boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = bpa.prova_id
+                                    where
+                                        bpa.ano_escolar = @anoEscolar
+                                        and blp.lote_id = @loteId;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -521,14 +527,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         public async Task<int> ObterTotalAlunos(long loteId, int anoEscolar)
         {
             const string query = @"select
-	                                    COUNT(distinct bpa.aluno_ra)
+	                                    sum(blu.realizaram_prova) 
                                     from
-	                                    boletim_prova_aluno bpa
-                                    inner join boletim_lote_prova blp on
-	                                    blp.prova_id = bpa.prova_id
+	                                    boletim_lote_ue blu
                                     where
-	                                    bpa.ano_escolar = @anoEscolar
-	                                    and blp.lote_id = @loteId;";
+	                                     blu.ano_escolar = @anoEscolar
+	                                    and blu.lote_id = @loteId;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -584,50 +588,50 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 parameters.Add("anoEscolar", anoEscolar);
 
                 var query = new StringBuilder(@$"with uesDisciplinas as (
-                                select
-	                                d.id as dreid,
-	                                d.nome as drenome,
-	                                bpa.disciplina_id,
-	                                bpa.disciplina,
-	                                blp.prova_id,
-	                                bpa.ano_escolar
-                                from
-	                                boletim_lote_ue blu
-                                join dre d 
-                                        on
-	                                d.id = blu.dre_id
-                                join boletim_lote_prova blp 
-                                        on
-	                                blp.lote_id = blu.lote_id
-                                join boletim_prova_aluno bpa 
-                                        on
-	                                bpa.prova_id = blp.prova_id
-                                where
-	                                bpa.ano_escolar = @anoEscolar
-	                                and blu.lote_id = @loteId
-                                group by
-	                                d.id,
-	                                d.nome,
-	                                bpa.disciplina_id,
-	                                bpa.disciplina,
-	                                blp.prova_id,
-	                                bpa.ano_escolar
-                            )
-                            select
-	                            ud.dreid,
-	                            ud.drenome,
-	                            ud.disciplina_id as disciplinaid,
-	                            ud.disciplina,
-	                            ud.prova_id as provaid,
-	                            coalesce(ROUND(AVG(bpa.proficiencia), 2), 0) as mediaproficiencia
-                            from
-	                            uesDisciplinas ud
-                            left join boletim_prova_aluno bpa 
-                                on
-	                            bpa.disciplina_id = ud.disciplina_id
-	                            and bpa.prova_id = ud.prova_id
-	                            and bpa.dre_id = ud.dreid
-	                            and bpa.ano_escolar = ud.ano_escolar");
+                                                    select
+	                                                    d.id as dreid,
+	                                                    d.nome as drenome,
+	                                                    bpa.disciplina_id,
+	                                                    bpa.disciplina,
+	                                                    blp.prova_id,
+	                                                    bpa.ano_escolar
+                                                    from
+	                                                    boletim_lote_ue blu
+                                                    join dre d 
+                                                            on
+	                                                    d.id = blu.dre_id
+                                                    join boletim_lote_prova blp 
+                                                            on
+	                                                    blp.lote_id = blu.lote_id
+                                                    join boletim_prova_aluno bpa 
+                                                            on
+	                                                    bpa.prova_id = blp.prova_id
+                                                    where
+	                                                    bpa.ano_escolar = @anoEscolar
+	                                                    and blu.lote_id = @loteId
+                                                    group by
+	                                                    d.id,
+	                                                    d.nome,
+	                                                    bpa.disciplina_id,
+	                                                    bpa.disciplina,
+	                                                    blp.prova_id,
+	                                                    bpa.ano_escolar
+                                                )
+                                                select
+	                                                ud.dreid,
+	                                                ud.drenome,
+	                                                ud.disciplina_id as disciplinaid,
+	                                                ud.disciplina,
+	                                                ud.prova_id as provaid,
+	                                                coalesce(ROUND(AVG(bpa.proficiencia), 2), 0) as mediaproficiencia
+                                                from
+	                                                uesDisciplinas ud
+                                                left join boletim_prova_aluno bpa 
+                                                    on
+	                                                bpa.disciplina_id = ud.disciplina_id
+	                                                and bpa.prova_id = ud.prova_id
+	                                                and bpa.dre_id = ud.dreid
+	                                                and bpa.ano_escolar = ud.ano_escolar");
 
                 if (dresIds?.Any() ?? false)
                 {
@@ -646,6 +650,269 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                ud.disciplina_id;");
 
                 return await conn.QueryAsync<DreDisciplinaMediaProficienciaDto>(query.ToString(), parameters);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>> ObterDownloadProvasBoletimEscolarSme(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    d.dre_id as CodigoDre,
+	                                    d.abreviacao as NomeDreAbreviacao,
+	                                    bpa.ue_codigo CodigoUE,
+	                                    bpa.ue_nome NomeUE,
+	                                    bpa.ano_escolar AnoEscola,
+	                                    bpa.turma Turma,
+	                                    bpa.aluno_ra AlunoRA,
+	                                    bpa.aluno_nome NomeAluno,
+	                                    bpa.disciplina Componente,
+	                                    bpa.proficiencia Proficiencia,
+	                                    CONCAT(np.codigo, ' - ', np.descricao) Nivel
+                                    from
+	                                    boletim_prova_aluno bpa
+                                    inner join dre d on
+	                                    d.id = bpa.dre_id
+                                    inner join ue u on
+	                                    u.ue_id = bpa.ue_codigo
+                                    inner join nivel_proficiencia np on
+	                                    np.codigo = bpa.nivel_codigo
+	                                    and np.disciplina_id = bpa.disciplina_id
+	                                    and np.ano = bpa.ano_escolar
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = bpa.prova_id
+                                    inner join lote_prova lp on
+	                                    lp.id = blp.lote_id
+                                    where
+	                                    lp.id = @loteId;";
+                return await conn.QueryAsync<DownloadProvasBoletimEscolarPorDreDto>(query, new { loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadSmeResultadoProbabilidade(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    d.dre_id as CodigoDre,
+	                                    d.abreviacao as NomeDreAbreviacao,
+	                                    u.ue_id as CodigoUE,
+	                                    u.nome as NomeUE,
+	                                    brp.ano_escolar as AnoEscola,
+	                                    brp.turma_descricao as TurmaDescricao,
+	                                    p.disciplina as componente,
+	                                    brp.codigo_habilidade as CodigoHabilidade,
+	                                    brp.habilidade_descricao as HabilidadeDescricao,
+	                                    ROUND(brp.abaixo_do_basico, 2) as AbaixoDoBasico,
+	                                    ROUND(brp.basico, 2) as Basico,
+	                                    ROUND(brp.adequado, 2) as Adequado,
+	                                    ROUND(brp.avancado, 2) as Avancado
+                                    from
+	                                    boletim_resultado_probabilidade brp
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = brp.prova_id
+                                    inner join lote_prova lp on
+	                                    lp.id = blp.lote_id
+                                    inner join ue u on
+	                                    u.id = brp.ue_id
+                                    inner join dre d on
+	                                    d.id = u.dre_id
+                                    inner join prova p on
+	                                    p.id = brp.prova_id 
+                                    where
+	                                    lp.id = @loteId
+                                    order by
+	                                    p.disciplina,
+	                                    d.abreviacao,
+	                                    u.nome,
+	                                    brp.codigo_habilidade,
+	                                    brp.turma_descricao";
+
+                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreDto>> ObterDreAsync(int anoEscolar, long loteId)
+        {
+            const string query = @"select distinct
+                                        d.id as DreId,
+                                        d.nome as DreNome,
+                                        d.abreviacao as DreNomeAbreviado
+                                    from
+                                        boletim_lote_ue blu
+                                    inner join dre d on
+                                        d.id = blu.dre_id
+                                    where
+                                        blu.ano_escolar = @anoEscolar
+                                        and blu.lote_id = @loteId
+                                    order by
+                                        d.nome;";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                return await conn.QueryAsync<DreDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DownloadResultadoProbabilidadeDto>> ObterDownloadDreResultadoProbabilidade(long loteId, int dreId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    d.dre_id as CodigoDre,
+	                                    d.abreviacao as NomeDreAbreviacao,
+	                                    u.ue_id as CodigoUE,
+	                                    u.nome as NomeUE,
+	                                    brp.ano_escolar as AnoEscola,
+	                                    brp.turma_descricao as TurmaDescricao,
+	                                    p.disciplina as componente,
+	                                    brp.codigo_habilidade as CodigoHabilidade,
+	                                    brp.habilidade_descricao as HabilidadeDescricao,
+	                                    ROUND(brp.abaixo_do_basico, 2) as AbaixoDoBasico,
+	                                    ROUND(brp.basico, 2) as Basico,
+	                                    ROUND(brp.adequado, 2) as Adequado,
+	                                    ROUND(brp.avancado, 2) as Avancado
+                                    from
+	                                    boletim_resultado_probabilidade brp
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = brp.prova_id
+                                    inner join lote_prova lp on
+	                                    lp.id = blp.lote_id
+                                    inner join ue u on
+	                                    u.id = brp.ue_id
+                                    inner join dre d on
+	                                    d.id = u.dre_id
+                                    inner join prova p on
+	                                    p.id = brp.prova_id 
+                                    where
+	                                    lp.id = @loteId
+                                    and 
+                                    	d.id = @dreId
+                                    order by
+	                                    p.disciplina,
+	                                    d.abreviacao,
+	                                    u.nome,
+	                                    brp.codigo_habilidade,
+	                                    brp.turma_descricao";
+
+                return await conn.QueryAsync<DownloadResultadoProbabilidadeDto>(query, new { loteId, dreId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreResumoDto>> ObterResumoDreAsync(int anoEscolar, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+	                                        d.id as DreId,
+	                                        d.nome as DreNome,
+	                                        blu.ano_escolar as AnoEscolar,
+	                                        COUNT(distinct blu.ue_id) as TotalUes,
+	                                        SUM(blu.total_alunos) as TotalAlunos,
+	                                        SUM(blu.realizaram_prova) as TotalRealizaramProva
+                                        from
+	                                        boletim_lote_ue blu
+                                        inner join dre d on
+	                                        d.id = blu.dre_id
+                                        where
+	                                        blu.lote_id = @loteId
+	                                        and blu.ano_escolar = @anoEscolar
+                                        group by
+	                                        d.id,
+	                                        d.nome,
+	                                        blu.ano_escolar;";
+
+                return await conn.QueryAsync<DreResumoDto>(query, new { loteId, anoEscolar });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreMediaProficienciaDto>> ObterMediaProficienciaDreAsync(int anoEscolar, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+	                                        bpa.dre_id as DreId,
+	                                        bpa.disciplina as Disciplina,
+	                                        bpa.disciplina_id as DisciplinaId,
+	                                        coalesce(ROUND(AVG(bpa.proficiencia),
+	                                        2),
+	                                        0) as MediaProficiencia
+                                        from
+	                                        boletim_prova_aluno bpa
+                                        inner join boletim_lote_prova blp on
+	                                        blp.prova_id = bpa.prova_id
+                                        where
+	                                        bpa.ano_escolar = @anoEscolar
+	                                        and blp.lote_id = @loteId
+                                        group by
+	                                        bpa.dre_id,
+	                                        bpa.disciplina,
+	                                        bpa.disciplina_id;";
+
+                return await conn.QueryAsync<DreMediaProficienciaDto>(query, new { anoEscolar, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreNivelProficienciaDto>> ObterNiveisProficienciaAsync(int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+	                                        disciplina_id as DisciplinaId,
+	                                        ano as Ano,
+	                                        descricao as Descricao,
+	                                        valor_referencia as ValorReferencia
+                                        from
+	                                        nivel_proficiencia
+                                        where
+	                                        ano = @anoEscolar;";
+
+                return await conn.QueryAsync<DreNivelProficienciaDto>(query, new { anoEscolar });
             }
             finally
             {
