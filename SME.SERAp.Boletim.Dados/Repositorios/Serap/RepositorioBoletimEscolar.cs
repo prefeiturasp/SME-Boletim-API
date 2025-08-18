@@ -585,53 +585,52 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("loteId", loteId);
-                parameters.Add("anoEscolar", anoEscolar);
+                parameters.Add("anoEscolar", anoEscolar.ToString());
 
                 var query = new StringBuilder(@$"with uesDisciplinas as (
-                                                    select
-	                                                    d.id as dreid,
-	                                                    d.nome as drenome,
-	                                                    bpa.disciplina_id,
-	                                                    bpa.disciplina,
-	                                                    blp.prova_id,
-	                                                    bpa.ano_escolar
-                                                    from
-	                                                    boletim_lote_ue blu
-                                                    join dre d 
-                                                            on
-	                                                    d.id = blu.dre_id
-                                                    join boletim_lote_prova blp 
-                                                            on
-	                                                    blp.lote_id = blu.lote_id
-                                                    join boletim_prova_aluno bpa 
-                                                            on
-	                                                    bpa.prova_id = blp.prova_id
-                                                    where
-	                                                    bpa.ano_escolar = @anoEscolar
-	                                                    and blu.lote_id = @loteId
-                                                    group by
-	                                                    d.id,
-	                                                    d.nome,
-	                                                    bpa.disciplina_id,
-	                                                    bpa.disciplina,
-	                                                    blp.prova_id,
-	                                                    bpa.ano_escolar
-                                                )
-                                                select
-	                                                ud.dreid,
-	                                                ud.drenome,
-	                                                ud.disciplina_id as disciplinaid,
-	                                                ud.disciplina,
-	                                                ud.prova_id as provaid,
-	                                                coalesce(ROUND(AVG(bpa.proficiencia), 2), 0) as mediaproficiencia
-                                                from
-	                                                uesDisciplinas ud
-                                                left join boletim_prova_aluno bpa 
-                                                    on
-	                                                bpa.disciplina_id = ud.disciplina_id
-	                                                and bpa.prova_id = ud.prova_id
-	                                                and bpa.dre_id = ud.dreid
-	                                                and bpa.ano_escolar = ud.ano_escolar");
+                                            select
+	                                            d.id as dreid,
+	                                            d.nome as drenome,
+	                                            p.disciplina_id,
+	                                            p.disciplina,
+	                                            blp.prova_id,
+	                                            blu.ano_escolar 
+                                            from
+	                                            boletim_lote_ue blu
+                                            inner join dre d on
+	                                            d.id = blu.dre_id
+                                            inner join boletim_lote_prova blp on
+	                                            blp.lote_id = blu.lote_id
+                                            inner join prova p on 
+	                                            p.id = blp.prova_id 
+                                            inner join prova_ano_original pao on
+	                                            pao.prova_id = p.id
+                                            where
+	                                            pao.ano  = @anoEscolar
+	                                            and blu.lote_id = @loteId
+                                            group by
+	                                            d.id,
+	                                            d.nome,
+	                                            p.disciplina_id,
+	                                            p.disciplina,
+	                                            blp.prova_id,
+	                                            blu.ano_escolar
+                                            )
+                                            select
+	                                            ud.dreid,
+	                                            ud.drenome,
+	                                            ud.disciplina_id as disciplinaid,
+	                                            ud.disciplina,
+	                                            ud.prova_id as provaid,
+	                                            coalesce(ROUND(AVG(bpa.proficiencia), 2), 0) as mediaproficiencia
+                                            from
+	                                            uesDisciplinas ud
+                                            left join boletim_prova_aluno bpa 
+                                                on
+	                                            bpa.disciplina_id = ud.disciplina_id
+	                                            and bpa.prova_id = ud.prova_id
+	                                            and bpa.dre_id = ud.dreid
+	                                            and bpa.ano_escolar = ud.ano_escolar");
 
                 if (dresIds?.Any() ?? false)
                 {
