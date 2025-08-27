@@ -496,5 +496,116 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Equal("Aluno 1", resultados.First().NomeAluno);
             Assert.Equal(610.8m, resultados.Last().Proficiencia);
         }
+
+        [Fact]
+        public async Task ObterDownloadSmeResultadoProbabilidade_DeveRetornarResultados()
+        {
+            var esperado = new List<DownloadResultadoProbabilidadeDto>
+            {
+                new DownloadResultadoProbabilidadeDto { CodigoDre = "01", NomeUe = "UE Teste" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DownloadResultadoProbabilidadeDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterDownloadSmeResultadoProbabilidade(1);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("01", resultado.First().CodigoDre);
+        }
+
+        [Fact]
+        public async Task ObterDreAsync_DeveRetornarDres()
+        {
+            var esperado = new List<DreDto> { new DreDto { DreId = 10, DreNome = "DRE Teste" } };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DreDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterDreAsync(5, 99);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal(10, resultado.First().DreId);
+        }
+
+        [Fact]
+        public async Task ObterDownloadDreResultadoProbabilidade_DeveRetornarResultados()
+        {
+            var esperado = new List<DownloadResultadoProbabilidadeDto>
+            {
+                new DownloadResultadoProbabilidadeDto { CodigoDre = "02", NomeUe = "UE Dre" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DownloadResultadoProbabilidadeDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterDownloadDreResultadoProbabilidade(1, 2);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("02", resultado.First().CodigoDre);
+        }
+
+        [Fact]
+        public async Task ObterResumoDreAsync_DeveRetornarResumo()
+        {
+            var esperado = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 5, DreNome = "DRE Teste", TotalAlunos = 100 }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DreResumoDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterResumoDreAsync(5, 1);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal(5, resultado.First().DreId);
+        }
+
+        [Fact]
+        public async Task ObterMediaProficienciaDreAsync_DeveRetornarMedias()
+        {
+            var esperado = new List<DreMediaProficienciaDto>
+            {
+                new DreMediaProficienciaDto { DreId = 1, Disciplina = "Matemática", MediaProficiencia = 250 }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DreMediaProficienciaDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterMediaProficienciaDreAsync(5, 1);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("Matemática", resultado.First().Disciplina);
+        }
+
+        [Fact]
+        public async Task ObterNiveisProficienciaAsync_DeveRetornarNiveis()
+        {
+            var esperado = new List<DreNivelProficienciaDto>
+            {
+                new DreNivelProficienciaDto { DisciplinaId = 1, Ano = 5, Descricao = "Básico", ValorReferencia = 250 }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QueryAsync<DreNivelProficienciaDto>(It.IsAny<string>(), It.IsAny<object>(), null, null, null))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterNiveisProficienciaAsync(5);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal(5, resultado.First().Ano);
+        }
     }
 }
