@@ -384,7 +384,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                                d.id = blu.dre_id");
 
                 totalQuery.Append(where);
-                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+                var totalRegistros = await conn.QueryFirstOrDefaultAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"select
                                                     u.id,

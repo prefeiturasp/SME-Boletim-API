@@ -336,7 +336,9 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
                 Ano = new List<int> { 5 },
                 NivelMinimo = 500,
                 NivelMaximo = 600,
-                NomeEstudante = "Maria"
+                NomeEstudante = "Maria",
+                NivelProficiencia = new List<int> { 1, 2 },
+                Turma = new List<string> { "A" }
             };
 
             var dadosMock = new List<AbaEstudanteGraficoTempDto>
@@ -370,6 +372,206 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Equal(2, turmaPortugues.Alunos.Count());
             Assert.Contains(turmaPortugues.Alunos, a => a.Nome == "Pedro");
             Assert.Contains(turmaPortugues.Alunos, a => a.Nome == "Ana");
+        }
+
+        [Fact]
+        public async Task ObterAbaEstudanteBoletimEscolarPorUeId_DeveFiltrarResultadosCorretamente_QuandoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var filtros = new FiltroBoletimEstudantePaginadoDto
+            {
+                ComponentesCurriculares = new List<int> { 1 },
+                Ano = new List<int> { 5 },
+                NivelMinimo = 500,
+                NivelMaximo = 600,
+                NomeEstudante = "Maria",
+                EolEstudante = 123,
+                NivelProficiencia = new List<int>{ 1,2,3,4},
+                PageNumber = 1,
+                PageSize = 4,
+                Turma = new List<string> { "A", "B"}
+            };
+
+            var dadosMock = new List<AbaEstudanteListaDto>
+            {
+                new AbaEstudanteListaDto { Turma = "5A", Disciplina = "Matemática", AlunoNome = "Maria", Proficiencia = 600 },
+                new AbaEstudanteListaDto { Turma = "5A", Disciplina = "Matemática", AlunoNome = "Joao", Proficiencia = 550 },
+                new AbaEstudanteListaDto { Turma = "5B", Disciplina = "Português", AlunoNome = "Pedro", Proficiencia = 650 },
+                new AbaEstudanteListaDto { Turma = "5B", Disciplina = "Português", AlunoNome = "Ana", Proficiencia = 700 }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AbaEstudanteListaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterAbaEstudanteBoletimEscolarPorUeId(loteId, ueId, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
+        }
+
+        [Fact]
+        public async Task ObterAbaEstudanteBoletimEscolarPorUeId_DeveFiltrarResultadosCorretamente_QuandoNaoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var filtros = new FiltroBoletimEstudantePaginadoDto { };
+
+            var dadosMock = new List<AbaEstudanteListaDto>
+            {
+                new AbaEstudanteListaDto { Turma = "5A", Disciplina = "Matemática", AlunoNome = "Maria", Proficiencia = 600 },
+                new AbaEstudanteListaDto { Turma = "5A", Disciplina = "Matemática", AlunoNome = "Joao", Proficiencia = 550 },
+                new AbaEstudanteListaDto { Turma = "5B", Disciplina = "Português", AlunoNome = "Pedro", Proficiencia = 650 },
+                new AbaEstudanteListaDto { Turma = "5B", Disciplina = "Português", AlunoNome = "Ana", Proficiencia = 700 }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AbaEstudanteListaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterAbaEstudanteBoletimEscolarPorUeId(loteId, ueId, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
+        }
+
+        [Fact]
+        public async Task ObterResultadoProbabilidadePorUeAsync_DeveFiltrarResultadosCorretamente_QuandoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var disciplinaId = 4;
+            var anoEscolar = 5;
+            var filtros = new FiltroBoletimResultadoProbabilidadeDto
+            { 
+                Habilidade = "Teste",
+                Turma = new List<string> { "5A", "5B" },
+                Pagina = 1,
+                TamanhoPagina = 10
+            };
+
+            var dadosMock = new List<ResultadoProbabilidadeDto>
+            {
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5B" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5B" },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ResultadoProbabilidadeDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterResultadoProbabilidadePorUeAsync(loteId, ueId, disciplinaId, anoEscolar, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
+        }
+
+        [Fact]
+        public async Task ObterResultadoProbabilidadePorUeAsync_DeveFiltrarResultadosCorretamente_QuandoNaoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var disciplinaId = 4;
+            var anoEscolar = 5;
+            var filtros = new FiltroBoletimResultadoProbabilidadeDto { };
+
+            var dadosMock = new List<ResultadoProbabilidadeDto>
+            {
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5B" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5B" },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ResultadoProbabilidadeDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterResultadoProbabilidadePorUeAsync(loteId, ueId, disciplinaId, anoEscolar, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
+        }
+
+        [Fact]
+        public async Task ObterResultadoProbabilidadeListaPorUeAsync_DeveFiltrarResultadosCorretamente_QuandoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var disciplinaId = 4;
+            var anoEscolar = 5;
+            var filtros = new FiltroBoletimResultadoProbabilidadeDto
+            {
+                Habilidade = "Teste",
+                Turma = new List<string> { "5A", "5B" },
+                Pagina = 1,
+                TamanhoPagina = 10
+            };
+
+            var dadosMock = new List<ResultadoProbabilidadeDto>
+            {
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5B" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5B" },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ResultadoProbabilidadeDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterResultadoProbabilidadeListaPorUeAsync(loteId, ueId, disciplinaId, anoEscolar, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
+        }
+
+        [Fact]
+        public async Task ObterResultadoProbabilidadeListaPorUeAsync_DeveFiltrarResultadosCorretamente_QuandoNaoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 123L;
+            var disciplinaId = 4;
+            var anoEscolar = 5;
+            var filtros = new FiltroBoletimResultadoProbabilidadeDto { };
+
+            var dadosMock = new List<ResultadoProbabilidadeDto>
+            {
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5A" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "123", HabilidadeDescricao = "Teste 1", TurmaDescricao = "5B" },
+                new ResultadoProbabilidadeDto { AbaixoDoBasico = 10, Adequado = 20, Avancado = 30, Basico = 20, CodigoHabilidade = "124", HabilidadeDescricao = "Teste 2", TurmaDescricao = "5B" },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ResultadoProbabilidadeDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(dadosMock);
+
+            var (resultado, totalRegistros) = await repositorio.ObterResultadoProbabilidadeListaPorUeAsync(loteId, ueId, disciplinaId, anoEscolar, filtros);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(dadosMock.Count, resultado.Count());
         }
     }
 }
