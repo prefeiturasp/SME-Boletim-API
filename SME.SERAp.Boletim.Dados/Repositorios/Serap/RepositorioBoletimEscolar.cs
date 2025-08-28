@@ -216,7 +216,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { dreId, anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -241,7 +242,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { dreId, anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -382,7 +384,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                                d.id = blu.dre_id");
 
                 totalQuery.Append(where);
-                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+                var totalRegistros = await conn.QueryFirstOrDefaultAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"select
                                                     u.id,
@@ -491,7 +493,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -515,7 +518,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -537,7 +541,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
