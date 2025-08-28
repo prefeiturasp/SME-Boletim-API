@@ -1,18 +1,13 @@
 ﻿using Dapper;
 using Moq;
 using Moq.Dapper;
-using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dados.Repositorios.Serap;
 using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
 {
@@ -37,6 +32,33 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
         {
             conexaoLeitura = new Mock<IDbConnection>();
             repositorio = new RepositorioBoletimEscolarFake(new ConnectionStringOptions(), conexaoLeitura.Object);
+        }
+
+        [Fact]
+        public async Task ObterBoletinsPorUe_DeveRetornarBoletins_QuandoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 100L;
+            var filtros = new FiltroBoletimDto() { Ano = new List<int> { 9 }, ComponentesCurriculares = new List<int> { 4 } };
+            var boletinsMock = new List<BoletimEscolar>
+            {
+                new BoletimEscolar { Id = 1, ProvaId = 1, UeId = 100, ComponenteCurricular = "Matemática", MediaProficiencia = 500m },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<BoletimEscolar>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(boletinsMock);
+
+            var resultados = await repositorio.ObterBoletinsPorUe(loteId, ueId, filtros);
+
+            Assert.NotNull(resultados);
+            Assert.Equal(boletinsMock.Count, resultados.Count());
+            Assert.Equal("Matemática", resultados.First().ComponenteCurricular);
         }
 
         [Fact]
@@ -103,8 +125,37 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             var ueId = 100L;
             var filtros = new FiltroBoletimDto
             {
-                ComponentesCurriculares = new List<int> { 1, 2 }
+                Ano = new List<int> { 9 },
+                ComponentesCurriculares = new List<int> { 4 }
             };
+
+            var provasMock = new List<ProvaBoletimEscolarDto>
+            {
+                new ProvaBoletimEscolarDto { Id = 4, Descricao = "Matemática" },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ProvaBoletimEscolarDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(provasMock);
+
+            var resultados = await repositorio.ObterProvasBoletimEscolarPorUe(loteId, ueId, filtros);
+
+            Assert.NotNull(resultados);
+            Assert.Equal(provasMock.Count, resultados.Count());
+            Assert.Equal("Matemática", resultados.First().Descricao);
+        }
+
+        [Fact]
+        public async Task ObterProvasBoletimEscolarPorUe_DeveRetornarProvas_QuandoNaoHaFiltros()
+        {
+            var loteId = 1L;
+            var ueId = 100L;
+            var filtros = new FiltroBoletimDto { };
 
             var provasMock = new List<ProvaBoletimEscolarDto>
             {
@@ -124,7 +175,7 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             var resultados = await repositorio.ObterProvasBoletimEscolarPorUe(loteId, ueId, filtros);
 
             Assert.NotNull(resultados);
-            Assert.Equal(2, resultados.Count());
+            Assert.Equal(provasMock.Count, resultados.Count());
             Assert.Equal("Matemática", resultados.First().Descricao);
             Assert.Equal("Português", resultados.Last().Descricao);
         }
@@ -606,6 +657,71 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.NotNull(resultado);
             Assert.Single(resultado);
             Assert.Equal(5, resultado.First().Ano);
+        }
+
+        [Fact]
+        public async Task ObterUesPorDre_DeveRetornarUes_QuandoHaFiltros()
+        {
+            var loteId = 1L;
+            var dreId = 50L;
+            var anoEscolar = 5;
+            var filtros = new FiltroUeBoletimDadosDto
+            {
+                Pagina = 1,
+                TamanhoPagina = 2,
+                UesIds = new List<long> { 1, 2 }
+            };
+
+            var uesDadosMock = new List<UeDadosBoletimDto>
+            {
+                new UeDadosBoletimDto { AnoEscolar = 5, UeNome = "EMEF JOAO DE BARRO", TipoEscola = TipoEscola.EMEF, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1" , PercentualEstudadesRealizaramProva = 50, TotalEstudadesRealizaramProva = 10, TotalEstudantes = 20 },
+                new UeDadosBoletimDto { AnoEscolar = 5, UeNome = "CEI LAR DA CRIANCA", TipoEscola = TipoEscola.CEIINDIR, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1", PercentualEstudadesRealizaramProva = 50, TotalEstudadesRealizaramProva = 10, TotalEstudantes = 20 }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeDadosBoletimDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null,
+                    null,
+                    null))
+                .ReturnsAsync(uesDadosMock);
+
+            var resultados = await repositorio.ObterUesPorDre(loteId, dreId, anoEscolar, filtros);
+
+            Assert.NotNull(resultados);
+            Assert.Equal(filtros.TamanhoPagina, resultados.TamanhoPagina);
+            Assert.Equal(filtros.Pagina, resultados.Pagina);
+            Assert.Equal(uesDadosMock.Count, resultados.Itens.Count());
+        }
+
+        [Fact]
+        public async Task ObterUesPorDre_DeveRetornarUes_QuandoNaoHaFiltros()
+        {
+            var loteId = 1L;
+            var dreId = 50L;
+            var anoEscolar = 5;
+            var filtros = new FiltroUeBoletimDadosDto{};
+
+            var uesDadosMock = new List<UeDadosBoletimDto>
+            {
+                new UeDadosBoletimDto { AnoEscolar = 5, UeNome = "EMEF JOAO DE BARRO", TipoEscola = TipoEscola.EMEF, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1" , PercentualEstudadesRealizaramProva = 50, TotalEstudadesRealizaramProva = 10, TotalEstudantes = 20 },
+                new UeDadosBoletimDto { AnoEscolar = 5, UeNome = "CEI LAR DA CRIANCA", TipoEscola = TipoEscola.CEIINDIR, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1", PercentualEstudadesRealizaramProva = 50, TotalEstudadesRealizaramProva = 10, TotalEstudantes = 20 }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeDadosBoletimDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null,
+                    null,
+                    null))
+                .ReturnsAsync(uesDadosMock);
+
+            var resultados = await repositorio.ObterUesPorDre(loteId, dreId, anoEscolar, filtros);
+
+            Assert.NotNull(resultados);
+            Assert.Equal(uesDadosMock.Count, resultados.Itens.Count());
         }
     }
 }
