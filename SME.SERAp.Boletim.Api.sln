@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.SERAp.Boletim.Dominio.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.SERAp.Boletim.Dados.Teste", "SME.SERAp.Boletim.Dados.Teste\SME.SERAp.Boletim.Dados.Teste.csproj", "{9E214A84-253D-4301-8573-9FB99E15C026}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.SERAp.Boletim.Infra.Teste", "SME.SERAp.Boletim.Infra.Teste\SME.SERAp.Boletim.Infra.Teste.csproj", "{6328A928-F0D4-4AE7-AEFB-3FD65796E582}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{9E214A84-253D-4301-8573-9FB99E15C026}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E214A84-253D-4301-8573-9FB99E15C026}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E214A84-253D-4301-8573-9FB99E15C026}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6328A928-F0D4-4AE7-AEFB-3FD65796E582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6328A928-F0D4-4AE7-AEFB-3FD65796E582}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6328A928-F0D4-4AE7-AEFB-3FD65796E582}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6328A928-F0D4-4AE7-AEFB-3FD65796E582}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{A7A73F74-527E-499C-9290-47697A5D90D9} = {5AD209B6-890C-4D74-A8A6-8B67C66DEFD5}
 		{227108D0-49EE-414B-9589-4F9E2EA5AAC6} = {5AD209B6-890C-4D74-A8A6-8B67C66DEFD5}
 		{9E214A84-253D-4301-8573-9FB99E15C026} = {5AD209B6-890C-4D74-A8A6-8B67C66DEFD5}
+		{6328A928-F0D4-4AE7-AEFB-3FD65796E582} = {5AD209B6-890C-4D74-A8A6-8B67C66DEFD5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9396AFF2-A5E8-4C1D-B9AC-006C51687F84}
