@@ -259,5 +259,25 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var file = await useCase.Executar(loteId, dreId);
             return File(file, "application/vnd.ms-excel", $"resultado-dre-probabilidade-{DateTime.Now:dd-MM-yyyy}.xls", enableRangeProcessing: true);
         }
+
+        [HttpGet("proficienciaComparativoProvaSp/{loteId}/{ueId}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(ProficienciaUeComparacaoProvaSPDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ObterProficienciaComparativoProvaSP(
+            long loteId,
+            int ueId,
+            int disciplinaId,
+            int anoEscolar,
+            [FromServices] IObterProficienciaComparativoProvaSPUseCase useCase)
+        {
+            var resultado = await useCase.Executar(loteId, ueId, disciplinaId, anoEscolar);
+
+            if (resultado == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(resultado);
+        }
     }
 }
