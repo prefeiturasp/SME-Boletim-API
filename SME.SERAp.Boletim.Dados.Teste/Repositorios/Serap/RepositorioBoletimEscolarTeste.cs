@@ -723,5 +723,198 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.NotNull(resultados);
             Assert.Equal(uesDadosMock.Count, resultados.Itens.Count());
         }
+
+        [Fact]
+        public async Task ObterMediaProficienciaUeAsync_DeveRetornarMediaCorreta_QuandoDadosExistem()
+        {
+            var loteId = 1L;
+            var ueId = 100;
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+            var mockData = new List<UeMediaProficienciaDto>
+            {
+                new UeMediaProficienciaDto { LoteId = 1, NomeAplicacao = "Prova São Paulo", Periodo = "1 Semestre", MediaProficiencia = 615.50M }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeMediaProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(mockData);
+
+            var resultados = await repositorio.ObterMediaProficienciaUeAsync(loteId, ueId, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Single(resultados);
+            Assert.Equal(mockData.First().MediaProficiencia, resultados.First().MediaProficiencia);
+            Assert.Equal("Prova São Paulo", resultados.First().NomeAplicacao);
+        }
+
+        [Fact]
+        public async Task ObterMediaProficienciaUeAnoAnteriorAsync_DeveRetornarMediaCorreta_QuandoDadosExistem()
+        {
+            var loteId = 1L;
+            var ueId = 100;
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+            var mockData = new List<UeMediaProficienciaDto>
+            {
+                new UeMediaProficienciaDto { LoteId = 0, NomeAplicacao = "Prova São Paulo", Periodo = "2023", MediaProficiencia = 540.20M }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeMediaProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(mockData);
+
+            var resultados = await repositorio.ObterMediaProficienciaUeAnoAnteriorAsync(loteId, ueId, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Single(resultados);
+            Assert.Equal(mockData.First().MediaProficiencia, resultados.First().MediaProficiencia);
+        }
+
+        [Fact]
+        public async Task ObterTotalAlunosRealizaramProvasUe_DeveRetornarTotalDeAlunos_QuandoExistemDados()
+        {
+            var loteId = 1L;
+            var anoEscolar = 2024;
+            var ueId = 100;
+            var totalAlunosMock = 50;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int> { totalAlunosMock });
+
+            var resultado = await repositorio.ObterTotalAlunosRealizaramProvasUe(loteId, anoEscolar, ueId);
+
+            Assert.Equal(totalAlunosMock, resultado);
+        }
+
+        [Fact]
+        public async Task ObterTotalAlunosRealizaramProvasUe_DeveRetornarZero_QuandoNaoExistemDados()
+        {
+            var loteId = 1L;
+            var anoEscolar = 2024;
+            var ueId = 100;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int>());
+
+            var resultado = await repositorio.ObterTotalAlunosRealizaramProvasUe(loteId, anoEscolar, ueId);
+
+            Assert.Equal(0, resultado);
+        }
+
+        [Fact]
+        public async Task ObterTotalAlunosUeRealizaramProvasSPAnterior_DeveRetornarTotalDeAlunos_QuandoDadosExistem()
+        {
+            var loteId = 1L;
+            var ueId = 100;
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+            var totalAlunosMock = 45;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int> { totalAlunosMock });
+
+            var resultado = await repositorio.ObterTotalAlunosUeRealizaramProvasSPAnterior(loteId, ueId, disciplinaId, anoEscolar);
+
+            Assert.Equal(totalAlunosMock, resultado);
+        }
+
+        [Fact]
+        public async Task ObterTotalAlunosUeRealizaramProvasSPAnterior_DeveRetornarZero_QuandoNaoExistemDados()
+        {
+            var loteId = 1L;
+            var ueId = 100;
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int>());
+
+            var resultado = await repositorio.ObterTotalAlunosUeRealizaramProvasSPAnterior(loteId, ueId, disciplinaId, anoEscolar);
+
+            Assert.Equal(0, resultado);
+        }
+
+        [Fact]
+        public async Task ObterNiveisProficienciaPorDisciplinaIdAsync_DeveRetornarNiveis_QuandoExistemDados()
+        {
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+            var mockData = new List<ObterNivelProficienciaDto>
+            {
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 2024, Descricao = "Nível 1", ValorReferencia = (int?)100.00M },
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 2024, Descricao = "Nível 2", ValorReferencia = (int?)200.00M },
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ObterNivelProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(mockData);
+
+            var resultados = await repositorio.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Equal(2, resultados.Count());
+            Assert.Equal("Nível 1", resultados.First().Descricao);
+        }
+
+        [Fact]
+        public async Task ObterNiveisProficienciaPorDisciplinaIdAsync_DeveRetornarVazio_QuandoNaoExistemDados()
+        {
+            var disciplinaId = 1;
+            var anoEscolar = 2024;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ObterNivelProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<ObterNivelProficienciaDto>());
+
+            var resultados = await repositorio.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Empty(resultados);
+        }
     }
 }
