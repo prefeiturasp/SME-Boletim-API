@@ -1076,47 +1076,48 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
         public async Task<int> ObterTotalAlunosUeRealizaramProvasSPAnterior(long loteId, int ueId, int disciplinaId, int anoEscolar)
         {
-            const string query = @"with ano_tai as (
+            const string query = @"with ano_base as (
                                     select
                                         extract(year
                                     from
-                                        p.fim) as ano_corrente
+                                        p2.fim) as ano_corrente,
+                                        extract(year
                                     from
-                                        prova p
-                                    inner join boletim_lote_prova blp on
-                                        blp.prova_id = p.id
+                                        p2.fim) - 1 as ano_anterior
+                                    from
+                                        prova p2
+                                    inner join boletim_lote_prova blp2 on
+                                        blp2.prova_id = p2.id
                                     where
-                                        blp.lote_id = @loteId
+                                        blp2.lote_id = @loteId
                                     limit 1
                                     )
                                     select
-                                        count(distinct app.aluno_ra) as TotalAlunos
+                                        count(distinct app.aluno_ra) 
                                     from
-                                        aluno_prova_sp_proficiencia app
-                                    inner join ano_tai at on
-                                        app.ano_letivo = at.ano_corrente - 1
-                                    where
-                                        app.disciplina_id = @disciplinaId
-                                        and app.ano_escolar = @anoEscolar
-                                        and app.aluno_ra in (
-                                        select
-                                            bpa.aluno_ra
-                                        from
-                                            boletim_prova_aluno bpa
-                                            inner join ue u on
+                                        boletim_prova_aluno bpa
+                                    inner join ue u on
                                         u.ue_id = bpa.ue_codigo
-                                       inner join prova p on
-                                            p.id = bpa.prova_id
-                                        where
-                                            u.id = @ueId
-                                            and bpa.disciplina_id = @disciplinaId
-                                            and bpa.ano_escolar = @anoEscolar
-                                            and p.exibir_no_boletim = true
-                                            and bpa.proficiencia is not null
-                                            and extract(year
-                                        from
-                                            p.fim) = at.ano_corrente
-                                      )";
+                                    inner join prova p on
+                                        p.id = bpa.prova_id
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = p.id
+                                    inner join ano_base ab on
+                                        true
+                                    inner join aluno_prova_sp_proficiencia app 
+                                        on
+                                        app.aluno_ra = bpa.aluno_ra
+                                        and app.disciplina_id = bpa.disciplina_id
+                                        and app.ano_letivo = ab.ano_anterior
+                                    where
+                                        u.id = @ueId
+                                        and bpa.disciplina_id = @disciplinaId
+                                        and bpa.ano_escolar = @anoEscolar
+                                        and p.exibir_no_boletim = true
+                                        and bpa.proficiencia is not null
+                                        and extract(year
+                                    from
+                                        p.fim) = ab.ano_corrente";
 
             using var conn = ObterConexaoLeitura();
             try
