@@ -573,5 +573,32 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.NotNull(resultado);
             Assert.Equal(dadosMock.Count, resultado.Count());
         }
+
+        [Fact]
+        public async Task ObterTurmasUeAno_DeveRetornarListaDeTurmasCorretamente()
+        {
+            var loteId = 1L;
+            var ueId = 100L;
+            var disciplinaId = 1;
+            var anoEscolar = 5;
+
+            var turmasMock = new List<TurmaAnoDto>
+            {
+                new TurmaAnoDto { Turma = "A", Ano = 5, Descricao = "5A"},
+                new TurmaAnoDto { Turma = "B", Ano = 5, Descricao = "5B" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<TurmaAnoDto>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(turmasMock);
+
+            var resultado = await repositorio.ObterTurmasUeAno(loteId, ueId, disciplinaId, anoEscolar);
+            Assert.NotNull(resultado);
+            Assert.Equal(2, resultado.Count());
+            Assert.Contains(resultado, t => t.Descricao == "5A" && t.Ano == 5 && t.Turma == "A");
+            Assert.Contains(resultado, t => t.Descricao == "5B" && t.Ano == 5 && t.Turma == "B");
+        }
     }
 }
