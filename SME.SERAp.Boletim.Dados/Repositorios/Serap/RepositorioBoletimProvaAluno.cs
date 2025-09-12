@@ -775,7 +775,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             try
             {
                 const string query = @"select
-	                                    bpa.ano_escolar,
+	                                    bpa.ano_escolar as ano,
 	                                    right(bpa.turma, 1) as turma,
 	                                    bpa.turma as descricao,
 	                                    bpa.disciplina 
