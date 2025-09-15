@@ -768,5 +768,43 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<TurmaAnoDto>> ObterTurmasUeAno(long loteId, long ueId, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    bpa.ano_escolar as ano,
+	                                    right(bpa.turma, 1) as turma,
+	                                    bpa.turma as descricao,
+	                                    bpa.disciplina 
+                                    from
+	                                    boletim_prova_aluno bpa
+                                    inner join ue u on
+	                                    u.ue_id = bpa.ue_codigo
+                                    inner join boletim_lote_prova blp on
+	                                    blp.prova_id = bpa.prova_id
+                                    where
+	                                    u.id = @ueId
+	                                    and blp.lote_id = @loteId
+	                                    and bpa.ano_escolar = @anoEscolar
+	                                    and bpa.disciplina_id = @disciplinaId
+                                    group by
+	                                    bpa.ano_escolar,
+	                                    right(bpa.turma, 1),
+	                                    bpa.turma,
+	                                    bpa.disciplina 
+                                    order by
+	                                    turma asc";
+
+                return await conn.QueryAsync<TurmaAnoDto>(query, new { loteId, ueId, disciplinaId, anoEscolar});
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
