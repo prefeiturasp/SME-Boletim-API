@@ -279,5 +279,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
 
             return Ok(resultado);
         }
+
+        [HttpGet("{loteId}/turmas-ue-ano/{ueId}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<TurmaAnoDto>), 200)]
+        public async Task<IActionResult> ObterTurmasUeAno(long loteId, long ueId, int disciplinaId, int anoEscolar,
+            [FromServices] IObterTurmasUeAnoUseCase obterTurmasUeAnoUseCase)
+        {
+            return Ok(await obterTurmasUeAnoUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar));
+        }
     }
 }
