@@ -75,6 +75,7 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterDownloadDreResultadoProbabilidadeUseCase, ObterDownloadDreResultadoProbabilidadeUseCase>();
             services.TryAddScoped<IObterProficienciaComparativoProvaSPUseCase, ObterProficienciaComparativoProvaSPUseCase>();
             services.TryAddScoped<IObterTurmasUeAnoUseCase, ObterTurmasUeAnoUseCase>();
+            services.TryAddScoped<IObterAnosAplicacaoPorDreUseCase, ObterAnosAplicacaoPorDreUseCase>();
         }
     }
 }

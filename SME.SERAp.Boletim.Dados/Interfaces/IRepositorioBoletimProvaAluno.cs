@@ -21,5 +21,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<UeNivelProficienciaDto>> ObterNiveisProficienciaUes(long dreId, int anoEscolar, long loteId);
         Task<IEnumerable<NivelProficienciaDto>> ObterNiveisProficienciaDisciplinas(int anoEscolar, long loteId);
         Task<IEnumerable<TurmaAnoDto>> ObterTurmasUeAno(long loteId, long ueId, int disciplinaId, int anoEscolar);
+        Task<IEnumerable<int>> ObterAnosAplicacaoPorDre(long dreId);
     }
 }
