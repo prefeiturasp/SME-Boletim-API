@@ -600,5 +600,25 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Contains(resultado, t => t.Descricao == "5A" && t.Ano == 5 && t.Turma == "A");
             Assert.Contains(resultado, t => t.Descricao == "5B" && t.Ano == 5 && t.Turma == "B");
         }
+
+        [Fact]
+        public async Task ObterAnosAplicacaoPorDre_DeveRetornarListaDeAnosCorretamente()
+        {
+            var dreId = 1;
+            var anosMock = new List<int> { 2024,2025 };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<int>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(anosMock);
+
+            var resultado = await repositorio.ObterAnosAplicacaoPorDre(dreId);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(anosMock.Count, resultado.Count());
+            Assert.Contains(2024, resultado);
+            Assert.Contains(2025, resultado);
+        }
     }
 }

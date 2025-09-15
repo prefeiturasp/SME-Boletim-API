@@ -288,5 +288,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterTurmasUeAnoUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar));
         }
+
+        [HttpGet("anos-aplicacao-dre/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public async Task<IActionResult> ObterAnosAplicacaoPorDre(long dreId, [FromServices] IObterAnosAplicacaoPorDreUseCase obterAnosAplicacaoPorDreUseCase)
+        {
+            return Ok(await obterAnosAplicacaoPorDreUseCase.Executar(dreId));
+        }
     }
 }
