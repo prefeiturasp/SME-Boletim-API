@@ -30,7 +30,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Retornar_Dados_Completos_Quando_Tudo_Existir()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 1, 10);
             var anoLetivo = 2024;
             var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
@@ -40,7 +40,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             };
             var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450 },
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450, NomeAplicacao = "PSP" },
             };
             var niveisProficiencia = new List<ObterNivelProficienciaDto>();
 
@@ -84,7 +84,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Retornar_Vazio_Quando_Nao_Houver_Proficiencia_No_Ano_Corrente()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null, null);
             var proficienciasAnoCorrente = new List<AlunoProficienciaDto>();
 
             repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
@@ -102,7 +102,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Filtrar_Por_Variacao_Positiva()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 1, null, null);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 1, null, null, null);
             var anoLetivo = 2024;
             var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
@@ -137,7 +137,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Filtrar_Por_Variacao_Negativa()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 2, null, null);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 2, null, null, null);
             var anoLetivo = 2024;
             var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
@@ -170,9 +170,42 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         }
 
         [Fact]
+        public async Task Handle_Deve_Filtrar_Aluno_Pelo_Nome()
+        {
+            var nomeAlunoFiltro = "Aluno Filtrado";
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, nomeAlunoFiltro, 1, 10);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno Filtrado", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Outro Aluno", Proficiencia = 600, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+                    var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450, NomeAplicacao = "PSP" },
+                new AlunoProficienciaDto { AlunoRa = 2, Proficiencia = 550, NomeAplicacao = "PSP" }
+            };
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(1);
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Nome.Should().Be(nomeAlunoFiltro);
+        }
+
+        [Fact]
         public async Task Handle_Deve_Paginacao_Corretamente()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 2, 2);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 2, 2);
             var anoLetivo = 2024;
             var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
@@ -206,7 +239,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Retornar_Aluno_Sem_Proficiencia_Anterior()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 1, 10);
             var anoLetivo = 2024;
             var profCorrente = new List<AlunoProficienciaDto>
             {
@@ -232,7 +265,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Agrupar_Proficiencias_Mesmo_Periodo()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 1, 10);
             var anoLetivo = 2024;
             var profCorrente = new List<AlunoProficienciaDto>
             {
@@ -261,7 +294,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Lidar_Com_NivelProficiencia_Nulo()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 1, 10);
             var anoLetivo = 2024;
             var profCorrente = new List<AlunoProficienciaDto>
             {
@@ -288,7 +321,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Ignorar_Alunos_Somente_Ano_Anterior()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, 1, 10);
             var anoLetivo = 2024;
             var profCorrente = new List<AlunoProficienciaDto>
             {
@@ -317,7 +350,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         [Fact]
         public async Task Handle_Deve_Lidar_Com_Parametros_Nulos()
         {
-            var query = new ObterProficienciaComparativoAlunoSpQuery(0, 0, 0, null, 0, null, null, null);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(0, 0, 0, null, 0, null, null, null, null);
             var profCorrente = new List<AlunoProficienciaDto>();
             var profAnterior = new List<AlunoProficienciaDto>();
             var niveis = new List<ObterNivelProficienciaDto>();

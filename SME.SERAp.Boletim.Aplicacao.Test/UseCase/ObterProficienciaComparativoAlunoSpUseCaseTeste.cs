@@ -35,6 +35,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             var turma = "Turma 1";
             var loteId = 5;
             var tipoVariacao = 1;
+            var nomeAluno = "Aluno Teste";
             var pagina = 1;
             var itensPorPagina = 10;
 
@@ -58,7 +59,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaComparativoAlunoSpQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(proficienciaComparativo);
 
-            var resultado = await useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, pagina, itensPorPagina);
+            var resultado = await useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina);
 
             Assert.NotNull(resultado);
             Assert.IsType<ProficienciaComparativoAlunoSpDto>(resultado);
@@ -74,6 +75,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             var turma = "Turma 1";
             var loteId = 5;
             var tipoVariacao = 1;
+            var nomeAluno = "Aluno Teste";
             var pagina = 1;
             var itensPorPagina = 10;
 
@@ -85,7 +87,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             mediatorMock.Setup(m => m.Send(It.IsAny<ObterUesAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(abrangenciasUsuarioLogado);
 
-            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, pagina, itensPorPagina));
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina));
             Assert.Equal("Usuário não possui abrangências para essa UE.", ex.Message);
 
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterProficienciaComparativoAlunoSpQuery>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -100,13 +102,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             var turma = "Turma 1";
             var loteId = 5;
             var tipoVariacao = 1;
+            var nomeAluno = "Aluno Teste";
             var pagina = 1;
             var itensPorPagina = 10;
 
             mediatorMock.Setup(m => m.Send(It.IsAny<ObterUesAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((IEnumerable<AbrangenciaUeDto>)null);
 
-            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, pagina, itensPorPagina));
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina));
             Assert.Equal("Usuário não possui abrangências para essa UE.", ex.Message);
 
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterProficienciaComparativoAlunoSpQuery>(), It.IsAny<CancellationToken>()), Times.Never);

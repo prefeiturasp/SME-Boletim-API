@@ -29,7 +29,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             var anoLetivoPSP = anoLetivoLote - 1;
 
             var proficienciasAnoCorrente = (await repositorioBoletimEscolar.ObterProficienciaAlunoProvaSaberesAsync(
-                request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.LoteId))?.ToList() ?? new List<AlunoProficienciaDto>();
+              request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.LoteId))?.ToList() ?? new List<AlunoProficienciaDto>();
 
             if (!proficienciasAnoCorrente.Any())
             {
@@ -46,7 +46,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             var alunosRa = proficienciasAnoCorrente.Select(x => x.AlunoRa).Distinct().ToList();
 
             var proficienciasAnoAnterior = (await repositorioBoletimEscolar.ObterProficienciaAlunoProvaSPAsync(
-                request.DisciplinaId, anoLetivoPSP, alunosRa))?.ToList() ?? new List<AlunoProficienciaDto>();
+              request.DisciplinaId, anoLetivoPSP, alunosRa))?.ToList() ?? new List<AlunoProficienciaDto>();
 
             var proficienciasAnteriorDict = proficienciasAnoAnterior.ToDictionary(p => p.AlunoRa);
 
@@ -67,20 +67,22 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                     var nivelProficienciaAnterior = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery(proficienciaAnterior.Proficiencia, request.DisciplinaId, niveisProficiencia));
                     proficiencias.Add(new ProficienciaDetalheDto
                     {
-                        Descricao = "PSP",
+                        Descricao = proficienciaAnterior.NomeAplicacao,
                         Mes = "",
                         Valor = proficienciaAnterior.Proficiencia,
                         NivelProficiencia = nivelProficienciaAnterior
                     });
                 }
 
-                proficiencias.AddRange(proficienciasPsa.Select(p => new ProficienciaDetalheDto
+                var proficienciasCorrenteDetalhes = await Task.WhenAll(proficienciasPsa.Select(async p => new ProficienciaDetalheDto
                 {
                     Descricao = p.NomeAplicacao,
                     Mes = p.Periodo,
                     Valor = p.Proficiencia,
-                    NivelProficiencia = mediator.Send(new ObterNivelProficienciaDisciplinaQuery(p.Proficiencia, request.DisciplinaId, niveisProficiencia)).Result
-                }).OrderBy(p => p.Mes));
+                    NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery(p.Proficiencia, request.DisciplinaId, niveisProficiencia))
+                }));
+
+                proficiencias.AddRange(proficienciasCorrenteDetalhes.OrderBy(p => p.Mes));
 
                 var variacao = 0.0;
                 if (proficienciaAnterior != null && proficienciasPsa.Any())
@@ -110,6 +112,11 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.NomeAluno))
+            {
+                itensFiltrados = itensFiltrados.Where(x => x.Nome.ToLower().Contains(request.NomeAluno.ToLower()));
+            }
+
             var itensOrdenados = itensFiltrados.OrderBy(x => x.Nome).ToList();
             var itensPaginados = new List<ProficienciaAlunoDto>();
 
@@ -124,10 +131,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             }
 
             var listaAplicacoes = proficienciasAnoCorrente
-                .Select(x => x.Periodo)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+              .Select(x => x.Periodo)
+              .Distinct()
+              .OrderBy(x => x)
+              .ToList();
 
             return new ProficienciaComparativoAlunoSpDto
             {

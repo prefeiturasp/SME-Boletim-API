@@ -9,6 +9,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterProficienciaComparativoAlunoSpUseCase
     {
-        Task<ProficienciaComparativoAlunoSpDto> Executar(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId, int? tipoVariacao, int? pagina, int? itensPorPagina);
+        Task<ProficienciaComparativoAlunoSpDto> Executar(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId, int? tipoVariacao, string? nomeAluno, int? pagina, int? itensPorPagina);
     }
 }
