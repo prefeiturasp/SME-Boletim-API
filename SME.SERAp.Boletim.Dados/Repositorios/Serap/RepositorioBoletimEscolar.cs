@@ -1157,5 +1157,118 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<int> ObterTotalAlunosComProficienciaAsync(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"
+                                select
+                                    count(distinct bpa.aluno_ra)
+                                from
+                                    boletim_prova_aluno bpa
+                                inner join prova p on p.id = bpa.prova_id
+                                inner join boletim_lote_prova blp on blp.prova_id = p.id
+                                inner join lote_prova lp on lp.id = blp.lote_id
+                                inner join ue u on u.ue_id = bpa.ue_codigo
+                                where
+                                    u.id = @ueId
+                                    and bpa.turma = @turma
+                                    and EXTRACT(YEAR FROM lp.data_criacao) = @anoCriacao
+                                    and bpa.disciplina_id = @disciplinaId
+                                    and bpa.ano_escolar = @anoEscolar
+                                    and p.exibir_no_boletim = true
+                                    and bpa.proficiencia is not null
+                ";
+
+
+                var resultado = await conn.QueryAsync<int>(query, new { ueId, disciplinaId, anoEscolar, turma, anoCriacao });
+                return resultado?.FirstOrDefault() ?? 0;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+                                            bpa.aluno_ra as AlunoRa,
+                                            a.nome as NomeAluno,
+                                            avg(bpa.proficiencia) as Proficiencia,
+                                            blp.lote_id as LoteId,
+                                            bpa.turma as Turma,
+                                            'PSA' as NomeAplicacao,
+                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as Periodo
+                                        from
+                                            boletim_prova_aluno bpa
+                                        inner join prova p on
+                                            p.id = bpa.prova_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = p.id
+                                        inner join lote_prova lp on
+                                            lp.id = blp.lote_id
+                                        inner join aluno a on
+                                            a.ra = bpa.aluno_ra
+                                        inner join ue u on u.ue_id = bpa.ue_codigo
+                                        where
+                                            u.id = @ueId
+                                            and bpa.turma = @turma
+                                            and EXTRACT(YEAR FROM lp.data_criacao) = @anoCriacao
+                                            and bpa.disciplina_id = @disciplinaId
+                                            and bpa.ano_escolar = @anoEscolar
+                                            and p.exibir_no_boletim = true
+                                            and bpa.proficiencia is not null
+                                        group by
+                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma
+                                        order by
+                                            a.nome;
+                                ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, turma, anoCriacao });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSPAsync(int disciplinaId, int anoLetivo, IEnumerable<long> alunosRa)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                    select
+                                        app.aluno_ra as AlunoRa,
+                                        a.nome as NomeAluno,
+                                        avg(app.proficiencia) as Proficiencia,
+                                        'PSP' as NomeAplicacao,
+                                        '' as Periodo
+                                    from
+                                        aluno_prova_sp_proficiencia app
+                                    inner join aluno a on a.ra = app.aluno_ra
+                                    where
+                                        app.disciplina_id = @disciplinaId
+                                        and app.ano_letivo = @anoLetivo
+                                        and app.aluno_ra = ANY(@alunosRa)
+                                        group by app.aluno_ra, a.nome
+                                    order by a.nome;
+                                ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { disciplinaId, anoLetivo, alunosRa });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }

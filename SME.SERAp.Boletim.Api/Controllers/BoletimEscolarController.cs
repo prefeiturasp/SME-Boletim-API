@@ -288,5 +288,16 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterTurmasUeAnoUseCase.Executar(loteId, ueId, disciplinaId, anoEscolar));
         }
+
+        [HttpGet("comparativo-aluno-ue/{ueId}/{disciplinaId}/{anoEscolar}/{turma}/{anoCriacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(ProficienciaComparativoAlunoSpDto), 200)]
+        public async Task<IActionResult> ObterProficienciaComparativoAlunoSp(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao,
+            [FromQuery] int pagina, [FromQuery] int itensPorPagina,
+            [FromServices] IObterProficienciaComparativoAlunoSpUseCase obterProficienciaComparativoAlunoSpUseCase)
+        {
+            var result = await obterProficienciaComparativoAlunoSpUseCase.Executar(ueId, disciplinaId, anoEscolar, turma, anoCriacao, pagina, itensPorPagina);
+            return Ok(result);
+        }
     }
 }
