@@ -296,5 +296,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterAnosAplicacaoPorDreUseCase.Executar(dreId));
         }
+
+        [HttpGet("componentes-curriculares-dre/{dreId}/{anoAplicacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterComponentesCurricularesPorDreAnoUseCase(long dreId, int anoAplicacao, [FromServices] IObterComponentesCurricularesPorDreAnoUseCase obterComponentesCurricularesPorDreAnoUseCase)
+        {
+            return Ok(await obterComponentesCurricularesPorDreAnoUseCase.Executar(dreId, anoAplicacao));
+        }
     }
 }
