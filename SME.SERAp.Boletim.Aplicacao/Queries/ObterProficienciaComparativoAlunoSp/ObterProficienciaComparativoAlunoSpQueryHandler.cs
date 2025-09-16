@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterAnoLoteProva;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -24,18 +25,19 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
 
         public async Task<ProficienciaComparativoAlunoSpDto> Handle(ObterProficienciaComparativoAlunoSpQuery request, CancellationToken cancellationToken)
         {
-            var anoLetivoPSP = request.AnoCriacao - 1;
+            var anoLetivoLote = await mediator.Send(new ObterAnoLoteProvaQuery(request.LoteId));
+            var anoLetivoPSP = anoLetivoLote - 1;
 
             var proficienciasAnoCorrente = (await repositorioBoletimEscolar.ObterProficienciaAlunoProvaSaberesAsync(
-                request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.AnoCriacao))?.ToList() ?? new List<AlunoProficienciaDto>();
+                request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.LoteId))?.ToList() ?? new List<AlunoProficienciaDto>();
 
             if (!proficienciasAnoCorrente.Any())
             {
                 return new ProficienciaComparativoAlunoSpDto
                 {
                     Total = 0,
-                    Pagina = request.Pagina,
-                    ItensPorPagina = request.ItensPorPagina,
+                    Pagina = request.Pagina.GetValueOrDefault(1),
+                    ItensPorPagina = request.ItensPorPagina.GetValueOrDefault(0),
                     Aplicacoes = new List<string>(),
                     Itens = new List<ProficienciaAlunoDto>()
                 };
@@ -49,9 +51,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             var proficienciasAnteriorDict = proficienciasAnoAnterior.ToDictionary(p => p.AlunoRa);
 
             var itensCompletos = new List<ProficienciaAlunoDto>();
-
             var proficienciasCorrenteAgrupadas = proficienciasAnoCorrente.GroupBy(p => p.AlunoRa);
-
             var niveisProficiencia = await repositorioBoletimEscolar.ObterNiveisProficienciaPorDisciplinaIdAsync(request.DisciplinaId, request.AnoEscolar);
 
             foreach (var grupoAluno in proficienciasCorrenteAgrupadas)
@@ -67,7 +67,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                     var nivelProficienciaAnterior = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery(proficienciaAnterior.Proficiencia, request.DisciplinaId, niveisProficiencia));
                     proficiencias.Add(new ProficienciaDetalheDto
                     {
-                        Descricao = proficienciaAnterior.NomeAplicacao,
+                        Descricao = "PSP",
                         Mes = "",
                         Valor = proficienciaAnterior.Proficiencia,
                         NivelProficiencia = nivelProficienciaAnterior
@@ -97,9 +97,31 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                 });
             }
 
-            var itensOrdenados = itensCompletos.OrderBy(x => x.Nome).ToList();
-            var skip = (request.Pagina - 1) * request.ItensPorPagina;
-            var itensPaginados = itensOrdenados.Skip(skip).Take(request.ItensPorPagina).ToList();
+            var itensFiltrados = itensCompletos.AsEnumerable();
+            if (request.TipoVariacao.HasValue)
+            {
+                if (request.TipoVariacao.Value == 1)
+                {
+                    itensFiltrados = itensFiltrados.Where(x => x.Variacao > 0);
+                }
+                else if (request.TipoVariacao.Value == 2)
+                {
+                    itensFiltrados = itensFiltrados.Where(x => x.Variacao < 0);
+                }
+            }
+
+            var itensOrdenados = itensFiltrados.OrderBy(x => x.Nome).ToList();
+            var itensPaginados = new List<ProficienciaAlunoDto>();
+
+            if (request.Pagina.HasValue && request.ItensPorPagina.HasValue)
+            {
+                var skip = (request.Pagina.Value - 1) * request.ItensPorPagina.Value;
+                itensPaginados = itensOrdenados.Skip(skip).Take(request.ItensPorPagina.Value).ToList();
+            }
+            else
+            {
+                itensPaginados = itensOrdenados;
+            }
 
             var listaAplicacoes = proficienciasAnoCorrente
                 .Select(x => x.Periodo)
@@ -110,8 +132,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             return new ProficienciaComparativoAlunoSpDto
             {
                 Total = itensOrdenados.Count,
-                Pagina = request.Pagina,
-                ItensPorPagina = request.ItensPorPagina,
+                Pagina = request.Pagina.GetValueOrDefault(1),
+                ItensPorPagina = request.ItensPorPagina.GetValueOrDefault(itensOrdenados.Count),
                 Aplicacoes = listaAplicacoes,
                 Itens = itensPaginados
             };

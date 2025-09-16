@@ -10,13 +10,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
 {
     public class ObterProficienciaComparativoAlunoSpQuery : IRequest<ProficienciaComparativoAlunoSpDto>
     {
-        public ObterProficienciaComparativoAlunoSpQuery(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao, int pagina, int itensPorPagina)
+        public ObterProficienciaComparativoAlunoSpQuery(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId, int? tipoVariacao, int? pagina, int? itensPorPagina)
         {
             UeId = ueId;
             DisciplinaId = disciplinaId;
             AnoEscolar = anoEscolar;
             Turma = turma;
-            AnoCriacao = anoCriacao;
+            LoteId = loteId;
+            TipoVariacao = tipoVariacao;
             Pagina = pagina;
             ItensPorPagina = itensPorPagina;
         }
@@ -25,8 +26,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
         public int DisciplinaId { get; set; }
         public int AnoEscolar { get; set; }
         public string Turma { get; set; }
-        public int AnoCriacao { get; set; }
-        public int Pagina { get; set; }
-        public int ItensPorPagina { get; set; }
+        public long LoteId { get; set; }
+        public int? TipoVariacao { get; set; }
+        public int? Pagina { get; set; }
+        public int? ItensPorPagina { get; set; }
     }
 }

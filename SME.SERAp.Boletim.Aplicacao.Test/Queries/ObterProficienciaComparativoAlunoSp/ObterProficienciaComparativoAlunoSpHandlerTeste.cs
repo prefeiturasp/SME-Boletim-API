@@ -1,5 +1,8 @@
-﻿using MediatR;
+﻿using FluentAssertions;
+using MediatR;
 using Moq;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterAnoLoteProva;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoSp;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -8,247 +11,326 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using FluentAssertions;
 
 namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoAlunoSp
 {
     public class ObterProficienciaComparativoAlunoSpHandlerTeste
     {
-        private readonly Mock<IRepositorioBoletimEscolar> repositorioBoletimEscolar;
-        private readonly Mock<IMediator> mediator;
+        private readonly Mock<IRepositorioBoletimEscolar> repositorioBoletimEscolarMock;
+        private readonly Mock<IMediator> mediatorMock;
         private readonly ObterProficienciaComparativoAlunoSpHandler handler;
 
         public ObterProficienciaComparativoAlunoSpHandlerTeste()
         {
-            repositorioBoletimEscolar = new Mock<IRepositorioBoletimEscolar>();
-            mediator = new Mock<IMediator>();
-            handler = new ObterProficienciaComparativoAlunoSpHandler(repositorioBoletimEscolar.Object, mediator.Object);
+            repositorioBoletimEscolarMock = new Mock<IRepositorioBoletimEscolar>();
+            mediatorMock = new Mock<IMediator>();
+            handler = new ObterProficienciaComparativoAlunoSpHandler(repositorioBoletimEscolarMock.Object, mediatorMock.Object);
         }
 
-        private ObterProficienciaComparativoAlunoSpQuery ObterQuery()
+        [Fact]
+        public async Task Handle_Deve_Retornar_Dados_Completos_Quando_Tudo_Existir()
         {
-            return new ObterProficienciaComparativoAlunoSpQuery(
-                ueId: 1,
-                disciplinaId: 10,
-                anoEscolar: 8,
-                turma: "8A",
-                anoCriacao: 2025,
-                pagina: 1,
-                itensPorPagina: 10
-            );
-        }
-
-        private IEnumerable<AlunoProficienciaDto> ObterProficienciasAnoCorrente()
-        {
-            return new List<AlunoProficienciaDto>
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 250, Periodo = "Abril", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 101, NomeAluno = "Maria", Proficiencia = 300, Periodo = "Abril", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 102, NomeAluno = "Pedro", Proficiencia = 280, Periodo = "Abril", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 275, Periodo = "Junho", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 103, NomeAluno = "Ana", Proficiencia = 320, Periodo = "Abril", NomeAplicacao = "P. Saberes" },
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 550, Periodo = "2 Bim", NomeAplicacao = "2 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno C", Proficiencia = 600, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
             };
-        }
-
-        private IEnumerable<AlunoProficienciaDto> ObterProficienciasAnoAnterior()
-        {
-            return new List<AlunoProficienciaDto>
+            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 240, NomeAplicacao = "PSP" },
-                new AlunoProficienciaDto { AlunoRa = 101, NomeAluno = "Maria", Proficiencia = 290, NomeAplicacao = "PSP" },
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450 },
             };
-        }
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
 
-        [Fact(DisplayName = "Deve retornar dados paginados e ordenados quando todos os dados estão presentes")]
-        public async Task Deve_Retornar_Dados_Completos_E_Paginados()
-        {
-            var query = ObterQuery();
-            var proficienciasCorrente = ObterProficienciasAnoCorrente().ToList();
-            var proficienciasAnterior = ObterProficienciasAnoAnterior().ToList();
-            var anoLetivoPSP = query.AnoCriacao - 1;
-            var alunosRa = proficienciasCorrente.Select(x => x.AlunoRa).Distinct().ToList();
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
 
-            repositorioBoletimEscolar
-                .Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
-
-            repositorioBoletimEscolar
-                .Setup(r => r.ObterProficienciaAlunoProvaSPAsync(query.DisciplinaId, anoLetivoPSP, It.Is<List<long>>(list => list.All(alunosRa.Contains) && list.Count == alunosRa.Count)))
-                .ReturnsAsync(proficienciasAnterior);
+            mediatorMock.Setup(m => m.Send(It.Is<ObterNivelProficienciaDisciplinaQuery>(q => q.Media == 450), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel 1");
+            mediatorMock.Setup(m => m.Send(It.Is<ObterNivelProficienciaDisciplinaQuery>(q => q.Media == 500), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel 2");
+            mediatorMock.Setup(m => m.Send(It.Is<ObterNivelProficienciaDisciplinaQuery>(q => q.Media == 550), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel 3");
+            mediatorMock.Setup(m => m.Send(It.Is<ObterNivelProficienciaDisciplinaQuery>(q => q.Media == 600), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel 4");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            Assert.NotNull(resultado);
-            Assert.Equal(proficienciasCorrente.Select(x => x.AlunoRa).Distinct().Count(), resultado.Total);
-            Assert.Equal(query.Pagina, resultado.Pagina);
-            Assert.Equal(query.ItensPorPagina, resultado.ItensPorPagina);
-            Assert.Equal(4, resultado.Itens.Count());
-            Assert.Equal("Ana", resultado.Itens.First().Nome);
-            Assert.Equal("Pedro", resultado.Itens.Last().Nome);
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(2);
+            resultado.Pagina.Should().Be(1);
+            resultado.ItensPorPagina.Should().Be(10);
+            resultado.Aplicacoes.Should().HaveCount(2).And.Contain("1 Bim", "2 Bim");
+            resultado.Itens.Should().HaveCount(2);
 
-            var joao = resultado.Itens.First(i => i.Nome == "João");
-            Assert.Equal(3, joao.Proficiencias.Count());
-            Assert.Equal("PSP", joao.Proficiencias.First().Descricao);
-            Assert.Equal(240, joao.Proficiencias.First().Valor);
-            Assert.Equal(35, joao.Variacao);
+            var alunoB = resultado.Itens.FirstOrDefault(x => x.Nome == "Aluno B");
+            alunoB.Should().NotBeNull();
+            alunoB.Variacao.Should().Be(100.0);
+            alunoB.Proficiencias.Should().HaveCount(3);
+            alunoB.Proficiencias.ElementAt(0).Descricao.Should().Be("PSP");
+            alunoB.Proficiencias.ElementAt(0).Valor.Should().Be(450);
+            alunoB.Proficiencias.ElementAt(1).Descricao.Should().Be("1 Bim");
+            alunoB.Proficiencias.ElementAt(1).Valor.Should().Be(500);
+            alunoB.Proficiencias.ElementAt(2).Descricao.Should().Be("2 Bim");
+            alunoB.Proficiencias.ElementAt(2).Valor.Should().Be(550);
 
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSaberesAsync(query.UeId, query.DisciplinaId, query.AnoEscolar, query.Turma, query.AnoCriacao), Times.Once);
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSPAsync(query.DisciplinaId, anoLetivoPSP, It.IsAny<List<long>>()), Times.Once);
+            var alunoC = resultado.Itens.FirstOrDefault(x => x.Nome == "Aluno C");
+            alunoC.Should().NotBeNull();
+            alunoC.Variacao.Should().Be(0.0);
+            alunoC.Proficiencias.Should().HaveCount(1);
+            alunoC.Proficiencias.First().Valor.Should().Be(600);
         }
 
-        [Fact(DisplayName = "Deve retornar lista vazia quando nenhuma proficiência é encontrada")]
-        public async Task Deve_Retornar_Lista_Vazia_Quando_Nenhum_Dado_E_Encontrado()
+        [Fact]
+        public async Task Handle_Deve_Retornar_Vazio_Quando_Nao_Houver_Proficiencia_No_Ano_Corrente()
         {
-            var query = ObterQuery();
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(new List<AlunoProficienciaDto>());
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null);
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>();
+
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            Assert.NotNull(resultado);
-            Assert.Empty(resultado.Itens);
-            Assert.Empty(resultado.Aplicacoes);
-            Assert.Equal(0, resultado.Total);
-
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()), Times.Never);
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(0);
+            resultado.Pagina.Should().Be(1);
+            resultado.ItensPorPagina.Should().Be(0);
+            resultado.Aplicacoes.Should().BeEmpty();
+            resultado.Itens.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Deve retornar dados com proficiência anterior nula se não existir")]
-        public async Task Deve_Retornar_Dados_Com_Proficiencia_Anterior_Nula()
+        [Fact]
+        public async Task Handle_Deve_Filtrar_Por_Variacao_Positiva()
         {
-            var query = ObterQuery();
-            var proficienciasCorrente = ObterProficienciasAnoCorrente().ToList();
-            var proficienciasAnterior = new List<AlunoProficienciaDto>();
-
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
-
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()))
-                .ReturnsAsync(proficienciasAnterior);
-
-            var resultado = await handler.Handle(query, CancellationToken.None);
-
-            Assert.NotNull(resultado);
-            Assert.Equal(4, resultado.Itens.Count());
-            Assert.Equal("Ana", resultado.Itens.First().Nome);
-            Assert.Equal(0, resultado.Itens.First(i => i.Nome == "Ana").Proficiencias.Count(p => p.Descricao == "PSP"));
-            Assert.Equal(0, resultado.Itens.First(i => i.Nome == "Ana").Variacao);
-        }
-
-        [Fact(DisplayName = "Deve calcular a variação corretamente com a última proficiência do ano corrente")]
-        public async Task Deve_Calcular_Variacao_Com_Ultima_Proficiencia()
-        {
-            var query = ObterQuery();
-            var proficienciasCorrente = new List<AlunoProficienciaDto>
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 1, null, null);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 250, Periodo = "Abril", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 275.50m, Periodo = "Junho", NomeAplicacao = "P. Saberes" }
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno Positivo", Proficiencia = 600, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno Negativo", Proficiencia = 400, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno Sem Variacao", Proficiencia = 500, Periodo = "1 Bim" },
             };
-            var proficienciasAnterior = new List<AlunoProficienciaDto>
+            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 240.25m }
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 2, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 3, Proficiencia = 500 },
             };
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
 
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
 
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()))
-                .ReturnsAsync(proficienciasAnterior);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            var joao = resultado.Itens.First();
-
-            Assert.Equal(3, joao.Proficiencias.Count());
-            Assert.Equal((double)(275.50m - 240.25m), joao.Variacao);
-            Assert.Equal((double)35.25m, joao.Variacao);
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(1);
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Nome.Should().Be("Aluno Positivo");
+            resultado.Itens.First().Variacao.Should().Be(100.0);
         }
 
-        [Fact(DisplayName = "Deve ordenar a lista de proficiências por período dentro de cada aluno")]
-        public async Task Deve_Ordenar_Proficiencias_Por_Periodo()
+        [Fact]
+        public async Task Handle_Deve_Filtrar_Por_Variacao_Negativa()
         {
-            var query = ObterQuery();
-            var proficienciasCorrente = new List<AlunoProficienciaDto>
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 2, null, null);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 275, Periodo = "Junho", NomeAplicacao = "P. Saberes" },
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 250, Periodo = "Abril", NomeAplicacao = "P. Saberes" }
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno Positivo", Proficiencia = 600, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno Negativo", Proficiencia = 400, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno Sem Variacao", Proficiencia = 500, Periodo = "1 Bim" },
             };
-            var proficienciasAnterior = ObterProficienciasAnoAnterior().ToList();
+            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 2, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 3, Proficiencia = 500 },
+            };
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
 
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
 
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()))
-                .ReturnsAsync(proficienciasAnterior);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            var joao = resultado.Itens.First();
-            var proficienciasJoao = joao.Proficiencias.ToList();
-            Assert.Equal("PSP", proficienciasJoao[0].Descricao);
-            Assert.Equal("Abril", proficienciasJoao[1].Mes);
-            Assert.Equal("Junho", proficienciasJoao[2].Mes);
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(1);
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Nome.Should().Be("Aluno Negativo");
+            resultado.Itens.First().Variacao.Should().Be(-100.0);
         }
 
-        [Fact(DisplayName = "Deve lidar com dados de repositório nulo sem lançar exceção")]
-        public async Task Deve_Lidar_Com_Dados_Nulos_Sem_Lancar_Excecao()
+        [Fact]
+        public async Task Handle_Deve_Paginacao_Corretamente()
         {
-            var query = ObterQuery();
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync((IEnumerable<AlunoProficienciaDto>)null);
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 2, 2);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 500, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Proficiencia = 500, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno C", Proficiencia = 500, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 4, NomeAluno = "Aluno D", Proficiencia = 500, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 5, NomeAluno = "Aluno E", Proficiencia = 500, Periodo = "1 Bim" },
+            };
+            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>();
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            Assert.NotNull(resultado);
-            Assert.Empty(resultado.Itens);
-            Assert.Empty(resultado.Aplicacoes);
-            Assert.Equal(0, resultado.Total);
-
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
-            repositorioBoletimEscolar.Verify(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()), Times.Never);
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(5);
+            resultado.Pagina.Should().Be(2);
+            resultado.ItensPorPagina.Should().Be(2);
+            resultado.Itens.Should().HaveCount(2);
+            resultado.Itens.First().Nome.Should().Be("Aluno C");
+            resultado.Itens.Last().Nome.Should().Be("Aluno D");
         }
 
-        [Fact(DisplayName = "Deve retornar proficiências ordenadas por nome do aluno")]
-        public async Task Deve_Retornar_Proficiencias_Ordenadas_Por_Nome_Aluno()
+        [Fact]
+        public async Task Handle_Deve_Retornar_Aluno_Sem_Proficiencia_Anterior()
         {
-            var query = ObterQuery();
-            var proficienciasCorrente = ObterProficienciasAnoCorrente().ToList();
-            var proficienciasAnterior = ObterProficienciasAnoAnterior().ToList();
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var anoLetivo = 2024;
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno Sem PSP", Proficiencia = 700, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+            var profAnterior = new List<AlunoProficienciaDto>();
+            var niveis = new List<ObterNivelProficienciaDto>();
 
-            repositorioBoletimEscolar
-                .Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
-
-            repositorioBoletimEscolar
-                .Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()))
-                .ReturnsAsync(proficienciasAnterior);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(profCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(profAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveis);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            var nomesOrdenados = proficienciasCorrente.Select(p => p.NomeAluno).Distinct().OrderBy(n => n).ToList();
-            var nomesResultado = resultado.Itens.Select(i => i.Nome).ToList();
-
-            nomesResultado.Should().BeEquivalentTo(nomesOrdenados, opts => opts.WithStrictOrdering());
+            resultado.Should().NotBeNull();
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Proficiencias.Should().HaveCount(1);
+            resultado.Itens.First().Proficiencias.First().Descricao.Should().Be("1 Bim");
         }
 
-        [Fact(DisplayName = "Deve mapear a lista de aplicações corretamente")]
-        public async Task Deve_Mapear_Lista_De_Aplicacoes_Corretamente()
+        [Fact]
+        public async Task Handle_Deve_Agrupar_Proficiencias_Mesmo_Periodo()
         {
-            var query = ObterQuery();
-            var proficienciasCorrente = ObterProficienciasAnoCorrente().ToList();
-            var proficienciasAnterior = ObterProficienciasAnoAnterior().ToList();
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var anoLetivo = 2024;
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 520, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+            var profAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450 }
+            };
+            var niveis = new List<ObterNivelProficienciaDto>();
 
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(proficienciasCorrente);
-
-            repositorioBoletimEscolar.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<long>>()))
-                .ReturnsAsync(proficienciasAnterior);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(profCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(profAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveis);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            var aplicacoesEsperadas = new List<string> { "Abril", "Junho" };
-            Assert.Equal(aplicacoesEsperadas, resultado.Aplicacoes);
+            resultado.Should().NotBeNull();
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Proficiencias.Should().HaveCount(3);
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Lidar_Com_NivelProficiencia_Nulo()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var anoLetivo = 2024;
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+            var profAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450 }
+            };
+            var niveis = new List<ObterNivelProficienciaDto>();
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(profCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(profAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveis);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync((string)null);
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            resultado.Should().NotBeNull();
+            resultado.Itens.First().Proficiencias.All(p => p.NivelProficiencia == null).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Ignorar_Alunos_Somente_Ano_Anterior()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, 1, 10);
+            var anoLetivo = 2024;
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno B", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+            var profAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 450 },
+                new AlunoProficienciaDto { AlunoRa = 2, Proficiencia = 400 }
+            };
+            var niveis = new List<ObterNivelProficienciaDto>();
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(profCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(profAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveis);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            resultado.Should().NotBeNull();
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Nome.Should().Be("Aluno B");
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Lidar_Com_Parametros_Nulos()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(0, 0, 0, null, 0, null, null, null);
+            var profCorrente = new List<AlunoProficienciaDto>();
+            var profAnterior = new List<AlunoProficienciaDto>();
+            var niveis = new List<ObterNivelProficienciaDto>();
+
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(profCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(profAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveis);
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(0);
+            resultado.Itens.Should().BeEmpty();
         }
     }
 }

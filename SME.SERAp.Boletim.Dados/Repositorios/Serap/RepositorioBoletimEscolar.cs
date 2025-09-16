@@ -24,7 +24,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
             try
             {
-
                 var query = new StringBuilder(@"select
 	                                                be.id,
 	                                                be.ue_id,
@@ -1193,7 +1192,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao)
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -1221,7 +1220,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         where
                                             u.id = @ueId
                                             and bpa.turma = @turma
-                                            and EXTRACT(YEAR FROM lp.data_criacao) = @anoCriacao
+                                            and EXTRACT(YEAR FROM lp.data_criacao) = (
+                                                select EXTRACT(YEAR FROM data_criacao)
+                                                from lote_prova
+                                                where id = @loteId
+                                            )
                                             and bpa.disciplina_id = @disciplinaId
                                             and bpa.ano_escolar = @anoEscolar
                                             and p.exibir_no_boletim = true
@@ -1230,8 +1233,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma
                                         order by
                                             a.nome;
-                                ";
-                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, turma, anoCriacao });
+                                    ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, turma, loteId });
             }
             finally
             {
@@ -1263,6 +1266,25 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     order by a.nome;
                                 ";
                 return await conn.QueryAsync<AlunoProficienciaDto>(query, new { disciplinaId, anoLetivo, alunosRa });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterAnoPorLoteIdAsync(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                    SELECT EXTRACT(YEAR FROM data_criacao)
+                    FROM lote_prova
+                    WHERE id = @loteId;
+                ";
+                return await conn.QuerySingleOrDefaultAsync<int>(query, new { loteId });
             }
             finally
             {
