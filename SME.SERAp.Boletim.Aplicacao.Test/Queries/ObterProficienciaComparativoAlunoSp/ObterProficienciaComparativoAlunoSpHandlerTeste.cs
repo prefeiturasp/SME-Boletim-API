@@ -54,8 +54,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         {
             return new List<AlunoProficienciaDto>
             {
-                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 240 },
-                new AlunoProficienciaDto { AlunoRa = 101, NomeAluno = "Maria", Proficiencia = 290 },
+                new AlunoProficienciaDto { AlunoRa = 100, NomeAluno = "João", Proficiencia = 240, NomeAplicacao = "PSP" },
+                new AlunoProficienciaDto { AlunoRa = 101, NomeAluno = "Maria", Proficiencia = 290, NomeAplicacao = "PSP" },
             };
         }
 
