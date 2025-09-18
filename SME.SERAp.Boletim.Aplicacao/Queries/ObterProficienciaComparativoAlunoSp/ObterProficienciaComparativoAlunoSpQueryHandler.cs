@@ -110,6 +110,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                 {
                     itensFiltrados = itensFiltrados.Where(x => x.Variacao < 0);
                 }
+                else if (request.TipoVariacao.Value == 3)
+                {
+                    itensFiltrados = itensFiltrados.Where(x => x.Variacao == 0);
+                }
             }
 
             if (!string.IsNullOrEmpty(request.NomeAluno))

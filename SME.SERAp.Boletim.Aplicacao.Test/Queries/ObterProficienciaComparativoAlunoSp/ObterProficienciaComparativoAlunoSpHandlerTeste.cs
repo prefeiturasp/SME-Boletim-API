@@ -100,7 +100,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         }
 
         [Fact]
-        public async Task Handle_Deve_Filtrar_Por_Variacao_Positiva()
+        public async Task Handle_Deve_Filtrar_Dados_Por_Variacao_Positiva()
         {
             var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 1, null, null, null);
             var anoLetivo = 2024;
@@ -135,7 +135,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         }
 
         [Fact]
-        public async Task Handle_Deve_Filtrar_Por_Variacao_Negativa()
+        public async Task Handle_Deve_Filtrar_Dados_Por_Variacao_Negativa()
         {
             var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 2, null, null, null);
             var anoLetivo = 2024;
@@ -167,6 +167,41 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             resultado.Itens.Should().HaveCount(1);
             resultado.Itens.First().Nome.Should().Be("Aluno Negativo");
             resultado.Itens.First().Variacao.Should().Be(-100.0);
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Filtrar_Dados_Sem_Variacao()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, 3, null, null, null);
+            var anoLetivo = 2024;
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno Positivo", Proficiencia = 600, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno Negativo", Proficiencia = 400, Periodo = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno Sem Variacao", Proficiencia = 500, Periodo = "1 Bim" },
+            };
+            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 2, Proficiencia = 500 },
+                new AlunoProficienciaDto { AlunoRa = 3, Proficiencia = 500 },
+            };
+            var niveisProficiencia = new List<ObterNivelProficienciaDto>();
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterAnoLoteProvaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(anoLetivo);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSaberesAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>())).ReturnsAsync(proficienciasAnoCorrente);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterProficienciaAlunoProvaSPAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IEnumerable<long>>())).ReturnsAsync(proficienciasAnoAnterior);
+            repositorioBoletimEscolarMock.Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(niveisProficiencia);
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync("Nivel X");
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            resultado.Should().NotBeNull();
+            resultado.Total.Should().Be(1);
+            resultado.Itens.Should().HaveCount(1);
+            resultado.Itens.First().Nome.Should().Be("Aluno Sem Variacao");
+            resultado.Itens.First().Variacao.Should().Be(0.0);
         }
 
         [Fact]
