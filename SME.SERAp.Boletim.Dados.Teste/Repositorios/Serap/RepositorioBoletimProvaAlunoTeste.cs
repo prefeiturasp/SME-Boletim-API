@@ -600,5 +600,74 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Contains(resultado, t => t.Descricao == "5A" && t.Ano == 5 && t.Turma == "A");
             Assert.Contains(resultado, t => t.Descricao == "5B" && t.Ano == 5 && t.Turma == "B");
         }
+
+        [Fact]
+        public async Task ObterAnosAplicacaoPorDre_DeveRetornarListaDeAnosCorretamente()
+        {
+            var dreId = 1;
+            var anosMock = new List<int> { 2024,2025 };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<int>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(anosMock);
+
+            var resultado = await repositorio.ObterAnosAplicacaoPorDre(dreId);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(anosMock.Count, resultado.Count());
+            Assert.Contains(2024, resultado);
+            Assert.Contains(2025, resultado);
+        }
+
+        [Fact]
+        public async Task ObterComponentesCurricularesPorDreAno_DeveRetornarListaDeComponentesCorretamente()
+        {
+            var dreId = 1;
+            var anoEscolar = 5;
+            var componentesMock = new List<OpcaoFiltroDto<int>>
+            {
+                new OpcaoFiltroDto<int> { Valor = 4, Texto = "Matemática" },
+                new OpcaoFiltroDto<int> { Valor = 5, Texto = "Português" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<OpcaoFiltroDto<int>>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(componentesMock);
+
+            var resultado = await repositorio.ObterComponentesCurricularesPorDreAno(dreId, anoEscolar);
+            Assert.NotNull(resultado);
+            Assert.Equal(componentesMock.Count, resultado.Count());
+            Assert.Contains(resultado, c => c.Valor == 4 && c.Texto == "Matemática");
+            Assert.Contains(resultado, c => c.Valor == 5 && c.Texto == "Português");
+        }
+
+        [Fact]
+        public async Task ObterAnosEscolaresPorDreAnoAplicacao_DeveRetornarListaDeAnosCorretamente()
+        {
+            var dreId = 1;
+            var anoAplicacao = 2025;
+            var disciplinaId= 4;
+            var anosMock = new List<OpcaoFiltroDto<int>>
+            {
+                new OpcaoFiltroDto<int> { Valor = 5, Texto = "5" },
+                new OpcaoFiltroDto<int> { Valor = 6, Texto = "6" }
+            };
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<OpcaoFiltroDto<int>>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(anosMock);
+
+            var resultado = await repositorio.ObterAnosEscolaresPorDreAnoAplicacao(dreId, anoAplicacao, disciplinaId);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(anosMock.Count, resultado.Count());
+            Assert.Contains(resultado, a => a.Valor == 5 && a.Texto == "5");
+            Assert.Contains(resultado, a => a.Valor == 6 && a.Texto == "6");
+        }
     }
 }

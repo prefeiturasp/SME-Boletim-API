@@ -301,5 +301,29 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var result = await obterProficienciaComparativoAlunoSpUseCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina);
             return Ok(result);
         }
+
+        [HttpGet("anos-aplicacao-dre/{dreId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public async Task<IActionResult> ObterAnosAplicacaoPorDre(long dreId, [FromServices] IObterAnosAplicacaoPorDreUseCase obterAnosAplicacaoPorDreUseCase)
+        {
+            return Ok(await obterAnosAplicacaoPorDreUseCase.Executar(dreId));
+        }
+
+        [HttpGet("componentes-curriculares-dre/{dreId}/{anoAplicacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterComponentesCurricularesPorDreAnoUseCase(long dreId, int anoAplicacao, [FromServices] IObterComponentesCurricularesPorDreAnoUseCase obterComponentesCurricularesPorDreAnoUseCase)
+        {
+            return Ok(await obterComponentesCurricularesPorDreAnoUseCase.Executar(dreId, anoAplicacao));
+        }
+
+        [HttpGet("anos-escolares-dre/{dreId}/{anoAplicacao}/{disciplinaId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterAnosEscolaresPorDreAnoAplicacao(long dreId, int anoAplicacao, int disciplinaId, [FromServices] IObterAnosEscolaresPorDreAnoAplicacaoUseCase obterAnosEscolaresPorDreAnoAplicacaoUseCase)
+        {
+            return Ok(await obterAnosEscolaresPorDreAnoAplicacaoUseCase.Executar(dreId, anoAplicacao, disciplinaId));
+        }
     }
 }

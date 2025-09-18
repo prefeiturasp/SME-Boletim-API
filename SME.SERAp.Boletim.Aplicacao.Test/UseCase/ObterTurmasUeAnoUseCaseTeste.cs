@@ -7,7 +7,7 @@ using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
 
-namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
+namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 {
     public class ObterTurmasUeAnoUseCaseTeste
     {
