@@ -644,5 +644,30 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Contains(resultado, c => c.Valor == 4 && c.Texto == "Matemática");
             Assert.Contains(resultado, c => c.Valor == 5 && c.Texto == "Português");
         }
+
+        [Fact]
+        public async Task ObterAnosEscolaresPorDreAnoAplicacao_DeveRetornarListaDeAnosCorretamente()
+        {
+            var dreId = 1;
+            var anoAplicacao = 2025;
+            var disciplinaId= 4;
+            var anosMock = new List<OpcaoFiltroDto<int>>
+            {
+                new OpcaoFiltroDto<int> { Valor = 5, Texto = "5" },
+                new OpcaoFiltroDto<int> { Valor = 6, Texto = "6" }
+            };
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<OpcaoFiltroDto<int>>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(anosMock);
+
+            var resultado = await repositorio.ObterAnosEscolaresPorDreAnoAplicacao(dreId, anoAplicacao, disciplinaId);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(anosMock.Count, resultado.Count());
+            Assert.Contains(resultado, a => a.Valor == 5 && a.Texto == "5");
+            Assert.Contains(resultado, a => a.Valor == 6 && a.Texto == "6");
+        }
     }
 }

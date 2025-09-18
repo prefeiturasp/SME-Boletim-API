@@ -864,5 +864,39 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterAnosEscolaresPorDreAnoAplicacao(long dreId, int anoAplicacao, int disciplinaId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    distinct on (pao.ano)
+	                                    pao.ano::int as valor,
+	                                    pao.ano as texto
+                                    from
+                                        boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = bpa.prova_id
+                                    inner join prova p on
+                                        p.id = blp.prova_id
+                                    inner join ue u on
+                                        u.ue_id = bpa.ue_codigo
+                                    inner join prova_ano_original pao on
+	                                    pao.prova_id = p.id
+                                    where
+                                        u.dre_id = @dreId 
+                                        and extract(year from p.inicio) = @anoAplicacao
+                                        and bpa.disciplina_id = @disciplinaId
+                                    order by pao.ano";
+
+                return await conn.QueryAsync<OpcaoFiltroDto<int>>(query, new { dreId, anoAplicacao, disciplinaId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
