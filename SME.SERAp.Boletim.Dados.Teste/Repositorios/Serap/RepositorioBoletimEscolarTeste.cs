@@ -916,5 +916,126 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.NotNull(resultados);
             Assert.Empty(resultados);
         }
+
+        [Fact]
+        public async Task ObterTotalAlunosComProficienciaAsync_DeveRetornarTotal_QuandoExistemResultados()
+        {
+            var totalEsperado = 5;
+            var parameters = new { ueId = 1, disciplinaId = 1, anoEscolar = 8, turma = "8A", anoCriacao = 2025 };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int> { totalEsperado });
+
+            var total = await repositorio.ObterTotalAlunosComProficienciaAsync(parameters.ueId, parameters.disciplinaId, parameters.anoEscolar, parameters.turma, parameters.anoCriacao);
+
+            Assert.Equal(totalEsperado, total);
+        }
+
+        [Fact]
+        public async Task ObterTotalAlunosComProficienciaAsync_DeveRetornarZero_QuandoNaoHaResultados()
+        {
+            var totalEsperado = 0;
+            var parameters = new { ueId = 1, disciplinaId = 1, anoEscolar = 8, turma = "8A", anoCriacao = 2025 };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<int>());
+
+            var total = await repositorio.ObterTotalAlunosComProficienciaAsync(parameters.ueId, parameters.disciplinaId, parameters.anoEscolar, parameters.turma, parameters.anoCriacao);
+
+            Assert.Equal(totalEsperado, total);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSaberesAsync_DeveRetornarProficiencias_QuandoExistemResultados()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 200, Periodo = "Abril" },
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 210, Periodo = "Junho" }
+            };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var proficiencias = await repositorio.ObterProficienciaAlunoProvaSaberesAsync(1, 1, 8, "8A", 2025);
+
+            Assert.NotNull(proficiencias);
+            Assert.Equal(2, proficiencias.Count());
+            Assert.Equal("Aluno A", proficiencias.First().NomeAluno);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSaberesAsync_DeveRetornarListaVazia_QuandoNaoHaResultados()
+        {
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<AlunoProficienciaDto>());
+
+            var proficiencias = await repositorio.ObterProficienciaAlunoProvaSaberesAsync(1, 1, 8, "8A", 2025);
+
+            Assert.Empty(proficiencias);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSPAsync_DeveRetornarProficiencias_QuandoExistemResultados()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 180, Periodo = "" }
+            };
+            var alunosRa = new List<long> { 1, 2, 3 };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var proficiencias = await repositorio.ObterProficienciaAlunoProvaSPAsync(1, 2024, alunosRa);
+
+            Assert.NotNull(proficiencias);
+            Assert.Single(proficiencias);
+            Assert.Equal("Aluno A", proficiencias.First().NomeAluno);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSPAsync_DeveRetornarListaVazia_QuandoNaoHaResultados()
+        {
+            var alunosRa = new List<long> { 1, 2, 3 };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<AlunoProficienciaDto>());
+
+            var proficiencias = await repositorio.ObterProficienciaAlunoProvaSPAsync(1, 2024, alunosRa);
+
+            Assert.Empty(proficiencias);
+        }
     }
 }
