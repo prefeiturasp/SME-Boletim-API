@@ -21,7 +21,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.mediator = mediator;
         }
 
-        public async Task<ProficienciaComparativoAlunoSpDto> Executar(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId, int? tipoVariacao, string? nomeAluno, int? pagina, int? itensPorPagina)
+        public async Task<ProficienciaComparativoAlunoSpDto> Executar(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId, List<int>? tiposVariacao, string? nomeAluno, int? pagina, int? itensPorPagina)
         {
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
@@ -29,7 +29,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
 
-            return await mediator.Send(new ObterProficienciaComparativoAlunoSpQuery(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina));
+            return await mediator.Send(new ObterProficienciaComparativoAlunoSpQuery(ueId, disciplinaId, anoEscolar, turma, loteId, tiposVariacao, nomeAluno, pagina, itensPorPagina));
         }
     }
 }
