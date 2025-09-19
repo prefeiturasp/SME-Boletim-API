@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SME.SERAp.Boletim.Infra.Extensions
 {
-    public static class UeExtensions
+    public static class BoletimExtensions
     {
         public static string ObterUeDescricao(this string ueNome, TipoEscola tipoEscola, string dreNome, string dreAbreviacao)
         {
@@ -27,6 +27,17 @@ namespace SME.SERAp.Boletim.Infra.Extensions
 
             var atributoTipoEscola = tipoEscola.GetAttribute<DisplayAttribute>();
             return atributoTipoEscola?.ShortName ?? string.Empty;
+        }
+
+        public static double CalcularPercentual(this decimal valorFinal, decimal valorInicial)
+        {
+            if (valorInicial == 0)
+            {
+                return 0.0;
+            }
+
+            var variacao = ((valorFinal - valorInicial) / valorInicial) * 100;
+            return (double)Math.Round(variacao, 2);
         }
     }
 }
