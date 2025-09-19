@@ -325,5 +325,14 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterAnosEscolaresPorDreAnoAplicacaoUseCase.Executar(dreId, anoAplicacao, disciplinaId));
         }
+
+        [HttpGet("ues-comparacao-por-dre/{dreId}/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(IEnumerable<UePorDreDto>), 200)]
+        public async Task<IActionResult> ObterUesComparacaoPorDre(long dreId, int anoAplicacao, int disciplinaId, int anoEscolar,
+            [FromServices] IObterUesComparacaoPorDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }
