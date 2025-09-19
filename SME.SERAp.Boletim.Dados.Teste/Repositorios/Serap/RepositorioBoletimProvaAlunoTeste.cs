@@ -3,6 +3,7 @@ using Moq;
 using Moq.Dapper;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Dados.Repositorios.Serap;
+using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
@@ -668,6 +669,33 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Equal(anosMock.Count, resultado.Count());
             Assert.Contains(resultado, a => a.Valor == 5 && a.Texto == "5");
             Assert.Contains(resultado, a => a.Valor == 6 && a.Texto == "6");
+        }
+
+        [Fact]
+        public async Task ObterUesComparacaoPorDre_DeveRetornarListaDeUesCorretamente()
+        {
+            var dreId = 1;
+            var anoAplicacao = 1;
+            var anoEscolar = 5;
+            var disciplinaId = 4;
+            var uesMock = new List<UePorDreDto>
+            {
+                new UePorDreDto { UeId = 1, UeNome = "EMEF JOAO DE BARRO", TipoEscola = TipoEscola.EMEF, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1" },
+                new UePorDreDto { UeId = 2, UeNome = "CEI LAR DA CRIANCA", TipoEscola = TipoEscola.CEIINDIR, DreId = 50, DreNomeAbreviado = "DRE-1", DreNome = "DIRETORIA REGIONAL DE ENSINO 1" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<UePorDreDto>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(uesMock);
+
+            var resultado = await repositorio.ObterUesComparacaoPorDre(dreId, anoAplicacao, disciplinaId, anoEscolar);
+            Assert.NotNull(resultado);
+            Assert.Equal(uesMock.Count, resultado.Count());
+
+            Assert.Contains(resultado, u => u.UeId == 1 && u.UeNome == "EMEF JOAO DE BARRO");
+            Assert.Contains(resultado, u => u.UeId == 2 && u.UeNome == "CEI LAR DA CRIANCA");
         }
     }
 }
