@@ -4,6 +4,7 @@ using SME.SERAp.Boletim.Aplicacao.Queries.ObterAnoLoteProva;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             var anoLetivoPSP = anoLetivoLote - 1;
 
             var proficienciasAnoCorrente = (await repositorioBoletimEscolar.ObterProficienciaAlunoProvaSaberesAsync(
-              request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.LoteId))?.ToList() ?? new List<AlunoProficienciaDto>();
+                request.UeId, request.DisciplinaId, request.AnoEscolar, request.Turma, request.LoteId))?.ToList() ?? new List<AlunoProficienciaDto>();
 
             if (!proficienciasAnoCorrente.Any())
             {
@@ -46,7 +47,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             var alunosRa = proficienciasAnoCorrente.Select(x => x.AlunoRa).Distinct().ToList();
 
             var proficienciasAnoAnterior = (await repositorioBoletimEscolar.ObterProficienciaAlunoProvaSPAsync(
-              request.DisciplinaId, anoLetivoPSP, alunosRa))?.ToList() ?? new List<AlunoProficienciaDto>();
+                request.DisciplinaId, anoLetivoPSP, alunosRa))?.ToList() ?? new List<AlunoProficienciaDto>();
 
             var proficienciasAnteriorDict = proficienciasAnoAnterior.ToDictionary(p => p.AlunoRa);
 
@@ -88,7 +89,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                 if (proficienciaAnterior != null && proficienciasPsa.Any())
                 {
                     var ultimaProficiencia = proficienciasPsa.OrderByDescending(p => p.Periodo).First().Proficiencia;
-                    variacao = (double)Math.Round(ultimaProficiencia - proficienciaAnterior.Proficiencia, 2);
+                    variacao = ultimaProficiencia.CalcularPercentual(proficienciaAnterior.Proficiencia);
                 }
 
                 itensCompletos.Add(new ProficienciaAlunoDto
@@ -100,16 +101,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             }
 
             var itensFiltrados = itensCompletos.AsEnumerable();
-            if (request.TipoVariacao.HasValue)
+
+            if (request.TiposVariacao != null && request.TiposVariacao.Any())
             {
-                if (request.TipoVariacao.Value == 1)
-                {
-                    itensFiltrados = itensFiltrados.Where(x => x.Variacao > 0);
-                }
-                else if (request.TipoVariacao.Value == 2)
-                {
-                    itensFiltrados = itensFiltrados.Where(x => x.Variacao < 0);
-                }
+                itensFiltrados = itensFiltrados.Where(x =>
+                    request.TiposVariacao.Contains(1) && x.Variacao > 0 ||
+                    request.TiposVariacao.Contains(2) && x.Variacao < 0 ||
+                    request.TiposVariacao.Contains(3) && x.Variacao == 0
+                );
             }
 
             if (!string.IsNullOrEmpty(request.NomeAluno))
@@ -131,10 +130,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
             }
 
             var listaAplicacoes = proficienciasAnoCorrente
-              .Select(x => x.Periodo)
-              .Distinct()
-              .OrderBy(x => x)
-              .ToList();
+                .Select(x => x.Periodo)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
 
             return new ProficienciaComparativoAlunoSpDto
             {

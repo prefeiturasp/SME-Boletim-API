@@ -293,12 +293,12 @@ namespace SME.SERAp.Boletim.Api.Controllers
         [ProducesResponseType(typeof(RetornoBaseDto), 500)]
         [ProducesResponseType(typeof(ProficienciaComparativoAlunoSpDto), 200)]
         public async Task<IActionResult> ObterProficienciaComparativoAlunoSp(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId,
-            [FromQuery] int? tipoVariacao,
-            [FromQuery] string? nomeAluno,
-            [FromQuery] int? pagina, [FromQuery] int? itensPorPagina,
-            [FromServices] IObterProficienciaComparativoAlunoSpUseCase obterProficienciaComparativoAlunoSpUseCase)
+        [FromQuery] List<int>? tiposVariacao,
+        [FromQuery] string? nomeAluno,
+        [FromQuery] int? pagina, [FromQuery] int? itensPorPagina,
+        [FromServices] IObterProficienciaComparativoAlunoSpUseCase obterProficienciaComparativoAlunoSpUseCase)
         {
-            var result = await obterProficienciaComparativoAlunoSpUseCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tipoVariacao, nomeAluno, pagina, itensPorPagina);
+            var result = await obterProficienciaComparativoAlunoSpUseCase.Executar(ueId, disciplinaId, anoEscolar, turma, loteId, tiposVariacao, nomeAluno, pagina, itensPorPagina);
             return Ok(result);
         }
 
