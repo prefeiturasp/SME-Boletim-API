@@ -1450,7 +1450,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
-    }
+    
 
 
         public async Task<ResultadoProeficienciaPorDre> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
