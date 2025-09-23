@@ -898,5 +898,44 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<UePorDreDto>> ObterUesComparacaoPorDre(long dreId, int anoAplicacao, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+	                                    distinct on (u.id, u.nome)
+	                                    u.id as ueId,
+	                                    u.nome as ueNome,
+	                                    u.tipo_escola as tipoEscola,
+	                                    d.id as dreId,
+	                                    d.abreviacao as dreNomeAbreviado,
+	                                    d.nome as dreNome
+                                    from
+                                        boletim_prova_aluno bpa
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = bpa.prova_id
+                                    inner join prova p on
+                                        p.id = blp.prova_id
+                                    inner join ue u on
+                                        u.ue_id = bpa.ue_codigo
+                                    inner join dre d on
+	                                    d.id = u.dre_id
+                                    where
+                                        u.dre_id = @dreId 
+                                        and extract(year from p.inicio) = @anoAplicacao
+                                        and bpa.disciplina_id = @disciplinaId
+                                        and bpa.ano_escolar = @anoEscolar
+                                    order by u.nome";
+
+                return await conn.QueryAsync<UePorDreDto>(query, new { dreId, anoAplicacao, disciplinaId, anoEscolar });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
