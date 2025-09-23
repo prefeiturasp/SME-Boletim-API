@@ -1292,5 +1292,163 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSaberesAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"
+                                                select
+                                                    be.disciplina_id as disciplinaId,
+                                                    blp.lote_id as loteId,
+                                                    blu.ano_escolar as anoEscolar,
+                                                    'Prova Saberes e Aprendizagens' as nomeAplicacao,
+                                                    initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
+                                                    be.ue_id as ueId,
+                                                    u.nome as ueNome,
+                                                    u.dre_id as dreId,
+                                                    d.abreviacao as dreAbreviacao,
+                                                    d.nome as dreNome,
+                                                    u.tipo_escola as tipoEscola,
+                                                    avg(be.media_proficiencia) as mediaProficiencia,
+                                                    sum(blu.realizaram_prova) as realizaramProva
+                                                from
+                                                    boletim_escolar be
+                                                inner join prova p on
+                                                    p.id = be.prova_id
+                                                inner join ue u on
+                                                    u.id = be.ue_id
+                                                inner join boletim_lote_prova blp on
+                                                    blp.prova_id = be.prova_id
+                                                inner join lote_prova lp on
+                                                    lp.id = blp.lote_id
+                                                inner join boletim_lote_ue blu on
+                                                    blu.ue_id = u.id and
+                                                    blu.lote_id = lp.id and
+                                                    blu.ano_escolar = @anoEscolar
+                                                inner join dre d on
+                                                    d.id = blu.dre_id
+                                                inner join prova_ano_original pao on
+                                                    pao.prova_id = be.prova_id
+                                                where
+                                                    u.dre_id = @dreId
+                                                    and extract(year from p.inicio) = @anoLetivo
+                                                    and pao.ano = @anoEscolarString
+                                                    and be.nivel_ue_codigo is not null
+                                                    and be.disciplina_id = @disciplinaId
+                ");
+
+                if (ueId.HasValue)
+                {
+                    query.AppendLine("and u.id = @ueId");
+                }
+
+                query.AppendLine(@"
+                                    group by
+                                        be.disciplina_id,
+                                        blp.lote_id,
+                                        blu.ano_escolar,
+                                        lp.nome,
+                                        be.ue_id,
+                                        u.nome,
+                                        d.abreviacao,
+                                        d.nome,
+                                        u.dre_id,
+                                        pao.ano,
+                                        u.tipo_escola
+                                    order by
+                                        be.ue_id,
+                                        be.disciplina_id,
+                                        pao.ano;
+                ");
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    anoEscolarString = anoEscolar.ToString(),
+                    ueId
+                };
+
+                return await conn.QueryAsync<UeProficienciaQueryResultDto>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSPAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"
+                                                select
+                                                    apsp.disciplina_id AS disciplinaId,
+                                                    0 as loteId,
+                                                    apsp.ano_escolar as anoEscolar,
+                                                    'Prova São Paulo' AS nomeAplicacao,
+                                                    apsp.ano_letivo AS periodo,
+                                                    u.id AS ueId,
+                                                    u.nome AS ueNome,
+                                                    u.dre_id as dreId,
+                                                    d.abreviacao as dreAbreviacao,
+                                                    d.nome as dreNome,
+                                                    u.tipo_escola AS tipoEscola,
+                                                    round(avg(apsp.proficiencia),2) AS mediaProficiencia,
+                                                    count(distinct apsp.aluno_ra) AS realizaramProva
+                                                FROM
+                                                    aluno_prova_sp_proficiencia apsp
+                                                JOIN
+                                                    ue u ON u.ue_id = apsp.ue_codigo
+                                                JOIN
+                                                    dre d ON d.id = u.dre_id
+                                                where
+                                                    u.dre_id = @dreId
+                                                    and apsp.ano_letivo = @anoLetivo
+                                                    and apsp.disciplina_id = @disciplinaId
+                                                    and apsp.ano_escolar = @anoEscolar
+                ");
+
+                if (ueId.HasValue)
+                {
+                    query.AppendLine("and u.id = @ueId");
+                }
+
+                query.AppendLine(@"
+                                    group by
+                                        apsp.disciplina_id,
+                                        apsp.ano_escolar,
+                                        apsp.ano_letivo,
+                                        u.id,
+                                        u.nome,
+                                        u.dre_id,
+                                        d.abreviacao,
+                                        d.nome,
+                                        u.tipo_escola;
+                ");
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    ueId
+                };
+
+                return await conn.QueryAsync<UeProficienciaQueryResultDto>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
