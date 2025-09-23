@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
-using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -334,5 +333,25 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
             return Ok(resultado);
         }
+
+        [HttpGet("comparativo-ue/{dreId}/{disciplinaId}/{anoLetivo}/{anoEscolar}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(ProficienciaComparativoUeDto), 200)]
+        public async Task<IActionResult> ObterProficienciaComparativoUe(
+            int dreId,
+            int disciplinaId,
+            int anoLetivo,
+            int anoEscolar,
+            [FromQuery] int? ueId,
+            [FromQuery] List<int>? tiposVariacao,
+            [FromQuery] string? nomeUe,
+            [FromQuery] int? pagina,
+            [FromQuery] int? itensPorPagina,
+            [FromServices] IObterProficienciaComparativoUeUseCase obterProficienciaComparativoUeUseCase)
+        {
+            var result = await obterProficienciaComparativoUeUseCase.Executar(dreId, disciplinaId, anoLetivo, anoEscolar, ueId, tiposVariacao, nomeUe, pagina, itensPorPagina);
+            return Ok(result);
+        }
+
     }
 }
