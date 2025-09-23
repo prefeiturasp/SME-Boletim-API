@@ -1037,5 +1037,133 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
 
             Assert.Empty(proficiencias);
         }
+
+        [Fact]
+        public async Task ObterProficienciaUeProvaSaberesAsync_DeveRetornarProficiencia_QuandoDadosExistem()
+        {
+            var dreId = 1;
+            var disciplinaId = 1;
+            var anoLetivo = 2024;
+            var anoEscolar = 8;
+            var mockData = new List<UeProficienciaQueryResultDto>
+            {
+                new UeProficienciaQueryResultDto
+                {
+                    DisciplinaId = 1,
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    AnoEscolar = 8,
+                    DreId = 1,
+                    DreAbreviacao = "DRE",
+                    UeId = 100,
+                    UeNome = "E.M.E.F. TESTE",
+                    MediaProficiencia = 650.50,
+                    RealizaramProva = 50
+                }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeProficienciaQueryResultDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(mockData);
+
+            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Single(resultados);
+            Assert.Equal(mockData.First().MediaProficiencia, resultados.First().MediaProficiencia);
+            Assert.Equal("Prova Saberes e Aprendizagens", resultados.First().NomeAplicacao);
+            Assert.Equal("E.M.E.F. TESTE", resultados.First().UeNome);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaUeProvaSaberesAsync_DeveRetornarVazio_QuandoNaoHaDados()
+        {
+            var dreId = 1;
+            var disciplinaId = 1;
+            var anoLetivo = 2024;
+            var anoEscolar = 8;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeProficienciaQueryResultDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<UeProficienciaQueryResultDto>());
+
+            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Empty(resultados);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaUeProvaSPAsync_DeveRetornarProficiencia_QuandoDadosExistem()
+        {
+            var dreId = 1;
+            var disciplinaId = 1;
+            var anoLetivo = 2024;
+            var anoEscolar = 8;
+            var mockData = new List<UeProficienciaQueryResultDto>
+            {
+                new UeProficienciaQueryResultDto
+                {
+                    DisciplinaId = 1,
+                    NomeAplicacao = "Prova São Paulo",
+                    AnoEscolar = 8,
+                    DreId = 1,
+                    DreAbreviacao = "DRE",
+                    UeId = 100,
+                    UeNome = "E.M.E.F. TESTE",
+                    MediaProficiencia = 580.25,
+                    RealizaramProva = 45
+                }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeProficienciaQueryResultDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(mockData);
+
+            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Single(resultados);
+            Assert.Equal(mockData.First().MediaProficiencia, resultados.First().MediaProficiencia);
+            Assert.Equal("Prova São Paulo", resultados.First().NomeAplicacao);
+            Assert.Equal("E.M.E.F. TESTE", resultados.First().UeNome);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaUeProvaSPAsync_DeveRetornarVazio_QuandoNaoHaDados()
+        {
+            var dreId = 1;
+            var disciplinaId = 1;
+            var anoLetivo = 2024;
+            var anoEscolar = 8;
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<UeProficienciaQueryResultDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<UeProficienciaQueryResultDto>());
+
+            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+
+            Assert.NotNull(resultados);
+            Assert.Empty(resultados);
+        }
     }
 }
