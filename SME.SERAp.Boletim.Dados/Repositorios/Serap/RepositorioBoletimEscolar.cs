@@ -1453,9 +1453,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
     
 
 
-        public async Task<ResultadoProeficienciaPorDre> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
+
+
             try
             {
                 const string query = @"
@@ -1465,7 +1467,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             blu.ano_escolar as anoEscolar,
                                             'Prova Saberes e Aprendizagens' as nomeAplicacao,
                                             initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
-                                       count(distinct be.ue_id) as quantidadeUe,
+                                       count(distinct be.ue_id) as quantidadeUes,
                                           
                                             u.dre_id as dreId,
                                             d.abreviacao as dreAbreviacao,
@@ -1486,15 +1488,15 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         inner join boletim_lote_ue blu on
                                             blu.ue_id = u.id and
                                             blu.lote_id = lp.id and
-                                            blu.ano_escolar = 5
+                                            blu.ano_escolar = @anoEscolar
                                         inner join dre d on
                                             d.id = blu.dre_id
                                         inner join prova_ano_original pao on
                                             pao.prova_id = be.prova_id
                                         where
                                             u.dre_id = @dreId
-                                            and extract(year from p.inicio) = @noLetivo
-                                            and pao.ano = @anoEscolar
+                                            and extract(year from p.inicio) = @anoLetivo
+                                            and pao.ano = @anoEscolarString
                                             and be.nivel_ue_codigo is not null
                                             and be.disciplina_id = @disciplinaId
                                             
@@ -1514,7 +1516,17 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                              be.disciplina_id,
                                              pao.ano;
                                              ";
-                return await conn.QueryFirstOrDefaultAsync<ResultadoProeficienciaPorDre>(query, new { dreId, anoLetivo, disciplinaId });
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    anoEscolarString = anoEscolar.ToString(),
+                    
+                };
+                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query, parametros);
             }
             finally
             {
@@ -1523,7 +1535,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<ResultadoProeficienciaPorDre> ObterProficienciaPorDreProvaSPAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId , int anoLetivo, int disciplinaId,  int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -1534,7 +1546,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             apsp.ano_escolar as anoEscolar,
                                             'Prova São Paulo' AS nomeAplicacao,
                                             apsp.ano_letivo AS periodo,                                       
-                                            count(distinct u.id) as quantidadeUe,
+                                            count(distinct u.id) as quantidadeUes,
                                             u.dre_id as dreId,
                                             d.abreviacao as dreAbreviacao,
                                             d.nome as dreNome,
@@ -1569,7 +1581,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     anoEscolar
                 };
 
-                return await conn.QueryFirstOrDefaultAsync<ResultadoProeficienciaPorDre>(query.ToString(), parametros);
+                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query.ToString(), parametros);
+            }
+
+            catch(Exception ex)
+            {
+                throw ex;
             }
             finally
             {

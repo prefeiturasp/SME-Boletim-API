@@ -5,7 +5,7 @@ using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDre
 {
-    public class ObterProficienciaProvaSaberesPorDreQueryHandler : IRequestHandler<ObterProficienciaProvaSaberesPorDreQuery, ResultadoProeficienciaPorDre>
+    public class ObterProficienciaProvaSaberesPorDreQueryHandler : IRequestHandler<ObterProficienciaProvaSaberesPorDreQuery, IEnumerable<ResultadoProeficienciaPorDre>>
     {
         private readonly IRepositorioBoletimEscolar repositorio;
 
@@ -14,7 +14,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDr
             this.repositorio = repositorio;
         }
 
-        public async Task<ResultadoProeficienciaPorDre> Handle(ObterProficienciaProvaSaberesPorDreQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> Handle(ObterProficienciaProvaSaberesPorDreQuery request, CancellationToken cancellationToken)
          => await repositorio.ObterProficienciaDreProvaSaberesAsync(request.DreId, request.AnoLetivo, request.DisciplinaId, request.AnoEscolar);
     }
 }

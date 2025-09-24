@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre
 {
-    internal class ObterProficienciaProvaSPAPorDreQueryHandler : IRequestHandler<ObterProficienciaProvaSPAPorDreQuery, ResultadoProeficienciaPorDre>
+    internal class ObterProficienciaProvaSPAPorDreQueryHandler : IRequestHandler<ObterProficienciaProvaSPAPorDreQuery, IEnumerable<ResultadoProeficienciaPorDre>>
     {
         private readonly IRepositorioBoletimEscolar repositorio;
 
@@ -19,7 +19,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre
             this.repositorio = repositorio;
         }
 
-        public async Task<ResultadoProeficienciaPorDre> Handle(ObterProficienciaProvaSPAPorDreQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> Handle(ObterProficienciaProvaSPAPorDreQuery request, CancellationToken cancellationToken)
          => await repositorio.ObterProficienciaPorDreProvaSPAsync(request.DreId, request.AnoLetivo, request.DisciplinaId, request.AnoEscolar);
     }
 }

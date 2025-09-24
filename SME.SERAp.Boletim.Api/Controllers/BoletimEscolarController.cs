@@ -10,7 +10,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class BoletimEscolarController : ControllerBase
     {
         [HttpGet("{loteId}/{ueId}")]
@@ -352,6 +352,16 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var result = await obterProficienciaComparativoUeUseCase.Executar(dreId, disciplinaId, anoLetivo, anoEscolar, ueId, tiposVariacao, nomeUe, pagina, itensPorPagina);
             return Ok(result);
         }
+
+        [HttpGet("dres-comparacao-por-dre/{dreId}/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterTabelaComparativaPorDre(int dreId, int anoAplicacao, int disciplinaId, int anoEscolar,
+            [FromServices] IObterProficienciaComparativoDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
+
 
     }
 }

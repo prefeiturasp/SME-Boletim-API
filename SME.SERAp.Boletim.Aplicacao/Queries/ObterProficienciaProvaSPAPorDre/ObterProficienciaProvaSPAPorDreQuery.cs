@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre
 {
-    public class ObterProficienciaProvaSPAPorDreQuery : IRequest<ResultadoProeficienciaPorDre>
+    public class ObterProficienciaProvaSPAPorDreQuery : IRequest<IEnumerable<ResultadoProeficienciaPorDre>>
     {
         public int DreId { get; set; }
         public int AnoLetivo { get; set; }

@@ -11,7 +11,7 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public string NomeAplicacao { get; set; }
 
         public string Periodo { get; set; }
-        public int QuantidadeAlunosUe { get; set; }
+        public int QuantidadeUes { get; set; }
 
         public int DreId { get; set; }  
 
@@ -23,6 +23,6 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public int DisciplinaId { get; set; }
         public decimal MediaProficiencia { get; set; }
      
-        public decimal RealizaramProva { get; set; }
+        public int RealizaramProva { get; set; }
     }
 }
