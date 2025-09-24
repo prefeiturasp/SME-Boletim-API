@@ -44,5 +44,8 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<int> ObterAnoPorLoteIdAsync(long loteId);
         Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSaberesAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null);
         Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSPAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null);
+
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId, int anoLetivo  , int disciplinaId , int anoEscolar);
     }
 }
