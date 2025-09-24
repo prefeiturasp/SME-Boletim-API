@@ -353,5 +353,15 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("dres-comparacao-por-dre/{dreId}/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterTabelaComparativaPorDre(int dreId, int anoAplicacao, int disciplinaId, int anoEscolar,
+            [FromServices] IObterProficienciaComparativoDreUseCase useCase)
+        {
+            var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
+
+
     }
 }

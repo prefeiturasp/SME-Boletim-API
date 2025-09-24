@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿    using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterDre;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesPorDre;
