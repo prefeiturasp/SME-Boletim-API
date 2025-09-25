@@ -362,6 +362,12 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-
+        [HttpGet("anos-aplicacao-sme")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public async Task<IActionResult> ObterAnosAplicacaoPorSme([FromServices] IObterAnosAplicacaoPorSmeUseCase obterAnosAplicacaoPorSmeUseCase)
+        {
+            return Ok(await obterAnosAplicacaoPorSmeUseCase.Executar());
+        }
     }
 }
