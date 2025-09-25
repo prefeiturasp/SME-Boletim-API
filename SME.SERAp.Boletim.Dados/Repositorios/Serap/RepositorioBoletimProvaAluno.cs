@@ -938,6 +938,29 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
+        public async Task<IEnumerable<int>> ObterAnosAplicacaoPorSme()
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+                                            distinct extract(year from p.inicio) as ano
+                                        from
+                                            boletim_prova_aluno bpa
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = bpa.prova_id
+                                        inner join prova p on
+                                            p.id = blp.prova_id";
+
+                return await conn.QueryAsync<int>(query);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
         public async Task<IEnumerable<OpcaoFiltroDto<int>>> ObterComponentesCurricularesSmePorAno(int anoAplicacao)
         {
             using var conn = ObterConexaoLeitura();
