@@ -1070,7 +1070,7 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
                     It.IsAny<CommandType?>()))
                 .ReturnsAsync(mockData);
 
-            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar, It.IsAny<int>());
 
             Assert.NotNull(resultados);
             Assert.Single(resultados);
@@ -1096,7 +1096,7 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
                     It.IsAny<CommandType?>()))
                 .ReturnsAsync(new List<UeProficienciaQueryResultDto>());
 
-            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+            var resultados = await repositorio.ObterProficienciaUeProvaSaberesAsync(dreId, disciplinaId, anoLetivo, anoEscolar, It.IsAny<int>());
 
             Assert.NotNull(resultados);
             Assert.Empty(resultados);
@@ -1134,7 +1134,7 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
                     It.IsAny<CommandType?>()))
                 .ReturnsAsync(mockData);
 
-            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar, It.IsAny<int>());
 
             Assert.NotNull(resultados);
             Assert.Single(resultados);
@@ -1160,10 +1160,29 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
                     It.IsAny<CommandType?>()))
                 .ReturnsAsync(new List<UeProficienciaQueryResultDto>());
 
-            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar);
+            var resultados = await repositorio.ObterProficienciaUeProvaSPAsync(dreId, disciplinaId, anoLetivo, anoEscolar, It.IsAny<int>());
 
             Assert.NotNull(resultados);
             Assert.Empty(resultados);
+        }
+
+        [Fact]
+        public async Task ObterAnoPorLoteIdAsync_Deve_Retornar_Ano_Quando_Encontrado()
+        {
+            conexaoLeitura.SetupDapperAsync(c =>
+                c.QuerySingleOrDefaultAsync<int>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null,
+                    null,
+                    null))
+                .ReturnsAsync(2025);
+
+            var resultado = await repositorio.ObterAnoPorLoteIdAsync(1);
+
+            Assert.Equal(2025, resultado);
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
         }
     }
 }
