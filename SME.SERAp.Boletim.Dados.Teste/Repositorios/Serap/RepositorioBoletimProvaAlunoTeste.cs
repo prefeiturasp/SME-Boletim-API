@@ -697,5 +697,28 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Contains(resultado, u => u.UeId == 1 && u.UeNome == "EMEF JOAO DE BARRO");
             Assert.Contains(resultado, u => u.UeId == 2 && u.UeNome == "CEI LAR DA CRIANCA");
         }
+
+        [Fact]
+        public async Task ObterComponentesCurricularesSmePorAno_DeveRetornarListaDeComponentesCorretamente()
+        {
+            var anoEscolar = 5;
+            var componentesMock = new List<OpcaoFiltroDto<int>>
+            {
+                new OpcaoFiltroDto<int> { Valor = 4, Texto = "Matemática" },
+                new OpcaoFiltroDto<int> { Valor = 5, Texto = "Português" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<OpcaoFiltroDto<int>>(
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                null, null, null))
+                .ReturnsAsync(componentesMock);
+
+            var resultado = await repositorio.ObterComponentesCurricularesSmePorAno(anoEscolar);
+            Assert.NotNull(resultado);
+            Assert.Equal(componentesMock.Count, resultado.Count());
+            Assert.Contains(resultado, c => c.Valor == 4 && c.Texto == "Matemática");
+            Assert.Contains(resultado, c => c.Valor == 5 && c.Texto == "Português");
+        }
     }
 }
