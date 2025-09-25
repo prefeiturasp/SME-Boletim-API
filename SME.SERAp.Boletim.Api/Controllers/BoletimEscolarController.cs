@@ -362,6 +362,12 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-
+        [HttpGet("componentes-curriculares-sme/{anoAplicacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterComponentesCurricularesSmePorAno(int anoAplicacao, [FromServices] IObterComponentesCurricularesSmePorAnoUseCase obterComponentesCurricularesSmePorAnoUseCase)
+        {
+            return Ok(await obterComponentesCurricularesSmePorAnoUseCase.Executar(anoAplicacao));
+        }
     }
 }
