@@ -316,5 +316,41 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             resultado.Total.Should().Be(0);
             resultado.Itens.Should().BeEmpty();
         }
+
+        [Fact]
+        public async Task Handle_Deve_Retornar_Todos_Itens_Quando_Paginacao_For_Nula()
+        {
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Proficiencia = 600, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
+            };
+
+            var profAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 400, NomeAplicacao = "PSP" }
+            };
+            ConfigurarMocks(profCorrente, profAnterior);
+
+            var query = new ObterProficienciaComparativoAlunoSpQuery(
+                ueId: 1,
+                disciplinaId: 10,
+                anoEscolar: 5,
+                turma: "Turma A",
+                loteId: 100,
+                tiposVariacao: null,
+                nomeAluno: null,
+                pagina: null,
+                itensPorPagina: null
+            );
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(2, resultado.Total);
+            Assert.Equal(2, resultado.Itens.Count());
+            Assert.Contains(resultado.Itens, x => x.Nome == "Aluno A");
+            Assert.Contains(resultado.Itens, x => x.Nome == "Aluno B");
+        }
     }
 }
