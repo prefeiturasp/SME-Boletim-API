@@ -27,5 +27,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<UePorDreDto>> ObterUesComparacaoPorDre(long dreId, int anoAplicacao, int disciplinaId, int anoEscolar);
         Task<IEnumerable<int>> ObterAnosAplicacaoPorSme();
         Task<IEnumerable<OpcaoFiltroDto<int>>> ObterComponentesCurricularesSmePorAno(int anoAplicacao);
+        Task<IEnumerable<OpcaoFiltroDto<int>>> ObterAnosEscolaresPorSmeAnoAplicacao(int anoAplicacao, int disciplinaId);
     }
 }
