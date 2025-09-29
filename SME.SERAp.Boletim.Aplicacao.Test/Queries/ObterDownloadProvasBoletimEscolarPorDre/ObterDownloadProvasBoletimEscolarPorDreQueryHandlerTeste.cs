@@ -1,84 +1,79 @@
 ﻿using Moq;
-using Xunit;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadProvasBoletimEscolar;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterDownloadProvasBoletimEscolarPorDre;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
-namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterDownloadProvasBoletimEscolar
+namespace SME.SERAp.Boletim.Aplicacao.Test.Queries
 {
-    public class ObterDownloadProvasBoletimEscolarQueryHandlerTeste
+    public class ObterDownloadProvasBoletimEscolarPorDreQueryHandlerTeste
     {
-        [Fact]
-        public async Task Deve_Retornar_DownloadProvas_Quando_Existir()
+        private readonly Mock<IRepositorioBoletimEscolar> repositorioMock;
+        private readonly ObterDownloadProvasBoletimEscolarPorDreQueryHandler handler;
+
+        public ObterDownloadProvasBoletimEscolarPorDreQueryHandlerTeste()
         {
-            // Arrange
-            var loteId = 1L;
-            var ueId = 123L;
-            var provasEsperadas = new List<DownloadProvasBoletimEscolarDto>
+            repositorioMock = new Mock<IRepositorioBoletimEscolar>();
+            handler = new ObterDownloadProvasBoletimEscolarPorDreQueryHandler(repositorioMock.Object);
+        }
+
+        [Fact(DisplayName = "Deve chamar o repositório com os parâmetros corretos e retornar os DTOs")]
+        public async Task Handle_Deve_ChamarRepositorio_E_RetornarDtos()
+        {
+            var dreId = 1L;
+            var loteId = 2L;
+
+            var listaDto = new List<DownloadProvasBoletimEscolarPorDreDto>
             {
-                new DownloadProvasBoletimEscolarDto
+                new DownloadProvasBoletimEscolarPorDreDto
                 {
-                    CodigoUE = "123",
+                    CodigoDre = dreId,
+                    NomeDreAbreviacao = "DRE1",
+                    CodigoUE = "UE123",
                     NomeUE = "Escola Teste",
-                    AnoEscola = 2024,
-                    Turma = "A",
-                    AlunoRA = 456789,
-                    NomeAluno = "João",
+                    AnoEscola = 9,
+                    Turma = "9A",
+                    AlunoRA = 123456,
+                    NomeAluno = "Aluno Teste",
                     Componente = "Matemática",
-                    Proficiencia = 250.5m,
-                    Nivel = "Adequado"
+                    Proficiencia = 7.5m,
+                    Nivel = "B"
                 }
             };
 
-            var repositorioBoletimEscolarMock = new Mock<IRepositorioBoletimEscolar>();
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterDownloadProvasBoletimEscolar(loteId, ueId))
-                .ReturnsAsync(provasEsperadas);
+            repositorioMock
+                .Setup(r => r.ObterDownloadProvasBoletimEscolarPorDre(dreId, loteId))
+                .ReturnsAsync(listaDto);
 
-            var handler = new ObterDownloadProvasBoletimEscolarQueryHandler(repositorioBoletimEscolarMock.Object);
-            var query = new ObterDownloadProvasBoletimEscolarQuery(loteId, ueId);
+            var query = new ObterDownloadProvasBoletimEscolarPorDreQuery(dreId, loteId);
 
-            // Act
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            // Assert
             Assert.NotNull(resultado);
+            Assert.IsAssignableFrom<IEnumerable<DownloadProvasBoletimEscolarPorDreDto>>(resultado);
             Assert.Single(resultado);
-            var prova = ((List<DownloadProvasBoletimEscolarDto>)resultado)[0];
-            Assert.Equal("123", prova.CodigoUE);
-            Assert.Equal("Escola Teste", prova.NomeUE);
-            Assert.Equal(2024, prova.AnoEscola);
-            Assert.Equal("A", prova.Turma);
-            Assert.Equal(456789, prova.AlunoRA);
-            Assert.Equal("João", prova.NomeAluno);
-            Assert.Equal("Matemática", prova.Componente);
-            Assert.Equal(250.5m, prova.Proficiencia);
-            Assert.Equal("Adequado", prova.Nivel);
+            Assert.Equal(dreId, resultado.First().CodigoDre);
+
+            repositorioMock.Verify(r => r.ObterDownloadProvasBoletimEscolarPorDre(dreId, loteId), Times.Once);
         }
 
-        [Fact]
-        public async Task Deve_Retornar_Nulo_Quando_Nao_Existir_DownloadProvas()
+        [Fact(DisplayName = "Deve retornar lista vazia quando repositório não retornar dados")]
+        public async Task Handle_Deve_RetornarListaVazia_QuandoRepositorioNaoRetornarDados()
         {
-            // Arrange
-            var loteId = 1L;
-            var ueId = 999L;
+            var dreId = 1L;
+            var loteId = 2L;
 
-            var repositorioBoletimEscolarMock = new Mock<IRepositorioBoletimEscolar>();
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterDownloadProvasBoletimEscolar(loteId, ueId))
-                .ReturnsAsync((IEnumerable<DownloadProvasBoletimEscolarDto>)null);
+            repositorioMock
+                .Setup(r => r.ObterDownloadProvasBoletimEscolarPorDre(dreId, loteId))
+                .ReturnsAsync(new List<DownloadProvasBoletimEscolarPorDreDto>());
 
-            var handler = new ObterDownloadProvasBoletimEscolarQueryHandler(repositorioBoletimEscolarMock.Object);
-            var query = new ObterDownloadProvasBoletimEscolarQuery(loteId, ueId);
+            var query = new ObterDownloadProvasBoletimEscolarPorDreQuery(dreId, loteId);
 
-            // Act
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            // Assert
-            Assert.Null(resultado);
+            Assert.NotNull(resultado);
+            Assert.Empty(resultado);
+
+            repositorioMock.Verify(r => r.ObterDownloadProvasBoletimEscolarPorDre(dreId, loteId), Times.Once);
         }
     }
 }
