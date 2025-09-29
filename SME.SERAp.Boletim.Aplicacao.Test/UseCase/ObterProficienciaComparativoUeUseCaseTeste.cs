@@ -1,21 +1,19 @@
 ﻿using MediatR;
 using Moq;
-using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoUe;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
 {
     public class ObterProficienciaComparativoUeUseCaseTeste
     {
         private readonly Mock<IMediator> mediatorMock;
-        private readonly IObterProficienciaComparativoUeUseCase useCase;
+        private readonly ObterProficienciaComparativoUeUseCase useCase;
 
         public ObterProficienciaComparativoUeUseCaseTeste()
         {
@@ -58,6 +56,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             };
 
             mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+
+            mediatorMock
                 .Setup(m => m.Send(It.IsAny<ObterProficienciaComparativoUeQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(proficienciaComparativoDto);
 
@@ -88,6 +94,51 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                          q.Pagina == pagina &&
                          q.ItensPorPagina == itensPorPagina),
                 It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException quando usuário não tem abrangência para a DRE")]
+        public async Task Executar_Deve_Lancar_NaoAutorizado_Quando_UsuarioNaoTemDre()
+        {
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto>());
+
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(async () =>
+                await useCase.Executar(1, 10, 2024, 9, 100, new List<int> { 1 }, "UE Teste", 1, 10));
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException quando usuário tem perfil inválido")]
+        public async Task Executar_Deve_Lancar_NaoAutorizado_Quando_PerfilInvalido()
+        {
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = 1 } });
+
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(null as TipoPerfil?);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(async () =>
+                await useCase.Executar(1, 10, 2024, 9, 100, new List<int> { 1 }, "UE Teste", 1, 10));
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException quando usuário não tem permissão de visualização")]
+        public async Task Executar_Deve_Lancar_NaoAutorizado_Quando_PerfilSemPermissao()
+        {
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = 1 } });
+
+            mediatorMock
+                .Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Professor);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(async () =>
+                await useCase.Executar(1, 10, 2024, 9, 100, new List<int> { 1 }, "UE Teste", 1, 10));
         }
     }
 }
