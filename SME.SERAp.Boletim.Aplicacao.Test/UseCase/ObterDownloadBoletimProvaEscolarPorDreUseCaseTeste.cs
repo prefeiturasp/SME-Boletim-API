@@ -8,10 +8,11 @@ using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 using System.Globalization;
 using System.Text;
 
-namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
+namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 {
     public class ObterDownloadBoletimProvaEscolarPorDreUseCaseTeste
     {
@@ -169,6 +170,40 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             // Assert
             mediatorMock.Verify(m => m.Send(It.Is<ObterDownloadProvasBoletimEscolarPorDreQuery>(
                 x => x.LoteId == loteId && x.DreId == dreId), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException se usuário não possui abrangência")]
+        public async Task DeveLancarExcecaoSeUsuarioSemAbrangencia()
+        {
+            // Arrange
+            var mediator = new Mock<IMediator>();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto>()); // vazio
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador);
+
+            var useCase = new ObterDownloadBoletimProvaEscolarPorDreUseCase(mediator.Object);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(1, 10));
+            Assert.Equal("Usuário não possui abrangências para essa DRE.", ex.Message);
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException se usuário não possui permissão")]
+        public async Task DeveLancarExcecaoSeUsuarioSemPermissao()
+        {
+            // Arrange
+            var mediator = new Mock<IMediator>();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new() { Id = 10 } });
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Professor);
+
+            var useCase = new ObterDownloadBoletimProvaEscolarPorDreUseCase(mediator.Object);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(1, 10));
+            Assert.Equal("Usuário não possui abrangências para essa DRE.", ex.Message);
         }
 
         private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
