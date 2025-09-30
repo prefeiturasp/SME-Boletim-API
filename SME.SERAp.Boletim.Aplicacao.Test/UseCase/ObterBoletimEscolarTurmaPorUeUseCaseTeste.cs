@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterBoletinsEscolaresTurmasPorUeIdProvaId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaBoletimEscolarPorUeIdProvaId;
@@ -14,7 +10,7 @@ using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
-using Xunit;
+using System.Reflection;
 
 namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 {
@@ -23,7 +19,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
         [Fact]
         public async Task Executar_Deve_Retornar_BoletimEscolarPorTurmaDto()
         {
-            
+
             var loteId = 1L;
             var ueId = 100L;
             var provaId = 999L;
@@ -118,6 +114,46 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 
             var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(1, 100, new()));
             Assert.Equal("Usuário não possui abrangências para essa UE.", ex.Message);
+        }
+
+        [Fact]
+        public async Task Executar_Deve_Retornar_Dto_Vazio_Quando_Nao_Houver_Provas()
+        {
+            var ueId = 100L;
+            var mediator = new Mock<IMediator>();
+
+            mediator.Setup(x => x.Send(It.IsAny<ObterUesAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<AbrangenciaUeDto> { new() { UeId = ueId } });
+
+            mediator.Setup(x => x.Send(It.IsAny<ObterProvasBoletimEscolarPorUeQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProvaBoletimEscolarDto>());
+
+            var useCase = new ObterBoletimEscolarTurmaPorUeUseCase(mediator.Object);
+
+            var resultado = await useCase.Executar(1, ueId, new());
+
+            Assert.Empty(resultado.Provas); // não entrou no foreach
+        }
+
+        [Fact]
+        public void ObterDescricaoNivelProficiencia_Deve_Retornar_Vazio_Quando_TipoNaoMapeado()
+        {
+            var grupoFake = new List<NivelProficienciaBoletimEscolarDto>
+            {
+                new() { Ano = 5, Codigo = 999, Valor = 300 } // tipo inexistente no dicionário
+            }.GroupBy(x => x.Ano).First();
+
+            var descricao = InvokeDescricaoNivelProficiencia((TipoNivelProficiencia)999, grupoFake);
+
+            Assert.Equal(string.Empty, descricao);
+        }
+
+        private static string InvokeDescricaoNivelProficiencia(TipoNivelProficiencia tipo, IGrouping<int, NivelProficienciaBoletimEscolarDto> grupo)
+        {
+            var method = typeof(ObterBoletimEscolarTurmaPorUeUseCase)
+                .GetMethod("ObterDescricaoNivelProficiencia", BindingFlags.NonPublic | BindingFlags.Static);
+
+            return (string)method.Invoke(null, new object[] { tipo, grupo });
         }
     }
 }

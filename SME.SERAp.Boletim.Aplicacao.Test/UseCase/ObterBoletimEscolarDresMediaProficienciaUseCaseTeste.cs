@@ -86,6 +86,40 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             mediator.Verify(m => m.Send(It.IsAny<ObterDresMediaProficienciaPorDisciplinaQuery>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
+        [Fact]
+        public async Task Deve_Retornar_Dres_Media_Proficiencia_Com_Disciplinas()
+        {
+            var tipoPerfilUsuarioLogado = TipoPerfil.Administrador;
+            var loteId = 1L;
+            var anoEscolar = 5;
+            var dresIds = new List<long>();
+
+            var itens = ObterItens();
+
+            mediator.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(tipoPerfilUsuarioLogado);
+
+            mediator.Setup(m => m.Send(It.IsAny<ObterDresMediaProficienciaPorDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(itens);
+
+            var result = await useCase.Executar(loteId, anoEscolar, dresIds);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count());
+
+            var dre1 = result.First(r => r.DreId == 1);
+            Assert.Equal("DRE 1", dre1.DreNome);
+            Assert.Equal(2, dre1.Diciplinas.Count());
+            Assert.Contains(dre1.Diciplinas, d => d.DisciplinaId == 4 && d.Disciplina == "Matemática" && d.MediaProficiencia == 146.5M);
+            Assert.Contains(dre1.Diciplinas, d => d.DisciplinaId == 5 && d.Disciplina == "Português" && d.MediaProficiencia == 203.54M);
+
+            var dre2 = result.First(r => r.DreId == 2);
+            Assert.Equal("DRE 2", dre2.DreNome);
+            Assert.Equal(2, dre2.Diciplinas.Count());
+            Assert.Contains(dre2.Diciplinas, d => d.DisciplinaId == 4 && d.Disciplina == "Matemática" && d.MediaProficiencia == 172.5M);
+            Assert.Contains(dre2.Diciplinas, d => d.DisciplinaId == 5 && d.Disciplina == "Português" && d.MediaProficiencia == 183.06M);
+        }
+
         private static List<DreDisciplinaMediaProficienciaDto> ObterItens()
         {
             return new List<DreDisciplinaMediaProficienciaDto>
