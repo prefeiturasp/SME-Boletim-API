@@ -24,7 +24,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 
             try
             {
-
                 var query = new StringBuilder(@"select
 	                                                be.id,
 	                                                be.ue_id,
@@ -216,7 +215,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { dreId, anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -241,7 +241,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { dreId, anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { dreId, anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -382,7 +383,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
 	                                                d.id = blu.dre_id");
 
                 totalQuery.Append(where);
-                var totalRegistros = await conn.ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
+                var totalRegistros = await conn.QueryFirstOrDefaultAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"select
                                                     u.id,
@@ -491,7 +492,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -515,7 +517,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -537,7 +540,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.ExecuteScalarAsync<int>(query, new { anoEscolar, loteId });
+                var resultado = await conn.QueryAsync<int>(query, new { anoEscolar, loteId });
+                return resultado?.FirstOrDefault() ?? 0;
             }
             finally
             {
@@ -919,5 +923,679 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<UeMediaProficienciaDto>> ObterMediaProficienciaUeAsync(long loteId, int ueId, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+                                            blp.lote_id as LoteId,
+                                            pao.ano, 
+                                            be.disciplina_id,
+                                            trim(regexp_replace(lp.nome, '\s*\([^)]*\)\s*$', '', 'g')) as NomeAplicacao,
+                                            initcap(regexp_replace(lp.nome,
+                                            '.*\(([^)]*)\).*',
+                                            '\1')) as Periodo,  
+                                            avg(be.media_proficiencia) as MediaProficiencia
+                                        from
+                                            boletim_escolar be
+                                        inner join prova p on
+                                            p.id = be.prova_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = p.id
+                                        inner join lote_prova lp on
+                                            lp.id = blp.lote_id
+                                        inner join prova_ano_original pao on
+                                         pao.prova_id = p.id 
+                                        where
+                                            be.ue_id = @ueId
+                                            and be.disciplina_id = @disciplinaId
+                                            and pao.ano = @anoEscolar
+                                            and p.exibir_no_boletim = true
+                                            and extract(year from p.fim) = (
+                                                select
+                                                    extract(year
+                                                from
+                                                    p2.fim)
+                                                from
+                                                    prova p2
+                                                inner join boletim_lote_prova blp on
+                                                    blp.prova_id = p2.id
+                                                where
+                                                    blp.lote_id = @loteId
+                                                limit 1
+                                            )
+                                            group by
+                                             blp.lote_id,
+                                             pao.ano,
+                                             be.disciplina_id,   
+                                             lp.nome";
+
+                return await conn.QueryAsync<UeMediaProficienciaDto>(query, new { loteId, ueId, disciplinaId, anoEscolar = anoEscolar.ToString() });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeMediaProficienciaDto>> ObterMediaProficienciaUeAnoAnteriorAsync(long loteId, int ueId, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"with ano_base as (
+                                        select
+	                                        extract(year
+                                        from
+	                                        p2.fim) as ano_corrente,
+	                                        extract(year
+                                        from
+	                                        p2.fim) - 1 as ano_anterior
+                                        from
+	                                        prova p2
+                                        inner join boletim_lote_prova blp2 on
+	                                        blp2.prova_id = p2.id
+                                        where
+	                                        blp2.lote_id = @loteId
+                                        limit 1
+                                        )
+                                        select
+	                                        'Prova São Paulo' as NomeAplicacao,
+	                                        0 as LoteId,
+	                                        ab.ano_anterior as Periodo,
+	                                        round(avg(app.proficiencia),
+	                                        2) as MediaProficiencia
+                                        from
+	                                        boletim_prova_aluno bpa
+                                        inner join ue u on
+	                                        u.ue_id = bpa.ue_codigo
+                                        inner join prova p on
+	                                        p.id = bpa.prova_id
+                                        inner join boletim_lote_prova blp on
+	                                        blp.prova_id = p.id
+                                        inner join lote_prova lp on
+	                                        lp.id = blp.lote_id
+                                        inner join ano_base ab on
+	                                        true
+                                        inner join aluno_prova_sp_proficiencia app 
+                                            on
+	                                        app.aluno_ra = bpa.aluno_ra
+	                                        and app.disciplina_id = bpa.disciplina_id
+	                                        and app.ano_letivo = ab.ano_anterior
+                                        where
+	                                        u.id = @ueId
+	                                        and bpa.disciplina_id = @disciplinaId
+	                                        and bpa.ano_escolar = @anoEscolar
+	                                        and p.exibir_no_boletim = true
+	                                        and bpa.proficiencia is not null
+	                                        and extract(year
+                                        from
+	                                        p.fim) = ab.ano_corrente
+                                        group by
+	                                        bpa.ue_codigo,
+	                                        ab.ano_anterior";
+
+                return await conn.QueryAsync<UeMediaProficienciaDto>(query, new { loteId, ueId, disciplinaId, anoEscolar });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunosRealizaramProvasUe(long loteId, int anoEscolar, int ueId)
+        {
+            const string query = @"select
+	                                    blu.realizaram_prova as TotalAlunosRealizaramProva
+                                    from
+	                                    boletim_lote_ue blu
+                                    inner join ue u on
+	                                    u.id = blu.ue_id
+                                    where
+	                                    blu.lote_id = @loteId
+	                                    and blu.ano_escolar = @anoEscolar
+	                                    and u.id = @ueId";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var resultado = await conn.QueryAsync<int>(query, new { loteId, anoEscolar, ueId });
+                return resultado?.FirstOrDefault() ?? 0;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunosUeRealizaramProvasSPAnterior(long loteId, int ueId, int disciplinaId, int anoEscolar)
+        {
+            const string query = @"with ano_base as (
+                                    select
+                                        extract(year
+                                    from
+                                        p2.fim) as ano_corrente,
+                                        extract(year
+                                    from
+                                        p2.fim) - 1 as ano_anterior
+                                    from
+                                        prova p2
+                                    inner join boletim_lote_prova blp2 on
+                                        blp2.prova_id = p2.id
+                                    where
+                                        blp2.lote_id = @loteId
+                                    limit 1
+                                    )
+                                    select
+                                        count(distinct app.aluno_ra) 
+                                    from
+                                        boletim_prova_aluno bpa
+                                    inner join ue u on
+                                        u.ue_id = bpa.ue_codigo
+                                    inner join prova p on
+                                        p.id = bpa.prova_id
+                                    inner join boletim_lote_prova blp on
+                                        blp.prova_id = p.id
+                                    inner join ano_base ab on
+                                        true
+                                    inner join aluno_prova_sp_proficiencia app 
+                                        on
+                                        app.aluno_ra = bpa.aluno_ra
+                                        and app.disciplina_id = bpa.disciplina_id
+                                        and app.ano_letivo = ab.ano_anterior
+                                    where
+                                        u.id = @ueId
+                                        and bpa.disciplina_id = @disciplinaId
+                                        and bpa.ano_escolar = @anoEscolar
+                                        and p.exibir_no_boletim = true
+                                        and bpa.proficiencia is not null
+                                        and extract(year
+                                    from
+                                        p.fim) = ab.ano_corrente";
+
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var resultado = await conn.QueryAsync<int>(query, new { loteId, ueId, disciplinaId, anoEscolar });
+                return resultado?.FirstOrDefault() ?? 0;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<ObterNivelProficienciaDto>> ObterNiveisProficienciaPorDisciplinaIdAsync(int disciplinaId, int anoEscolar)
+        {
+            using IDbConnection conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select
+                                            disciplina_id as DisciplinaId,
+                                            ano as Ano,
+                                            descricao as Descricao,
+                                            valor_referencia as ValorReferencia
+                                        from
+                                            nivel_proficiencia
+                                        where
+                                            disciplina_id = @disciplinaId
+                                        and
+                                            ano = @anoEscolar";
+
+                return await conn.QueryAsync<ObterNivelProficienciaDto>(query, new { disciplinaId, anoEscolar });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterTotalAlunosComProficienciaAsync(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = @"
+                                select
+                                    count(distinct bpa.aluno_ra)
+                                from
+                                    boletim_prova_aluno bpa
+                                inner join prova p on p.id = bpa.prova_id
+                                inner join boletim_lote_prova blp on blp.prova_id = p.id
+                                inner join lote_prova lp on lp.id = blp.lote_id
+                                inner join ue u on u.ue_id = bpa.ue_codigo
+                                where
+                                    u.id = @ueId
+                                    and bpa.turma = @turma
+                                    and EXTRACT(YEAR FROM lp.data_criacao) = @anoCriacao
+                                    and bpa.disciplina_id = @disciplinaId
+                                    and bpa.ano_escolar = @anoEscolar
+                                    and p.exibir_no_boletim = true
+                                    and bpa.proficiencia is not null
+                ";
+
+
+                var resultado = await conn.QueryAsync<int>(query, new { ueId, disciplinaId, anoEscolar, turma, anoCriacao });
+                return resultado?.FirstOrDefault() ?? 0;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+                                            bpa.aluno_ra as AlunoRa,
+                                            a.nome as NomeAluno,
+                                            avg(bpa.proficiencia) as Proficiencia,
+                                            blp.lote_id as LoteId,
+                                            bpa.turma as Turma,
+                                            'PSA' as NomeAplicacao,
+                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as Periodo
+                                        from
+                                            boletim_prova_aluno bpa
+                                        inner join prova p on
+                                            p.id = bpa.prova_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = p.id
+                                        inner join lote_prova lp on
+                                            lp.id = blp.lote_id
+                                        inner join aluno a on
+                                            a.ra = bpa.aluno_ra
+                                        inner join ue u on u.ue_id = bpa.ue_codigo
+                                        where
+                                            u.id = @ueId
+                                            and bpa.turma = @turma
+                                            and EXTRACT(YEAR FROM lp.data_criacao) = (
+                                                select EXTRACT(YEAR FROM data_criacao)
+                                                from lote_prova
+                                                where id = @loteId
+                                            )
+                                            and bpa.disciplina_id = @disciplinaId
+                                            and bpa.ano_escolar = @anoEscolar
+                                            and p.exibir_no_boletim = true
+                                            and bpa.proficiencia is not null
+                                        group by
+                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma
+                                        order by
+                                            a.nome;
+                                    ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, turma, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSPAsync(int disciplinaId, int anoLetivo, IEnumerable<long> alunosRa)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                    select
+                                        app.aluno_ra as AlunoRa,
+                                        a.nome as NomeAluno,
+                                        avg(app.proficiencia) as Proficiencia,
+                                        'PSP' as NomeAplicacao,
+                                        '' as Periodo
+                                    from
+                                        aluno_prova_sp_proficiencia app
+                                    inner join aluno a on a.ra = app.aluno_ra
+                                    where
+                                        app.disciplina_id = @disciplinaId
+                                        and app.ano_letivo = @anoLetivo
+                                        and app.aluno_ra = ANY(@alunosRa)
+                                        group by app.aluno_ra, a.nome
+                                    order by a.nome;
+                                ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { disciplinaId, anoLetivo, alunosRa });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<int> ObterAnoPorLoteIdAsync(long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                    SELECT EXTRACT(YEAR FROM data_criacao)
+                    FROM lote_prova
+                    WHERE id = @loteId;
+                ";
+                return await conn.QuerySingleOrDefaultAsync<int>(query, new { loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSaberesAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"
+                                                select
+                                                    be.disciplina_id as disciplinaId,
+                                                    blp.lote_id as loteId,
+                                                    blu.ano_escolar as anoEscolar,
+                                                    'Prova Saberes e Aprendizagens' as nomeAplicacao,
+                                                    initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
+                                                    be.ue_id as ueId,
+                                                    u.nome as ueNome,
+                                                    u.dre_id as dreId,
+                                                    d.abreviacao as dreAbreviacao,
+                                                    d.nome as dreNome,
+                                                    u.tipo_escola as tipoEscola,
+                                                    avg(be.media_proficiencia) as mediaProficiencia,
+                                                    sum(blu.realizaram_prova) as realizaramProva
+                                                from
+                                                    boletim_escolar be
+                                                inner join prova p on
+                                                    p.id = be.prova_id
+                                                inner join ue u on
+                                                    u.id = be.ue_id
+                                                inner join boletim_lote_prova blp on
+                                                    blp.prova_id = be.prova_id
+                                                inner join lote_prova lp on
+                                                    lp.id = blp.lote_id
+                                                inner join boletim_lote_ue blu on
+                                                    blu.ue_id = u.id and
+                                                    blu.lote_id = lp.id and
+                                                    blu.ano_escolar = @anoEscolar
+                                                inner join dre d on
+                                                    d.id = blu.dre_id
+                                                inner join prova_ano_original pao on
+                                                    pao.prova_id = be.prova_id
+                                                where
+                                                    u.dre_id = @dreId
+                                                    and extract(year from p.inicio) = @anoLetivo
+                                                    and pao.ano = @anoEscolarString
+                                                    and be.nivel_ue_codigo is not null
+                                                    and be.disciplina_id = @disciplinaId
+                ");
+
+                if (ueId.HasValue)
+                {
+                    query.AppendLine("and u.id = @ueId");
+                }
+
+                query.AppendLine(@"
+                                    group by
+                                        be.disciplina_id,
+                                        blp.lote_id,
+                                        blu.ano_escolar,
+                                        lp.nome,
+                                        be.ue_id,
+                                        u.nome,
+                                        d.abreviacao,
+                                        d.nome,
+                                        u.dre_id,
+                                        pao.ano,
+                                        u.tipo_escola
+                                    order by
+                                        be.ue_id,
+                                        be.disciplina_id,
+                                        pao.ano;
+                ");
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    anoEscolarString = anoEscolar.ToString(),
+                    ueId
+                };
+
+                return await conn.QueryAsync<UeProficienciaQueryResultDto>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSPAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"
+                                                select
+                                                    apsp.disciplina_id AS disciplinaId,
+                                                    0 as loteId,
+                                                    apsp.ano_escolar as anoEscolar,
+                                                    'Prova São Paulo' AS nomeAplicacao,
+                                                    apsp.ano_letivo AS periodo,
+                                                    u.id AS ueId,
+                                                    u.nome AS ueNome,
+                                                    u.dre_id as dreId,
+                                                    d.abreviacao as dreAbreviacao,
+                                                    d.nome as dreNome,
+                                                    u.tipo_escola AS tipoEscola,
+                                                    round(avg(apsp.proficiencia),2) AS mediaProficiencia,
+                                                    count(distinct apsp.aluno_ra) AS realizaramProva
+                                                FROM
+                                                    aluno_prova_sp_proficiencia apsp
+                                                JOIN
+                                                    ue u ON u.ue_id = apsp.ue_codigo
+                                                JOIN
+                                                    dre d ON d.id = u.dre_id
+                                                where
+                                                    u.dre_id = @dreId
+                                                    and apsp.ano_letivo = @anoLetivo
+                                                    and apsp.disciplina_id = @disciplinaId
+                                                    and apsp.ano_escolar = @anoEscolar
+                ");
+
+                if (ueId.HasValue)
+                {
+                    query.AppendLine("and u.id = @ueId");
+                }
+
+                query.AppendLine(@"
+                                    group by
+                                        apsp.disciplina_id,
+                                        apsp.ano_escolar,
+                                        apsp.ano_letivo,
+                                        u.id,
+                                        u.nome,
+                                        u.dre_id,
+                                        d.abreviacao,
+                                        d.nome,
+                                        u.tipo_escola;
+                ");
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    ueId
+                };
+
+                return await conn.QueryAsync<UeProficienciaQueryResultDto>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+    
+
+
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+
+
+            try
+            {
+                const string query = @"
+                                       select
+                                            be.disciplina_id as disciplinaId,
+                                            blp.lote_id as loteId,
+                                            blu.ano_escolar as anoEscolar,
+                                            'Prova Saberes e Aprendizagens' as nomeAplicacao,
+                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
+                                       count(distinct be.ue_id) as quantidadeUes,
+                                          
+                                            u.dre_id as dreId,
+                                            d.abreviacao as dreAbreviacao,
+                                            d.nome as dreNome,
+                                         
+                                            avg(be.media_proficiencia) as mediaProficiencia,
+                                            sum(blu.realizaram_prova) as realizaramProva
+                                        from
+                                            boletim_escolar be
+                                        inner join prova p on
+                                            p.id = be.prova_id
+                                        inner join ue u on
+                                            u.id = be.ue_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = be.prova_id
+                                        inner join lote_prova lp on
+                                            lp.id = blp.lote_id
+                                        inner join boletim_lote_ue blu on
+                                            blu.ue_id = u.id and
+                                            blu.lote_id = lp.id and
+                                            blu.ano_escolar = @anoEscolar
+                                        inner join dre d on
+                                            d.id = blu.dre_id
+                                        inner join prova_ano_original pao on
+                                            pao.prova_id = be.prova_id
+                                        where
+                                            u.dre_id = @dreId
+                                            and extract(year from p.inicio) = @anoLetivo
+                                            and pao.ano = @anoEscolarString
+                                            and be.nivel_ue_codigo is not null
+                                            and be.disciplina_id = @disciplinaId
+                                            
+                                         group by
+                                                be.disciplina_id,
+                                                blp.lote_id,
+                                                blu.ano_escolar,
+                                                lp.nome,
+                                                                          
+                                                d.abreviacao,
+                                                d.nome,
+                                                u.dre_id,
+                                                pao.ano
+                                              
+                                         order by
+                                             blp.lote_id,
+                                             be.disciplina_id,
+                                             pao.ano;
+                                             ";
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    anoEscolarString = anoEscolar.ToString(),
+                    
+                };
+                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query, parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId , int anoLetivo, int disciplinaId,  int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"
+                                 
+                                   select  apsp.disciplina_id AS disciplinaId,
+                                            apsp.ano_escolar as anoEscolar,
+                                            'Prova São Paulo' AS nomeAplicacao,
+                                            apsp.ano_letivo AS periodo,                                       
+                                            count(distinct u.id) as quantidadeUes,
+                                            u.dre_id as dreId,
+                                            d.abreviacao as dreAbreviacao,
+                                            d.nome as dreNome,
+                                            round(avg(apsp.proficiencia),2) AS mediaProficiencia,
+                                            count(distinct apsp.aluno_ra) AS realizaramProva
+                                        FROM
+                                            aluno_prova_sp_proficiencia apsp
+                                        JOIN
+                                            ue u ON u.ue_id = apsp.ue_codigo
+                                        JOIN
+                                            dre d ON d.id = u.dre_id
+                                        where
+                                            u.dre_id = @dreId
+                                            and apsp.ano_letivo = @anoLetivo
+                                            and apsp.disciplina_id = @disciplinaId
+                                            and apsp.ano_escolar = @anoEscolar
+									group by
+                                         apsp.disciplina_id,
+                                         apsp.ano_escolar,
+                                         apsp.ano_letivo,
+                                         u.dre_id,
+                                         d.abreviacao,
+                                         d.nome
+                                
+        ");
+
+                var parametros = new
+                {
+                    dreId,
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar
+                };
+
+                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query.ToString(), parametros);
+            }
+
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+
     }
+
 }
