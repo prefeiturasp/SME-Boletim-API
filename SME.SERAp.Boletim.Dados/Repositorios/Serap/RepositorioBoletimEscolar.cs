@@ -1571,7 +1571,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                          d.abreviacao,
                                          d.nome
                                 
-        ");
+                        ");
 
                 var parametros = new
                 {
@@ -1595,7 +1595,71 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
+        public async Task<IEnumerable<ResultadoProeficienciaSme>> ObterProficienciaSmeProvaSaberesAsync(int anoLetivo, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
 
+
+            try
+            {
+                const string query = @"select
+                                         be.disciplina_id as disciplinaId,
+                                         blp.lote_id as loteId,
+                                         blu.ano_escolar as anoEscolar,
+                                         'Prova Saberes e Aprendizagens' as nomeAplicacao,
+                                         initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
+                                         count(distinct d.id) as quantidadeDres,
+	                                     count(distinct be.ue_id) as quantidadeUes,
+                                         avg(be.media_proficiencia) as mediaProficiencia,
+                                         sum(blu.realizaram_prova) as realizaramProva
+                                     from
+                                         boletim_escolar be
+                                     inner join prova p on
+                                         p.id = be.prova_id
+                                     inner join ue u on
+                                         u.id = be.ue_id
+                                     inner join boletim_lote_prova blp on
+                                         blp.prova_id = be.prova_id
+                                     inner join lote_prova lp on
+                                         lp.id = blp.lote_id
+                                     inner join boletim_lote_ue blu on
+                                         blu.ue_id = u.id and
+                                         blu.lote_id = lp.id and
+                                         blu.ano_escolar = @anoEscolar
+                                     inner join dre d on
+                                         d.id = blu.dre_id
+                                     inner join prova_ano_original pao on
+                                         pao.prova_id = be.prova_id
+                                     where
+                                         extract(year from p.inicio) = @anoLetivo
+                                         and pao.ano = @anoEscolarString
+                                         and be.nivel_ue_codigo is not null
+                                         and be.disciplina_id = @disciplinaId 
+                                      group by
+                                             be.disciplina_id,
+                                             blp.lote_id,
+                                             blu.ano_escolar,
+                                             lp.nome,          
+                                             pao.ano    
+                                      order by
+                                          blp.lote_id,
+                                          be.disciplina_id,
+                                          pao.ano";
+
+                var parametros = new
+                {
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar,
+                    anoEscolarString = anoEscolar.ToString(),
+                };
+                return await conn.QueryAsync<ResultadoProeficienciaSme>(query, parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
-
 }
