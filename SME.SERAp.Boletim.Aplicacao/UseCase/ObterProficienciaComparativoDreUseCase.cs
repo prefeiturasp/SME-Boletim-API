@@ -20,7 +20,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             this.repositorioBoletimEscolar = repositorioBoletimEscolar;
         }
 
-        public async Task<TabelaComparativaDrePspPsaDto> Executar(int dreId, int anoLetivo  , int disciplinaId, int anoEscolar)
+        public async Task<TabelaComparativaDrePspPsaDto> Executar(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
 
 
@@ -33,22 +33,17 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var proficienciaComparativaPspDreDto = new ProficienciaTabelaComparativaDre();
             var proficienciasPsp = listaProficienciasPsp.FirstOrDefault();
 
-            proficienciaComparativaPspDreDto.Descricao = proficienciasPsp?.NomeAplicacao;
-            proficienciaComparativaPspDreDto.Mes = proficienciasPsp?.Periodo;
-            proficienciaComparativaPspDreDto.ValorProficiencia = Math.Round((decimal)proficienciasPsp.MediaProficiencia, 2);
-            proficienciaComparativaPspDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia));
-            proficienciaComparativaPspDreDto.QtdeEstudante = proficienciasPsp.RealizaramProva;
-            proficienciaComparativaPspDreDto.QtdeUe = proficienciasPsp.QuantidadeUes;
-
-
-
-            listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPspDreDto);
-
+         
+                proficienciaComparativaPspDreDto.Descricao = proficienciasPsp?.NomeAplicacao;
+                proficienciaComparativaPspDreDto.Mes = proficienciasPsp?.Periodo;
+                proficienciaComparativaPspDreDto.ValorProficiencia = proficienciasPsp != null ? Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2) : 0;
+                proficienciaComparativaPspDreDto.NivelProficiencia = proficienciasPsp != null ?  await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia)): string.Empty ;
+                proficienciaComparativaPspDreDto.QtdeEstudante = proficienciasPsp != null ? proficienciasPsp.RealizaramProva : 0 ;
+                proficienciaComparativaPspDreDto.QtdeUe = proficienciasPsp != null ? proficienciasPsp.QuantidadeUes: 0;
+                listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPspDreDto);
 
             if (proficienciasPsa.Any())
             {
-
-
                 foreach (var proficiencia in proficienciasPsa)
                 {
                     var proficienciaComparativaPsaDreDto = new ProficienciaTabelaComparativaDre();
@@ -75,7 +70,8 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         private static decimal calculaVariacao(IEnumerable<ResultadoProeficienciaPorDre> proficienciasPsa, ResultadoProeficienciaPorDre proficienciasPsp)
         {
             var proficienciaFinal = proficienciasPsa.LastOrDefault() != null ? proficienciasPsa.LastOrDefault().MediaProficiencia : 0;
-            var variacao = (decimal)BoletimExtensions.CalcularPercentual((decimal)proficienciaFinal, (decimal)proficienciasPsp.MediaProficiencia);
+            var mediaProficiencia = proficienciasPsp != null ? proficienciasPsp.MediaProficiencia : 0;
+            var variacao = (decimal)BoletimExtensions.CalcularPercentual((decimal)proficienciaFinal, (decimal)mediaProficiencia);
             return variacao;
         }
     }

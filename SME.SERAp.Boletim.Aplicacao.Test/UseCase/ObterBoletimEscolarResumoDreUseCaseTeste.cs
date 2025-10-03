@@ -9,6 +9,7 @@ using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,6 +118,70 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             Assert.Equal(0, resultado.TotalAlunos);
             Assert.Empty(resultado.ProficienciaDisciplina);
         }
+
+        [Fact]
+        public async Task Executar_Deve_Lancar_Excecao_Quando_DreId_Nao_Esta_Na_Abrangencia()
+        {
+            var loteId = 1L;
+            var dreId = 999L; // não existe na lista de abrangência
+            var anoEscolar = 5;
+
+            var mediatorMock = new Mock<IMediator>();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+
+            var useCase = new ObterBoletimEscolarResumoDreUseCase(mediatorMock.Object);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar));
+        }
+
+        [Fact]
+        public async Task Executar_Deve_Lancar_Excecao_Quando_Perfil_Usuario_For_Nulo()
+        {
+            var loteId = 1L;
+            var dreId = 10L; // existe na abrangência
+            var anoEscolar = 5;
+
+            var mediatorMock = new Mock<IMediator>();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((TipoPerfil?)null); // perfil nulo
+
+            var useCase = new ObterBoletimEscolarResumoDreUseCase(mediatorMock.Object);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar));
+        }
+
+        [Fact]
+        public async Task Executar_Deve_Lancar_Excecao_Quando_Perfil_Nao_Pode_Visualizar_Dre()
+        {
+            var loteId = 1L;
+            var dreId = 10L;
+            var anoEscolar = 5;
+
+            var mediatorMock = new Mock<IMediator>();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Professor); // supondo que Professor não pode visualizar DRE
+
+            var useCase = new ObterBoletimEscolarResumoDreUseCase(mediatorMock.Object);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar));
+        }
+
 
         private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
         {

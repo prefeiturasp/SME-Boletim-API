@@ -1,20 +1,13 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using Moq;
-using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaDre;
 using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Dominio.Enumerados;
-using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
-namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
+namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 {
     public class ObterProficienciaDreUseCaseTest
     {
@@ -166,6 +159,30 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
 
             // Assert
             mediatorMock.Verify(m => m.Send(It.IsAny<ObterProficienciaDreQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException quando usuário não for administrador")]
+        public async Task DeveLancarExcecaoSeUsuarioNaoForAdministrador()
+        {
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Professor); // perfil sem permissão
+
+            var useCase = new ObterProficienciaDreUseCase(mediatorMock.Object);
+
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(5, 1));
+            Assert.Equal("Usuário sem permissão.", ex.Message);
+        }
+
+        [Fact(DisplayName = "Deve lançar NaoAutorizadoException quando tipoPerfilUsuarioLogado for null")]
+        public async Task DeveLancarExcecaoSeTipoPerfilNulo()
+        {
+            mediatorMock.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((TipoPerfil?)null);
+
+            var useCase = new ObterProficienciaDreUseCase(mediatorMock.Object);
+
+            var ex = await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(5, 1));
+            Assert.Equal("Usuário sem permissão.", ex.Message);
         }
 
         private ProficienciaDreCompletoDto ObterProficienciaDreCompletoMock()

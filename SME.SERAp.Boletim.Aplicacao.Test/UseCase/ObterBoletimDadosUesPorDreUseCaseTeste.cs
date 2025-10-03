@@ -7,6 +7,7 @@ using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
 {
@@ -97,6 +98,61 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.UseCase
             Assert.Empty(resultado.Itens);
             mediator.Verify(m => m.Send(It.IsAny<ObterBoletimDadosUesPorDreQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [Fact]
+        public async Task Deve_Lancar_Excecao_Quando_DreId_Nao_Esta_Na_Abrangencia()
+        {
+            var loteId = 1L;
+            var dreId = 999L;
+            var anoEscolar = 5;
+            var filtros = new FiltroUeBoletimDadosDto();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar, filtros));
+        }
+
+        [Fact]
+        public async Task Deve_Lancar_Excecao_Quando_Perfil_Usuario_For_Nulo()
+        {
+            var loteId = 1L;
+            var dreId = 10L; 
+            var anoEscolar = 5;
+            var filtros = new FiltroUeBoletimDadosDto();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((TipoPerfil?)null);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar, filtros));
+        }
+
+        [Fact]
+        public async Task Deve_Lancar_Excecao_Quando_Perfil_Nao_Pode_Visualizar_Dre()
+        {
+            var loteId = 1L;
+            var dreId = 10L;
+            var anoEscolar = 5;
+            var filtros = new FiltroUeBoletimDadosDto();
+
+            var dresAbrangencia = ObterDresAbrangenciaUsuarioLogado();
+            mediator.Setup(x => x.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dresAbrangencia);
+
+            mediator.Setup(x => x.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Professor);
+
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(loteId, dreId, anoEscolar, filtros));
+        }
+
 
         private IEnumerable<DreAbragenciaDetalheDto> ObterDresAbrangenciaUsuarioLogado()
         {

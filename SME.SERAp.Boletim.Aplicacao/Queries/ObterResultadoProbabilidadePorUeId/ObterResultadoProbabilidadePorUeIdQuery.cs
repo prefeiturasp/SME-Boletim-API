@@ -7,7 +7,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterResultadoProbabilidadePorUeId
     {
         public long LoteId { get; }
         public long UeId { get; }
-        public long ProvaId { get; }
         public long DisciplinaId { get; }
         public int AnoEscolar { get; }
         public FiltroBoletimResultadoProbabilidadeDto Filtros { get; set; }

@@ -7,6 +7,7 @@ using SME.SERAp.Boletim.Dados.Repositorios.Serap;
 using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace SME.SERAp.Boletim.Aplicacao.Teste.Queries
 {
@@ -126,6 +127,76 @@ namespace SME.SERAp.Boletim.Aplicacao.Teste.Queries
             repositorioAbrangencia.Verify(r => r.ObterDresAbrangenciaPorLoginPerfil(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
             repositorioCache.Verify(r => r.ObterRedisToJsonAsync(It.IsAny<string>()), Times.Once);
             repositorioCache.Verify(r => r.SalvarRedisToJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Nao_Deve_Retornar_Dres_Abrangencia_Quando_Login_Usuario_For_Nulo()
+        {
+            httpContextAccessor.Setup(x => x.HttpContext.User).Returns(new ClaimsPrincipal());
+
+            var requisicao = new ObterDresAbrangenciaUsuarioLogadoQuery();
+            var resultado = await obterDresAbrangenciaUsuarioLogadoQueryHandler.Handle(requisicao, CancellationToken.None);
+
+            Assert.Null(resultado);
+            repositorioAbrangencia.Verify(r => r.ObterDresAdministrador(), Times.Never);
+            repositorioAbrangencia.Verify(r => r.ObterDresAbrangenciaPorLoginPerfil(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
+            repositorioCache.Verify(r => r.ObterRedisToJsonAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Nao_Deve_Retornar_Dres_Abrangencia_Quando_Perfil_Usuario_For_Invalido()
+        {
+            var claimsUsuarioLogado = new List<Claim>
+            {
+                new Claim("LOGIN", "123"),
+                new Claim("PERFIL", "PerfilInvalido")
+            };
+
+            var identityUsuarioLogado = new ClaimsIdentity(claimsUsuarioLogado, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identityUsuarioLogado);
+            httpContextAccessor.Setup(x => x.HttpContext.User).Returns(claimsPrincipal);
+
+            var requisicao = new ObterDresAbrangenciaUsuarioLogadoQuery();
+            var resultado = await obterDresAbrangenciaUsuarioLogadoQueryHandler.Handle(requisicao, CancellationToken.None);
+
+            Assert.Null(resultado);
+            repositorioAbrangencia.Verify(r => r.ObterDresAdministrador(), Times.Never);
+            repositorioAbrangencia.Verify(r => r.ObterDresAbrangenciaPorLoginPerfil(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
+            repositorioCache.Verify(r => r.ObterRedisToJsonAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Deve_Retornar_Dres_Abrangencia_Do_Cache()
+        {
+            var claimsUsuarioLogado = new List<Claim>
+            {
+                new Claim("LOGIN", "123"),
+                new Claim("PERFIL", Guid.NewGuid().ToString())
+            };
+
+            var identityUsuarioLogado = new ClaimsIdentity(claimsUsuarioLogado, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identityUsuarioLogado);
+            httpContextAccessor.Setup(x => x.HttpContext.User).Returns(claimsPrincipal);
+
+            var dresCache = new List<DreAbragenciaDetalheDto>
+            {
+                new DreAbragenciaDetalheDto { Id = 99, Nome = "DRE cacheada" }
+            };
+
+            repositorioCache.Setup(r => r.ObterRedisToJsonAsync(It.IsAny<string>()))
+                .ReturnsAsync(JsonSerializer.Serialize(dresCache));
+
+            var requisicao = new ObterDresAbrangenciaUsuarioLogadoQuery();
+            var resultado = await obterDresAbrangenciaUsuarioLogadoQueryHandler.Handle(requisicao, CancellationToken.None);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal(99, resultado.First().Id);
+
+            repositorioAbrangencia.Verify(r => r.ObterDresAdministrador(), Times.Never);
+            repositorioAbrangencia.Verify(r => r.ObterDresAbrangenciaPorLoginPerfil(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
+            repositorioCache.Verify(r => r.ObterRedisToJsonAsync(It.IsAny<string>()), Times.Once);
+            repositorioCache.Verify(r => r.SalvarRedisToJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
         }
 
         private static List<DreAbragenciaDetalheDto> ObterDresAbragenciaUsuarioAdministrador()
