@@ -1661,5 +1661,50 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 conn.Dispose();
             }
         }
+
+        public async Task<IEnumerable<ResultadoProeficienciaSme>> ObterProficienciaSmeProvaSPAsync(int anoLetivo, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                var query = new StringBuilder(@"select
+	                                                apsp.disciplina_id as disciplinaId,
+	                                                apsp.ano_escolar as anoEscolar,
+	                                                'Prova São Paulo' as nomeAplicacao,
+	                                                apsp.ano_letivo as periodo,
+	                                                count(distinct d.id) as quantidadeDres,
+	                                                count(distinct u.id) as quantidadeUes,
+	                                                round(avg(apsp.proficiencia), 2) as mediaProficiencia,
+	                                                count(distinct apsp.aluno_ra) as realizaramProva
+                                                from
+	                                                aluno_prova_sp_proficiencia apsp
+                                                inner join ue u on
+	                                                u.ue_id = apsp.ue_codigo
+                                                inner join dre d on
+	                                                d.id = u.dre_id
+                                                where
+	                                                apsp.ano_letivo = @anoLetivo
+	                                                and apsp.disciplina_id = @disciplinaId
+	                                                and apsp.ano_escolar = @anoEscolar
+                                                group by
+	                                                apsp.disciplina_id,
+	                                                apsp.ano_escolar,
+	                                                apsp.ano_letivo");
+
+                var parametros = new
+                {
+                    disciplinaId,
+                    anoLetivo,
+                    anoEscolar
+                };
+
+                return await conn.QueryAsync<ResultadoProeficienciaSme>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
     }
 }
