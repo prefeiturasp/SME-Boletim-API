@@ -1,10 +1,13 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaPorDisciplinaId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaSmeProvaSaberes;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaSmeProvaSP;
+using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 using SME.SERAp.Boletim.Infra.Extensions;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
@@ -19,6 +22,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<TabelaComparativaSmePspPsaDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar)
         {
+            var tipoPerfilUsuarioLogado = await mediator.Send(new ObterTipoPerfilUsuarioLogadoQuery());
+
+            if (tipoPerfilUsuarioLogado is null || tipoPerfilUsuarioLogado.Value != TipoPerfil.Administrador)
+                throw new NaoAutorizadoException("Usuário sem permissão.");
+
             var proficienciasPsa = await mediator.Send(new ObterProficienciaSmeProvaSaberesQuery(anoLetivo, disciplinaId, anoEscolar));
             var listaProficienciasPsp = await mediator.Send(new ObterProficienciaSmeProvaSPQuery(anoLetivo - 1, disciplinaId, anoEscolar - 1));
             var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaPorDisciplinaIdQuery(disciplinaId, anoEscolar));
@@ -26,16 +34,19 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var listaProdificiencasComparativaSme = new List<ProficienciaTabelaComparativaSmeDto>();
 
             var proficienciaComparativaPspSmeDto = new ProficienciaTabelaComparativaSmeDto();
-            var proficienciasPsp = listaProficienciasPsp.FirstOrDefault();
+            var proficienciasPsp = listaProficienciasPsp?.FirstOrDefault();
 
-            proficienciaComparativaPspSmeDto.Descricao = proficienciasPsp?.NomeAplicacao;
-            proficienciaComparativaPspSmeDto.Mes = proficienciasPsp?.Periodo;
-            proficienciaComparativaPspSmeDto.ValorProficiencia = proficienciasPsp != null ? Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2) : 0;
-            proficienciaComparativaPspSmeDto.NivelProficiencia = proficienciasPsp != null ? await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia)) : string.Empty;
-            proficienciaComparativaPspSmeDto.QtdeEstudante = proficienciasPsp != null ? proficienciasPsp.RealizaramProva : 0;
-            proficienciaComparativaPspSmeDto.QtdeUe = proficienciasPsp != null ? proficienciasPsp.QuantidadeUes : 0;
-            proficienciaComparativaPspSmeDto.QtdeDre = proficienciasPsp != null ? proficienciasPsp.QuantidadeDres : 0;
-            listaProdificiencasComparativaSme.Add(proficienciaComparativaPspSmeDto);
+            if (proficienciasPsp is not null)
+            {
+                proficienciaComparativaPspSmeDto.Descricao = proficienciasPsp.NomeAplicacao;
+                proficienciaComparativaPspSmeDto.Mes = proficienciasPsp.Periodo;
+                proficienciaComparativaPspSmeDto.ValorProficiencia = Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2);
+                proficienciaComparativaPspSmeDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia));
+                proficienciaComparativaPspSmeDto.QtdeEstudante = proficienciasPsp.RealizaramProva;
+                proficienciaComparativaPspSmeDto.QtdeUe = proficienciasPsp.QuantidadeUes;
+                proficienciaComparativaPspSmeDto.QtdeDre = proficienciasPsp.QuantidadeDres;
+                listaProdificiencasComparativaSme.Add(proficienciaComparativaPspSmeDto);
+            }
 
             if (proficienciasPsa.Any())
             {
