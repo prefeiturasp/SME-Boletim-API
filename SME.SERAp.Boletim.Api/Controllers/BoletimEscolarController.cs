@@ -362,6 +362,13 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
-
+        [HttpGet("dados-tabela-comparativa-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaSmePspPsaDto), 200)]
+        public async Task<IActionResult> ObterTabelaComparativaSme(int anoAplicacao, int disciplinaId, int anoEscolar,
+            [FromServices] IObterProficienciaComparativoSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
     }
 }
