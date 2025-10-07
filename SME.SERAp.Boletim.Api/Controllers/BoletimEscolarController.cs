@@ -362,6 +362,27 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("anos-aplicacao-sme")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public async Task<IActionResult> ObterAnosAplicacaoPorSme([FromServices] IObterAnosAplicacaoPorSmeUseCase obterAnosAplicacaoPorSmeUseCase)
+        {
+            return Ok(await obterAnosAplicacaoPorSmeUseCase.Executar());
+        }
+        [HttpGet("componentes-curriculares-sme/{anoAplicacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterComponentesCurricularesSmePorAno(int anoAplicacao, [FromServices] IObterComponentesCurricularesSmePorAnoUseCase obterComponentesCurricularesSmePorAnoUseCase)
+        {
+            return Ok(await obterComponentesCurricularesSmePorAnoUseCase.Executar(anoAplicacao));
+        }
 
+        [HttpGet("anos-escolares-sme/{anoAplicacao}/{disciplinaId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterAnosEscolaresPorSmeAnoAplicacao(int anoAplicacao, int disciplinaId, [FromServices] IObterAnosEscolaresPorSmeAnoAplicacaoUseCase obterAnosEscolaresPorSmeAnoAplicacaoUseCase)
+        {
+            return Ok(await obterAnosEscolaresPorSmeAnoAplicacaoUseCase.Executar(anoAplicacao, disciplinaId));
+        }
     }
 }
