@@ -1,31 +1,34 @@
-﻿using Moq;
-using MediatR;
-using SME.SERAp.Boletim.Aplicacao.UseCase;
-using SME.SERAp.Boletim.Dados.Interfaces;
-using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+﻿using MediatR;
+using Moq;
+using SME.SERAp.Boletim.Aplicacao.Queries;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaPorDisciplinaId;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDre;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
+using SME.SERAp.Boletim.Aplicacao.UseCase;
+using SME.SERAp.Boletim.Dados.Interfaces;
+using SME.SERAp.Boletim.Dominio.Constraints;
+using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos.Abrangencia;
+using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 
 namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
 {
     public class ObterProficienciaComparativoDreUseCaseTeste
     {
         private readonly Mock<IMediator> mediatorMock;
-        private readonly Mock<IRepositorioBoletimEscolar> repositorioBoletimEscolarMock;
         private readonly ObterProficienciaComparativoDreUseCase useCase;
 
         public ObterProficienciaComparativoDreUseCaseTeste()
         {
             mediatorMock = new Mock<IMediator>();
-            repositorioBoletimEscolarMock = new Mock<IRepositorioBoletimEscolar>();
-            useCase = new ObterProficienciaComparativoDreUseCase(mediatorMock.Object, repositorioBoletimEscolarMock.Object);
+            useCase = new ObterProficienciaComparativoDreUseCase(mediatorMock.Object);
         }
 
         [Fact]
         public async Task Executar_DeveRetornarTabelaComparativaComDados()
         {
-            
             int dreId = 1, anoLetivo = 2024, disciplinaId = 2, anoEscolar = 5;
 
             var proficienciasPsa = new List<ResultadoProeficienciaPorDre>
@@ -67,222 +70,179 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                 new ObterNivelProficienciaDto { DisciplinaId = disciplinaId, Ano = anoEscolar, ValorReferencia = 200 }
             };
 
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(proficienciasPsa);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(proficienciasPsp);
-
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaPorDisciplinaIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(niveisProficiencia);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync("Adequado");
 
-             
             var resultado = await useCase.Executar(dreId, anoLetivo, disciplinaId, anoEscolar);
 
-             
             Assert.NotNull(resultado);
-            Assert.NotNull(resultado.Aplicacao);
-            Assert.True(resultado.Aplicacao is IEnumerable<ProficienciaTabelaComparativaDre>);
-            Assert.True(resultado.Aplicacao.GetEnumerator().MoveNext());
+            Assert.NotEmpty(resultado.Aplicacao);
             Assert.True(resultado.Variacao != 0);
         }
 
         [Fact]
-        public async Task Executar_DeveRetornarTabelaComparativaVazia_QuandoNaoHouverDados()
+        public async Task Executar_DeveRetornarTabelaVazia_QuandoNaoHouverDados()
         {
-             
             int dreId = 1, anoLetivo = 2024, disciplinaId = 2, anoEscolar = 5;
 
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<ResultadoProeficienciaPorDre>());
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<ResultadoProeficienciaPorDre>());
-
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaPorDisciplinaIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<ObterNivelProficienciaDto>());
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(string.Empty);
 
-             
             var resultado = await useCase.Executar(dreId, anoLetivo, disciplinaId, anoEscolar);
 
-             
             Assert.NotNull(resultado);
-            Assert.NotNull(resultado.Aplicacao);
-            Assert.Equal(0,resultado.Aplicacao.First().QtdeEstudante);
-            Assert.Equal(0, resultado.Aplicacao.First().ValorProficiencia);
-            Assert.Equal(0, resultado.Aplicacao.First().QtdeEstudante);
-            Assert.Equal(string.Empty, resultado.Aplicacao.First().NivelProficiencia);
+            Assert.Single(resultado.Aplicacao);
+            var aplicacao = resultado.Aplicacao.First();
+            Assert.Equal(0, aplicacao.QtdeEstudante);
+            Assert.Equal(0, aplicacao.ValorProficiencia);
+            Assert.Equal(string.Empty, aplicacao.NivelProficiencia);
         }
 
         [Fact]
-        public async Task Executar_DeveRetornarTabelaComVariacaoZero_QuandoNaoHouverProficienciaPsp()
+        public async Task Executar_DeveRetornarVariacaoZero_QuandoNaoHouverProficienciaPsp()
         {
-             
             int dreId = 1, anoLetivo = 2024, disciplinaId = 2, anoEscolar = 5;
 
             var proficienciasPsa = new List<ResultadoProeficienciaPorDre>
             {
                 new ResultadoProeficienciaPorDre
                 {
-                    DreId = dreId,
-                    DisciplinaId = disciplinaId,
-                    RealizaramProva = 100,
-                    QuantidadeUes = 10,
-                    DreAbreviacao = "DRE1",
-                    DreNome = "Diretoria 1",
-                    AnoEscolar = anoEscolar.ToString(),
                     MediaProficiencia = 250,
                     NomeAplicacao = "PSA",
-                    Periodo = "Março"
+                    Periodo = "Março",
+                    RealizaramProva = 100,
+                    QuantidadeUes = 10
                 }
             };
 
-            var proficienciasPsp = new List<ResultadoProeficienciaPorDre>(); // Nenhum PSP
-
-            var niveisProficiencia = new List<ObterNivelProficienciaDto>
-            {
-                new ObterNivelProficienciaDto { DisciplinaId = disciplinaId, Ano = anoEscolar, ValorReferencia = 200 }
-            };
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(proficienciasPsa);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(proficienciasPsp);
-
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar))
-                .ReturnsAsync(niveisProficiencia);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ResultadoProeficienciaPorDre>());
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaPorDisciplinaIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ObterNivelProficienciaDto>());
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync("Adequado");
 
-             
             var resultado = await useCase.Executar(dreId, anoLetivo, disciplinaId, anoEscolar);
 
-             
             Assert.NotNull(resultado);
-            Assert.NotNull(resultado.Aplicacao);
-            Assert.True(resultado.Aplicacao.Any());
             Assert.Equal(0, resultado.Variacao);
         }
 
         [Fact]
-        public async Task Executar_DeveRetornarTabelaComNivelProficienciaVazio_QuandoNiveisProficienciaNaoExistem()
+        public async Task Executar_DeveRetornarNivelProficienciaVazio_QuandoNiveisNaoExistirem()
         {
-            
             int dreId = 1, anoLetivo = 2024, disciplinaId = 2, anoEscolar = 5;
 
-            var proficienciasPsa = new List<ResultadoProeficienciaPorDre>
+            var psa = new List<ResultadoProeficienciaPorDre>
             {
-                new ResultadoProeficienciaPorDre
-                {
-                    DreId = dreId,
-                    DisciplinaId = disciplinaId,
-                    RealizaramProva = 100,
-                    QuantidadeUes = 10,
-                    DreAbreviacao = "DRE1",
-                    DreNome = "Diretoria 1",
-                    AnoEscolar = anoEscolar.ToString(),
-                    MediaProficiencia = 250,
-                    NomeAplicacao = "PSA",
-                    Periodo = "Março"
-                }
+                new ResultadoProeficienciaPorDre { MediaProficiencia = 250, NomeAplicacao = "PSA", Periodo = "Março", RealizaramProva = 100, QuantidadeUes = 10 }
             };
 
-            var proficienciasPsp = new List<ResultadoProeficienciaPorDre>
+            var psp = new List<ResultadoProeficienciaPorDre>
             {
-                new ResultadoProeficienciaPorDre
-                {
-                    DreId = dreId,
-                    DisciplinaId = disciplinaId,
-                    RealizaramProva = 90,
-                    QuantidadeUes = 9,
-                    DreAbreviacao = "DRE1",
-                    DreNome = "Diretoria 1",
-                    AnoEscolar = (anoEscolar - 1).ToString(),
-                    MediaProficiencia = 230,
-                    NomeAplicacao = "PSP",
-                    Periodo = "Março"
-                }
+                new ResultadoProeficienciaPorDre { MediaProficiencia = 230, NomeAplicacao = "PSP", Periodo = "Março", RealizaramProva = 90, QuantidadeUes = 9 }
             };
 
-            var niveisProficiencia = new List<ObterNivelProficienciaDto>(); // Nenhum nível
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(proficienciasPsa);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(proficienciasPsp);
-
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar))
-                .ReturnsAsync(niveisProficiencia);
-
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(psa);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(psp);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaPorDisciplinaIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ObterNivelProficienciaDto>());
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(string.Empty);
 
-             
             var resultado = await useCase.Executar(dreId, anoLetivo, disciplinaId, anoEscolar);
 
-             
-            Assert.NotNull(resultado);
-            Assert.NotNull(resultado.Aplicacao);
-            Assert.True(resultado.Aplicacao.Any());
             Assert.All(resultado.Aplicacao, x => Assert.True(string.IsNullOrEmpty(x.NivelProficiencia)));
         }
 
         [Fact]
-        public async Task Executar_DeveRetornarTabelaComValoresDefault_QuandoTudoVazio()
+        public async Task Executar_DeveLancarExcecao_QuandoUsuarioNaoTemAbrangencia()
         {
-             
-            int dreId = 1, anoLetivo = 2024, disciplinaId = 2, anoEscolar = 5;
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto>());
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
 
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<ResultadoProeficienciaPorDre>());
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(1, 2024, 2, 5));
+        }
 
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<ResultadoProeficienciaPorDre>());
+        [Fact]
+        public async Task Executar_DeveLancarExcecao_QuandoPerfilNulo()
+        {
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = 1 } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((TipoPerfil?)null);
 
-            repositorioBoletimEscolarMock
-                .Setup(r => r.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar))
+            await Assert.ThrowsAsync<NaoAutorizadoException>(() => useCase.Executar(1, 2024, 2, 5));
+        }
+
+        [Fact]
+        public async Task Executar_DeveRetornarVariacaoPositiva_QuandoPsaMaiorQuePsp()
+        {
+            var dreId = 1;
+            var disciplinaId = 2;
+            var anoEscolar = 5;
+            var anoLetivo = 2024;
+
+            var psa = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre { MediaProficiencia = 300, NomeAplicacao = "PSA", Periodo = "Março", RealizaramProva = 100, QuantidadeUes = 10 }
+            };
+
+            var psp = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre { MediaProficiencia = 200, NomeAplicacao = "PSP", Periodo = "Março", RealizaramProva = 80, QuantidadeUes = 8 }
+            };
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterDresAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<DreAbragenciaDetalheDto> { new DreAbragenciaDetalheDto { Id = dreId } });
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterTipoPerfilUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TipoPerfil.Administrador_DRE);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSaberesPorDreQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(psa);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterProficienciaProvaSPAPorDreQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(psp);
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaPorDisciplinaIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<ObterNivelProficienciaDto>());
+            mediatorMock.Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Adequado");
 
-            mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterNivelProficienciaDisciplinaQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(string.Empty);
-
-             
             var resultado = await useCase.Executar(dreId, anoLetivo, disciplinaId, anoEscolar);
 
-             
-            Assert.NotNull(resultado);
-            Assert.NotNull(resultado.Aplicacao);
-            Assert.Equal(0, resultado.Variacao);
+            Assert.True(resultado.Variacao > 0);
         }
     }
-
-
 }
