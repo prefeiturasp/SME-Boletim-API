@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
-    public interface IObterProficienciaComparativoSmeUseCase
+    public interface IObterGraficoProficienciaComparativoSmeUseCase
     {
         Task<GraficoComparativoSmeDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar);
     }

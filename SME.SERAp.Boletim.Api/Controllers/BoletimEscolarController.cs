@@ -385,10 +385,10 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(await obterAnosEscolaresPorSmeAnoAplicacaoUseCase.Executar(anoAplicacao, disciplinaId));
         }
 
-        [HttpGet("sme-comparacao-grafico/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [HttpGet("comparacao-grafico-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
         [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
         public async Task<IActionResult> ObterGraficoComparativoPorSme(int anoAplicacao, int disciplinaId, int anoEscolar,
-         [FromServices] IObterProficienciaComparativoSmeUseCase useCase)
+         [FromServices] IObterGraficoProficienciaComparativoSmeUseCase useCase)
         {
             var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
             if(resultado is not null)

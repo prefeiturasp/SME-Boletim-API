@@ -21,12 +21,12 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
-    public class ObterProficienciaComparativoSmeUseCase : IObterProficienciaComparativoSmeUseCase
+    public class ObterGraficoProficienciaComparativoGraficoSmeUseCase : IObterGraficoProficienciaComparativoSmeUseCase
     {
         private readonly IMediator mediator;
         private readonly IRepositorioBoletimEscolar repositorioBoletimEscolar;
 
-        public ObterProficienciaComparativoSmeUseCase(IMediator mediator, IRepositorioBoletimEscolar repositorioBoletimEscolar)
+        public ObterGraficoProficienciaComparativoGraficoSmeUseCase(IMediator mediator, IRepositorioBoletimEscolar repositorioBoletimEscolar)
         {
             this.mediator = mediator;
             this.repositorioBoletimEscolar = repositorioBoletimEscolar;
