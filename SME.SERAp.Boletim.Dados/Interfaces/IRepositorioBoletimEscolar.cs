@@ -47,5 +47,6 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
 
         Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar);
         Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId, int anoLetivo  , int disciplinaId , int anoEscolar);
+        Task<IEnumerable<DreDto>> ObterDresComparativoSmeAsync(int anoAplicacao, int disciplinaId, int anoEscolar);
     }
 }

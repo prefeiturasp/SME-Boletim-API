@@ -85,6 +85,7 @@ namespace SME.SERAp.Boletim.IoC
             services.TryAddScoped<IObterAnosAplicacaoPorSmeUseCase, ObterAnosAplicacaoPorSmeUseCase>();
             services.TryAddScoped<IObterComponentesCurricularesSmePorAnoUseCase, ObterComponentesCurricularesSmePorAnoUseCase>();
             services.TryAddScoped<IObterAnosEscolaresPorSmeAnoAplicacaoUseCase, ObterAnosEscolaresPorSmeAnoAplicacaoUseCase>();
+            services.TryAddScoped<IObterDresComparativoSmeUseCase, ObterDresComparativoSmeUseCase>();
         }
     }
 }
