@@ -115,17 +115,5 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return listaAplicacoesDisponives;
         }
 
-        private ProficienciaTabelaComparativaDre MapearDtOComparativoProficiencias(ResultadoProeficienciaPorDre proficienciasPsp)
-        {
-            return new ProficienciaTabelaComparativaDre
-            {
-                DreNome = proficienciasPsp.DreNome,
-                DreAbreviacao = proficienciasPsp.DreAbreviacao,
-                Descricao = proficienciasPsp?.NomeAplicacao,
-                Mes = proficienciasPsp?.Periodo,
-                ValorProficiencia = proficienciasPsp != null ? Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2) : 0
-            };
-
-        }
     }
 }
