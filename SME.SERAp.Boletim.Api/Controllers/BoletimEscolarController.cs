@@ -384,5 +384,18 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await obterAnosEscolaresPorSmeAnoAplicacaoUseCase.Executar(anoAplicacao, disciplinaId));
         }
+
+        [HttpGet("sme-comparacao-grafico/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterGraficoComparativoPorSme(int anoAplicacao, int disciplinaId, int anoEscolar,
+         [FromServices] IObterProficienciaComparativoSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
+            if(resultado is not null)
+                 return Ok(resultado);
+
+            return NoContent();
+
+        }
     }
 }
