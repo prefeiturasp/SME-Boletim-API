@@ -10,7 +10,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class BoletimEscolarController : ControllerBase
     {
         [HttpGet("{loteId}/{ueId}")]
@@ -388,7 +388,7 @@ namespace SME.SERAp.Boletim.Api.Controllers
         [HttpGet("comparacao-grafico-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
         [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
         public async Task<IActionResult> ObterGraficoComparativoPorSme(int anoAplicacao, int disciplinaId, int anoEscolar,
-         [FromServices] IObterGraficoProficienciaComparativoSmeUseCase useCase)
+         [FromServices] IObterGraficoComparativoProficienciaSmeUseCase useCase)
         {
             var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
             if(resultado is not null)
@@ -405,5 +405,16 @@ namespace SME.SERAp.Boletim.Api.Controllers
             var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
             return Ok(resultado);
         }
+
+
+        //[HttpGet("dres-comparacao-por-dre/{dreId}/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        //[ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        //public async Task<IActionResult> ObterTabelaComparativaSMEPorDre(int dreId, int anoAplicacao, int disciplinaId, int anoEscolar,
+        //    [FromServices] IObterProficienciaComparativoDreUseCase useCase)
+        //{
+        //    var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
+        //    return Ok(resultado);
+        //}
+
     }
 }

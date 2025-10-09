@@ -3,26 +3,37 @@ using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaPorDisciplinaId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaPorSmeProvaSaberes;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDre;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciasPorSmeProvaSP;
 using SME.SERAp.Boletim.Dominio.Constraints;
+using SME.SERAp.Boletim.Dominio.Enumerados;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
 using SME.SERAp.Boletim.Infra.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
-    public class ObterProficienciaComparativoDreUseCase : IObterProficienciaComparativoDreUseCase
+    public class ObterCardComparativoProficienciasSme : IObterCardComparativoProficienciasSme
     {
         private readonly IMediator mediator;
 
-        public ObterProficienciaComparativoDreUseCase(IMediator mediator)
+        public ObterCardComparativoProficienciasSme(IMediator mediator)
         {
             this.mediator = mediator;
         }
 
-        public async Task<TabelaComparativaDrePspPsaDto> Executar(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+
+        public async Task<TabelaComparativaDrePspPsaDto> Executar(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
+
+            var cardProficienciaComparativoDreDto = new CardProficienciaComparativoDreDto();
             var dresAbrangenciaUsuarioLogado = await mediator
                 .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
 
@@ -31,6 +42,9 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
                 throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
+            
+
+
 
             var proficienciasPsa = await mediator.Send(new ObterProficienciaProvaSaberesPorDreQuery(dreId, anoLetivo, disciplinaId, anoEscolar));
             var listaProficienciasPsp = await mediator.Send(new ObterProficienciaProvaSPAPorDreQuery(dreId, anoLetivo - 1, disciplinaId, anoEscolar - 1));
@@ -61,8 +75,6 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     proficienciaComparativaPsaDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficiencia.MediaProficiencia, disciplinaId, niveisProficiencia));
                     proficienciaComparativaPsaDreDto.QtdeEstudante = proficiencia.RealizaramProva;
                     proficienciaComparativaPsaDreDto.QtdeUe = proficiencia.QuantidadeUes;
-                    proficienciaComparativaPspDreDto.DreAbreviacao = proficiencia.DreAbreviacao;
-                    proficienciaComparativaPspDreDto.DreNome = proficiencia.DreNome;
                     listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPsaDreDto);
                 }
 

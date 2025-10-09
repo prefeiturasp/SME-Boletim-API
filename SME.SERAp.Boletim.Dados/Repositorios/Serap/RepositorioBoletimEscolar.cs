@@ -1453,14 +1453,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
     
 
 
-        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
 
 
             try
             {
-                const string query = @"
+                  var  query =  new StringBuilder (@"
                                        select
                                             be.disciplina_id as disciplinaId,
                                             blp.lote_id as loteId,
@@ -1494,13 +1494,20 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         inner join prova_ano_original pao on
                                             pao.prova_id = be.prova_id
                                         where
-                                            u.dre_id = @dreId
-                                            and extract(year from p.inicio) = @anoLetivo
+                                            extract(year from p.inicio) = @anoLetivo
                                             and pao.ano = @anoEscolarString
                                             and be.nivel_ue_codigo is not null
-                                            and be.disciplina_id = @disciplinaId
-                                            
-                                         group by
+                                            and be.disciplina_id = @disciplinaId");
+
+
+
+               if (dreId.HasValue)
+                {
+                    query.AppendLine(" and u.dre_id = @dreId");
+                }
+
+                query.AppendLine(@"
+                                       group by
                                                 be.disciplina_id,
                                                 blp.lote_id,
                                                 blu.ano_escolar,
@@ -1514,8 +1521,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                          order by
                                              blp.lote_id,
                                              be.disciplina_id,
-                                             pao.ano;
-                                             ";
+                                             pao.ano;");
+                                             
+             
+
+
+
+
+
 
                 var parametros = new
                 {
@@ -1526,7 +1539,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     anoEscolarString = anoEscolar.ToString(),
                     
                 };
-                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query, parametros);
+                return await conn.QueryAsync<ResultadoProeficienciaPorDre>(query.ToString(), parametros);
             }
             finally
             {
@@ -1535,13 +1548,14 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
 
-        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId , int anoLetivo, int disciplinaId,  int anoEscolar)
+        public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int? dreId , int anoLetivo, int disciplinaId,  int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
             try
             {
                 var query = new StringBuilder(@"
-                                 
+
+
                                    select  apsp.disciplina_id AS disciplinaId,
                                             apsp.ano_escolar as anoEscolar,
                                             'Prova São Paulo' AS nomeAplicacao,
@@ -1559,19 +1573,29 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         JOIN
                                             dre d ON d.id = u.dre_id
                                         where
-                                            u.dre_id = @dreId
-                                            and apsp.ano_letivo = @anoLetivo
+                                           
+                                             apsp.ano_letivo = @anoLetivo
                                             and apsp.disciplina_id = @disciplinaId
                                             and apsp.ano_escolar = @anoEscolar
-									group by
+								
+                        ");
+
+                
+
+               if (dreId.HasValue)
+                {
+                    query.AppendLine(" and u.dre_id = @dreId");
+                }
+
+
+                query.Append(@"	group by
                                          apsp.disciplina_id,
                                          apsp.ano_escolar,
                                          apsp.ano_letivo,
                                          u.dre_id,
                                          d.abreviacao,
                                          d.nome
-                                
-                        ");
+                                ");
 
                 var parametros = new
                 {
