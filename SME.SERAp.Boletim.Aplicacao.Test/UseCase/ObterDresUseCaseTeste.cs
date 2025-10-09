@@ -35,7 +35,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
             };
 
             mediatorMock
-                .Setup(m => m.Send(It.Is<ObterDreQuery>(q => q.AnoEscolar == anoEscolar && q.LoteId == loteId), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.Is<ObterDrePorAnoEscolarLoteIdQuery>(q => q.AnoEscolar == anoEscolar && q.LoteId == loteId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(listaEsperada);
 
             // Act
@@ -52,7 +52,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
         {
             // Arrange
             mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterDreQuery>(), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.IsAny<ObterDrePorAnoEscolarLoteIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Enumerable.Empty<DreDto>());
 
             // Act
@@ -68,7 +68,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
         {
             // Arrange
             mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterDreQuery>(), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.IsAny<ObterDrePorAnoEscolarLoteIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((IEnumerable<DreDto>)null);
 
             // Act
@@ -83,7 +83,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
         {
             // Arrange
             mediatorMock
-                .Setup(m => m.Send(It.IsAny<ObterDreQuery>(), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.IsAny<ObterDrePorAnoEscolarLoteIdQuery>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Erro no MediatR"));
 
             // Act & Assert

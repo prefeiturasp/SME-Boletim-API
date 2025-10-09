@@ -1615,7 +1615,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                    JOIN
                                        dre d ON d.id = u.dre_id
                                    where
-                                       and apsp.ano_letivo = @anoLetivo
+                                        apsp.ano_letivo = @anoLetivo
                                        and apsp.disciplina_id = @disciplinaId
                                        and apsp.ano_escolar = @anoEscolar
 							group by
@@ -1655,13 +1655,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             d.abreviacao as dreAbreviacao,
                                             d.nome as dreNome,
                                             be.disciplina_id as disciplinaId,
-                                            blp.lote_id as loteId,
                                             blu.ano_escolar as anoEscolar,
                                             'Prova Saberes e Aprendizagens' as nomeAplicacao,
                                             initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
                                        count(distinct be.ue_id) as quantidadeUes,
-                                            avg(be.media_proficiencia) as mediaProficiencia,
-                                            sum(blu.realizaram_prova) as realizaramProva
+                                            avg(be.media_proficiencia) as mediaProficiencia
+                                  
                                         from
                                             boletim_escolar be
                                         inner join prova p on
@@ -1681,7 +1680,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         inner join prova_ano_original pao on
                                             pao.prova_id = be.prova_id
                                         where
-                                            and extract(year from p.inicio) = @anoLetivo
+                                             extract(year from p.inicio) = @anoLetivo
                                             and pao.ano = @anoEscolarString
                                             and be.nivel_ue_codigo is not null
                                             and be.disciplina_id = @disciplinaId
@@ -1691,12 +1690,10 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                                 d.abreviacao,
                                                 d.nome,
                                                 be.disciplina_id,
-                                                blp.lote_id,
                                                 blu.ano_escolar,
                                                 lp.nome,
                                                 pao.ano
                                          order by
-                                             blp.lote_id,
                                              be.disciplina_id,
                                              pao.ano;
                                              ";
