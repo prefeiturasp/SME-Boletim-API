@@ -1451,8 +1451,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             }
         }
     
-
-
         public async Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
