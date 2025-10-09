@@ -23,7 +23,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<IEnumerable<DreDto>> Executar(int anoEscolar, long loteId)
         {
-            return await mediator.Send(new ObterDreQuery(anoEscolar, loteId));
+            return await mediator.Send(new ObterDrePorAnoEscolarLoteIdQuery(anoEscolar, loteId));
         }
     }
 }

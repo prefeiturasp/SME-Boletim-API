@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDre
 {
-    public class ObterDreQueryHandler : IRequestHandler<ObterDreQuery, IEnumerable<DreDto>>
+    public class ObterDreQueryHandler : IRequestHandler<ObterDrePorAnoEscolarLoteIdQuery, IEnumerable<DreDto>>
     {
         private readonly IRepositorioBoletimEscolar repositorio;
 
@@ -20,7 +20,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDre
             this.repositorio = repositorio;
         }
 
-        public async Task<IEnumerable<DreDto>> Handle(ObterDreQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<DreDto>> Handle(ObterDrePorAnoEscolarLoteIdQuery request, CancellationToken cancellationToken)
         {
             return await repositorio.ObterDreAsync(request.AnoEscolar, request.LoteId);
         }

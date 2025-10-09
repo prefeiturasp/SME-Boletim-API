@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterDre
 {
-    public class ObterDreQuery : IRequest<IEnumerable<DreDto>>
+    public class ObterDrePorAnoEscolarLoteIdQuery : IRequest<IEnumerable<DreDto>>
     {
         public int AnoEscolar { get; }
         public long LoteId { get; }
 
-        public ObterDreQuery(int anoEscolar, long loteId)
+        public ObterDrePorAnoEscolarLoteIdQuery(int anoEscolar, long loteId)
         {
             AnoEscolar = anoEscolar;
             LoteId = loteId;
