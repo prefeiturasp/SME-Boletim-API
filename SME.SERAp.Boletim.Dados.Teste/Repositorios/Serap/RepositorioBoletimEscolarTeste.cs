@@ -1286,5 +1286,47 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.NotNull(resultado);
             Assert.Empty(resultado);
         }
+
+        [Fact]
+        public async Task ObterDresComparativoSmeAsync_Deve_Retornar_Lista_De_Dres_Quando_Ha_Dados()
+        {
+            var esperado = new List<DreDto>
+            {
+                new DreDto { DreId = 1, DreNome = "Teste 1", DreNomeAbreviado = "T1" },
+                new DreDto { DreId = 2, DreNome = "Teste 2", DreNomeAbreviado = "T2" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<DreDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterDresComparativoSmeAsync(2025, 10, 3);
+
+            Assert.NotNull(resultado);
+            Assert.Collection(resultado,
+                item => Assert.Equal("Teste 1", item.DreNome),
+                item => Assert.Equal("Teste 2", item.DreNome));
+        }
+
+        [Fact]
+        public async Task ObterDresComparativoSmeAsync_Deve_Fechar_E_Excluir_Conexao_Apos_Execucao()
+        {
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<DreDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<DreDto>());
+
+            await repositorio.ObterDresComparativoSmeAsync(2025, 10, 3);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.AtLeastOnce);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
     }
 }

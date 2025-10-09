@@ -1682,7 +1682,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             blu.ano_escolar as anoEscolar,
                                             'Prova Saberes e Aprendizagens' as nomeAplicacao,
                                             initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as periodo,
-                                       count(distinct be.ue_id) as quantidadeUes,
+                                            count(distinct be.ue_id) as quantidadeUes,
                                             avg(be.media_proficiencia) as mediaProficiencia
                                   
                                         from
@@ -1707,8 +1707,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                              extract(year from p.inicio) = @anoLetivo
                                             and pao.ano = @anoEscolarString
                                             and be.nivel_ue_codigo is not null
-                                            and be.disciplina_id = @disciplinaId
-                                            
+                                            and be.disciplina_id = @disciplinaId                                            
                                          group by
                                                 u.dre_id,
                                                 d.abreviacao,
@@ -1742,7 +1741,6 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         public async Task<IEnumerable<ResultadoProeficienciaSme>> ObterProficienciaSmeProvaSaberesAsync(int anoLetivo, int disciplinaId, int anoEscolar)
         {
             using var conn = ObterConexaoLeitura();
-
 
             try
             {
@@ -1797,6 +1795,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                     anoEscolar,
                     anoEscolarString = anoEscolar.ToString(),
                 };
+
                 return await conn.QueryAsync<ResultadoProeficienciaSme>(query, parametros);
             }
             finally
@@ -1843,6 +1842,41 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 };
 
                 return await conn.QueryAsync<ResultadoProeficienciaSme>(query.ToString(), parametros);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<DreDto>> ObterDresComparativoSmeAsync(int anoAplicacao, int disciplinaId, int anoEscolar)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"select distinct
+                                        d.id as DreId,
+                                        d.nome as DreNome,
+                                        d.abreviacao as DreNomeAbreviado
+                                    from
+	                                    boletim_escolar be 
+                                    inner join prova p on
+	                                    p.id = be.prova_id 
+                                    inner join prova_ano_original pao on
+	                                    pao.prova_id = p.id
+                                    inner join ue u on
+	                                    u.id = be.ue_id 
+                                    inner join dre d on 
+	                                    d.id = u.dre_id
+                                    where
+	                                    extract(year from p.inicio) = @anoAplicacao
+                                        and be.disciplina_id = @disciplinaId
+                                        and pao.ano = @anoEscolar
+                                    order by 
+	                                    d.nome;";
+
+                return await conn.QueryAsync<DreDto>(query, new { anoAplicacao, disciplinaId, anoEscolar = anoEscolar.ToString() });
             }
             finally
             {
