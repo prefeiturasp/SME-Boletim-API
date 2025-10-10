@@ -61,6 +61,8 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     proficienciaComparativaPsaDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficiencia.MediaProficiencia, disciplinaId, niveisProficiencia));
                     proficienciaComparativaPsaDreDto.QtdeEstudante = proficiencia.RealizaramProva;
                     proficienciaComparativaPsaDreDto.QtdeUe = proficiencia.QuantidadeUes;
+                    proficienciaComparativaPspDreDto.DreAbreviacao = proficiencia.DreAbreviacao;
+                    proficienciaComparativaPspDreDto.DreNome = proficiencia.DreNome;
                     listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPsaDreDto);
                 }
 

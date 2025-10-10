@@ -10,12 +10,12 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDr
 {
     public class ObterProficienciaProvaSaberesPorDreQuery : IRequest<IEnumerable<ResultadoProeficienciaPorDre>>
     {
-        public int DreId { get; set; }
+        public int? DreId { get; set; }
         public int AnoLetivo { get; set; }
         public int DisciplinaId { get; set; }
         public int AnoEscolar { get; set; }
 
-        public ObterProficienciaProvaSaberesPorDreQuery(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        public ObterProficienciaProvaSaberesPorDreQuery(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
             DreId = dreId;
             AnoLetivo = anoLetivo;
