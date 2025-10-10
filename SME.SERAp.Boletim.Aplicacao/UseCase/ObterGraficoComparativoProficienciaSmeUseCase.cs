@@ -21,25 +21,23 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
 {
-    public class ObterGraficoProficienciaComparativoGraficoSmeUseCase : IObterGraficoProficienciaComparativoSmeUseCase
+    public class ObterGraficoComparativoProficienciaSmeUseCase : IObterGraficoComparativoProficienciaSmeUseCase
     {
         private readonly IMediator mediator;
-        private readonly IRepositorioBoletimEscolar repositorioBoletimEscolar;
 
-        public ObterGraficoProficienciaComparativoGraficoSmeUseCase(IMediator mediator, IRepositorioBoletimEscolar repositorioBoletimEscolar)
+        public ObterGraficoComparativoProficienciaSmeUseCase(IMediator mediator)
         {
             this.mediator = mediator;
-            this.repositorioBoletimEscolar = repositorioBoletimEscolar;
         }
 
         public async Task<GraficoComparativoSmeDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar)
         {
 
-            var tipoPerfilUsuarioLogado = await mediator
-                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+            //var tipoPerfilUsuarioLogado = await mediator
+            //    .Send(new ObterTipoPerfilUsuarioLogadoQuery());
 
-            if (tipoPerfilUsuarioLogado is null || TipoPerfil.Administrador != tipoPerfilUsuarioLogado.Value)
-                throw new NaoAutorizadoException("Usuário não possui acesso.");
+            //if (tipoPerfilUsuarioLogado is null || TipoPerfil.Administrador != tipoPerfilUsuarioLogado.Value)
+            //    throw new NaoAutorizadoException("Usuário não possui acesso.");
             var proficienciaDre = new ProficienciasGraficoComparativoDreDto();
 
 
@@ -80,7 +78,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         private static ProficienciasGraficoComparativoDreDto MapeamentoProvaPSA(ProficienciasGraficoComparativoSmeDto proficienciaGraficoComparativoSme,  ResultadoProeficienciaPorDre itemDre)
         {
             var proficienciaPSAGraficoComparativoDre = new ProficienciasGraficoComparativoDreDto();
-            proficienciaPSAGraficoComparativoDre.Mes = $"{itemDre.Periodo} PSP";
+            proficienciaPSAGraficoComparativoDre.Mes = $"{itemDre.Periodo} PSA";
             proficienciaPSAGraficoComparativoDre.Descricao = itemDre.NomeAplicacao;
             proficienciaPSAGraficoComparativoDre.ValorProficiencia = itemDre.MediaProficiencia;
            
@@ -95,7 +93,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         {
             var proficienciaPSPGraficoComparativoDre = new ProficienciasGraficoComparativoDreDto();
             var proficienciasDreProvaSP = proficienciasDresProvaSP.Where(x => x.DreAbreviacao == dre.Key).FirstOrDefault();
-            proficienciaPSPGraficoComparativoDre.Mes = $"{proficienciasDreProvaSP.Periodo} PSA";
+            proficienciaPSPGraficoComparativoDre.Mes = $"{proficienciasDreProvaSP.Periodo} PSP";
             proficienciaPSPGraficoComparativoDre.Descricao = proficienciasDreProvaSP.NomeAplicacao;
             proficienciaPSPGraficoComparativoDre.ValorProficiencia = proficienciasDreProvaSP.MediaProficiencia;
             proficienciaGraficoComparativoSme.DreAbreviacao = dre.Key;
