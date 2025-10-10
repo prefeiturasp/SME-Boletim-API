@@ -33,11 +33,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         public async Task<GraficoComparativoSmeDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar)
         {
 
-            //var tipoPerfilUsuarioLogado = await mediator
-            //    .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+            var tipoPerfilUsuarioLogado = await mediator
+                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
 
-            //if (tipoPerfilUsuarioLogado is null || TipoPerfil.Administrador != tipoPerfilUsuarioLogado.Value)
-            //    throw new NaoAutorizadoException("Usuário não possui acesso.");
+            if (tipoPerfilUsuarioLogado is null || TipoPerfil.Administrador != tipoPerfilUsuarioLogado.Value)
+                throw new NaoAutorizadoException("Usuário não possui acesso.");
             var proficienciaDre = new ProficienciasGraficoComparativoDreDto();
 
 
