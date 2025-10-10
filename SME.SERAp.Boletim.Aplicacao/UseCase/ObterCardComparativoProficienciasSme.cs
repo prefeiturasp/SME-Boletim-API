@@ -1,6 +1,9 @@
-﻿using MediatR;
+﻿using Amazon.Runtime.Internal;
+using Elastic.Apm.Api;
+using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterDresComparativoSme;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaPorDisciplinaId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaPorSmeProvaSaberes;
@@ -9,6 +12,7 @@ using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciasPorSmeProvaSP;
 using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Dominio.Enumerados;
+using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.Exceptions;
 using SME.SERAp.Boletim.Infra.Extensions;
@@ -30,62 +34,118 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         }
 
 
-        public async Task<TabelaComparativaDrePspPsaDto> Executar(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        public async Task<CardsProficienciaComparativoSmeDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar, int? dreId = null, int? pagina = null, int? itensPorPagina = null)
         {
 
-            var cardProficienciaComparativoDreDto = new CardProficienciaComparativoDreDto();
-            var dresAbrangenciaUsuarioLogado = await mediator
-                .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
 
-            var tipoPerfilUsuarioLogado = await mediator
-                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+            //var dresAbrangenciaUsuarioLogado = await mediator
+            //    .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
 
-            if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
-                throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
-            
+            //var tipoPerfilUsuarioLogado = await mediator
+            //    .Send(new ObterTipoPerfilUsuarioLogadoQuery());
 
+            //if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
+            //    throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
 
 
+            var filtroDres = await retornaTodasAsDresSeDreIdIsNull(dreId, anoLetivo, disciplinaId, anoEscolar);
+
+            var cardsProficienciaComparativoSmeDto = new CardsProficienciaComparativoSmeDto();
+            var listaCardsDres = new List<CardComparativoProficienciaDre>();
+            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaPorDisciplinaIdQuery(disciplinaId, anoEscolar));
+
+            foreach (var dre in filtroDres.OrderBy(x => x).ToList())
+                listaCardsDres.Add(await CriaCardComparativoDre(dre, anoLetivo, disciplinaId, anoEscolar, niveisProficiencia));
+
+            List<CardComparativoProficienciaDre> itensOrdenados, itensPaginados;
+            Paginacao(pagina, itensPorPagina, listaCardsDres, out itensOrdenados, out itensPaginados);
+
+            cardsProficienciaComparativoSmeDto.Total = itensOrdenados.Count;
+            cardsProficienciaComparativoSmeDto.Pagina = pagina.GetValueOrDefault(1);
+            cardsProficienciaComparativoSmeDto.ItensPorPagina = itensPorPagina.GetValueOrDefault(itensOrdenados.Count);
+            cardsProficienciaComparativoSmeDto.Dres = itensPaginados;
+            return cardsProficienciaComparativoSmeDto;
+        }
+
+        private static void Paginacao(int? pagina, int? itensPorPagina, List<CardComparativoProficienciaDre> listaCardsDres, out List<CardComparativoProficienciaDre> itensOrdenados, out List<CardComparativoProficienciaDre> itensPaginados)
+        {
+            itensOrdenados = (listaCardsDres ?? new List<CardComparativoProficienciaDre>())
+                .OrderBy(x => x.DreNome)
+                .ToList();
+            if (pagina.HasValue && itensPorPagina.HasValue && pagina > 0 && itensPorPagina > 0)
+            {
+                var skip = (pagina.Value - 1) * itensPorPagina.Value;
+                itensPaginados = itensOrdenados
+                    .Skip(skip)
+                    .Take(itensPorPagina.Value)
+                    .ToList();
+            }
+            else
+            {
+                itensPaginados = itensOrdenados;
+            }
+        }
+
+        private async Task<CardComparativoProficienciaDre> CriaCardComparativoDre(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar, IEnumerable<ObterNivelProficienciaDto> niveisProficiencia)
+        {
             var proficienciasPsa = await mediator.Send(new ObterProficienciaProvaSaberesPorDreQuery(dreId, anoLetivo, disciplinaId, anoEscolar));
             var listaProficienciasPsp = await mediator.Send(new ObterProficienciaProvaSPAPorDreQuery(dreId, anoLetivo - 1, disciplinaId, anoEscolar - 1));
-            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaPorDisciplinaIdQuery(disciplinaId, anoEscolar));
 
             var listaProdificiencasComparativaPorDre = new List<ProficienciaTabelaComparativaDre>();
 
             var proficienciaComparativaPspDreDto = new ProficienciaTabelaComparativaDre();
-            var proficienciasPsp = listaProficienciasPsp.FirstOrDefault();
+            var proficienciaPsp = listaProficienciasPsp?.FirstOrDefault();
 
-            proficienciaComparativaPspDreDto.Descricao = proficienciasPsp?.NomeAplicacao;
-            proficienciaComparativaPspDreDto.Mes = proficienciasPsp?.Periodo;
-            proficienciaComparativaPspDreDto.ValorProficiencia = proficienciasPsp != null ? Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2) : 0;
-            proficienciaComparativaPspDreDto.NivelProficiencia = proficienciasPsp != null ? await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia)) : string.Empty;
-            proficienciaComparativaPspDreDto.QtdeEstudante = proficienciasPsp != null ? proficienciasPsp.RealizaramProva : 0;
-            proficienciaComparativaPspDreDto.QtdeUe = proficienciasPsp != null ? proficienciasPsp.QuantidadeUes : 0;
-            listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPspDreDto);
+            var cardComparativoDreDto = new CardComparativoProficienciaDre()
+            {
+                DreAbreviacao = proficienciaPsp?.DreAbreviacao,
+                DreNome = proficienciaPsp?.DreNome,
+                AplicacaoPsp = await MapeiaProficienciaDetalheDreDto(disciplinaId, niveisProficiencia, proficienciaPsp)
+            };
 
+            var aplicacoesPsa = new List<ProficienciaDetalheDreDto>();
             if (proficienciasPsa.Any())
             {
                 foreach (var proficiencia in proficienciasPsa)
-                {
-                    var proficienciaComparativaPsaDreDto = new ProficienciaTabelaComparativaDre();
+                    aplicacoesPsa.Add(await MapeiaProficienciaDetalheDreDto(disciplinaId, niveisProficiencia, proficiencia));
+            }
+            cardComparativoDreDto.AplicacoesPsa = aplicacoesPsa;
+            cardComparativoDreDto.Variacao = calculaVariacao(proficienciasPsa, proficienciaPsp);
+            return cardComparativoDreDto;
 
-                    proficienciaComparativaPsaDreDto.Descricao = proficiencia.NomeAplicacao;
-                    proficienciaComparativaPsaDreDto.Mes = proficiencia.Periodo;
-                    proficienciaComparativaPsaDreDto.ValorProficiencia = Math.Round((decimal)proficiencia.MediaProficiencia, 2);
-                    proficienciaComparativaPsaDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficiencia.MediaProficiencia, disciplinaId, niveisProficiencia));
-                    proficienciaComparativaPsaDreDto.QtdeEstudante = proficiencia.RealizaramProva;
-                    proficienciaComparativaPsaDreDto.QtdeUe = proficiencia.QuantidadeUes;
-                    listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPsaDreDto);
-                }
 
+        }
+
+        private async Task<ProficienciaDetalheDreDto> MapeiaProficienciaDetalheDreDto(int disciplinaId, IEnumerable<ObterNivelProficienciaDto> niveisProficiencia, ResultadoProeficienciaPorDre proficienciaPsp)
+        {
+            return new ProficienciaDetalheDreDto()
+            {
+                MediaProficiencia = proficienciaPsp != null ? Math.Round((decimal)proficienciaPsp?.MediaProficiencia, 2) : 0,
+                NivelProficiencia = proficienciaPsp != null ? await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciaPsp?.MediaProficiencia, disciplinaId, niveisProficiencia)) : string.Empty,
+                NomeAplicacao = proficienciaPsp?.NomeAplicacao,
+                Periodo = proficienciaPsp?.Periodo,
+                RealizaramProva = proficienciaPsp != null ? proficienciaPsp.RealizaramProva : 0,
+                QuantidadeUes = proficienciaPsp != null ? proficienciaPsp.QuantidadeUes : 0
+            };
+        }
+
+    
+
+        private async Task<List<int?>> retornaTodasAsDresSeDreIdIsNull(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar)
+        {
+            var dresId = new List<int?>();
+
+            if (dreId == null || dreId <= 0)
+            {
+                var dres = await mediator.Send(new ObterDresComparativoSmeQuery(anoLetivo, disciplinaId, anoEscolar));
+                dres.ToList().ForEach(dre => dresId.Add(Convert.ToInt32(dre.DreId)));
+                return dresId;
             }
 
-            decimal variacao = calculaVariacao(proficienciasPsa, proficienciasPsp);
+            dresId.Add(dreId);
+            return dresId;
 
-            var tabelaRetorno = new TabelaComparativaDrePspPsaDto();
-            tabelaRetorno.Variacao = variacao;
-            tabelaRetorno.Aplicacao = listaProdificiencasComparativaPorDre;
-            return tabelaRetorno;
+
         }
 
         private static decimal calculaVariacao(IEnumerable<ResultadoProeficienciaPorDre> proficienciasPsa, ResultadoProeficienciaPorDre proficienciasPsp)

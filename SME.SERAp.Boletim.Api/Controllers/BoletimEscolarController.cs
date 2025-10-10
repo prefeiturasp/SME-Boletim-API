@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -407,14 +408,17 @@ namespace SME.SERAp.Boletim.Api.Controllers
         }
 
 
-        //[HttpGet("dres-comparacao-por-dre/{dreId}/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
-        //[ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
-        //public async Task<IActionResult> ObterTabelaComparativaSMEPorDre(int dreId, int anoAplicacao, int disciplinaId, int anoEscolar,
-        //    [FromServices] IObterProficienciaComparativoDreUseCase useCase)
-        //{
-        //    var resultado = await useCase.Executar(dreId, anoAplicacao, disciplinaId, anoEscolar);
-        //    return Ok(resultado);
-        //}
+        [HttpGet("cards-comparativo-sme-por-dre/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterCardsComparativoSMEPorDreAnoAplicacao( int anoAplicacao, int disciplinaId, int anoEscolar, 
+            [FromQuery] int? dreId,
+            [FromQuery] int? pagina,
+            [FromQuery] int? itensPorPagina,
+            [FromServices] IObterCardComparativoProficienciasSme useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar, dreId, pagina, itensPorPagina);
+            return Ok(resultado);
+        }
 
 
         [HttpGet("dres-comparativo-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]

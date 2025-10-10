@@ -9,6 +9,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase
 {
     public interface IObterCardComparativoProficienciasSme
     {
-        Task<TabelaComparativaDrePspPsaDto> Executar(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar);
+        Task<CardsProficienciaComparativoSmeDto> Executar(int anoLetivo, int disciplinaId, int anoEscolar, int? dreId = null, int? pagina = null, int? itensPorPagina = null);
     }
 }

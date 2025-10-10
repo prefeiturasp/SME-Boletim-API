@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
 {
-    public class CardProficienciaComparativoDreDto
+    public class CardsProficienciaComparativoSmeDto
     {
         public int Total { get; set; }
         public int Pagina { get; set; }
         public int ItensPorPagina { get; set; }
-       public IEnumerable<ProficienciaTabelaComparativaDre> Dres { get; set; }
+       public IEnumerable<CardComparativoProficienciaDre> Dres { get; set; }
     }
 }
