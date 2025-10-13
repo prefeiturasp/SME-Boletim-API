@@ -11,6 +11,6 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public int Total { get; set; }
         public int Pagina { get; set; }
         public int ItensPorPagina { get; set; }
-       public IEnumerable<CardComparativoProficienciaDre> Dres { get; set; }
+       public IEnumerable<CardComparativoProficienciaDreDto> Dres { get; set; }
     }
 }
