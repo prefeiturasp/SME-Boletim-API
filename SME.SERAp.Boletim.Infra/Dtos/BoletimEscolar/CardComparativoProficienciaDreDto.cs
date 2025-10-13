@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
 {
-    public class CardComparativoProficienciaDre
+    public class CardComparativoProficienciaDreDto
     {
+        public long DreId { get; set; }
         public string DreAbreviacao { get; set; }
         public string DreNome { get; set; }
         
