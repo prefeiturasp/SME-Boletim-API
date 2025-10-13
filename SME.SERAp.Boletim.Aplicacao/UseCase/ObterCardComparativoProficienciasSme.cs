@@ -51,13 +51,13 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var filtroDres = await retornaTodasAsDresSeDreIdIsNull(dreId, anoLetivo, disciplinaId, anoEscolar);
 
             var cardsProficienciaComparativoSmeDto = new CardsProficienciaComparativoSmeDto();
-            var listaCardsDres = new List<CardComparativoProficienciaDre>();
+            var listaCardsDres = new List<CardComparativoProficienciaDreDto>();
             var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaPorDisciplinaIdQuery(disciplinaId, anoEscolar));
 
             foreach (var dre in filtroDres.OrderBy(x => x).ToList())
                 listaCardsDres.Add(await CriaCardComparativoDre(dre, anoLetivo, disciplinaId, anoEscolar, niveisProficiencia));
 
-            List<CardComparativoProficienciaDre> itensOrdenados, itensPaginados;
+            List<CardComparativoProficienciaDreDto> itensOrdenados, itensPaginados;
             Paginacao(pagina, itensPorPagina, listaCardsDres, out itensOrdenados, out itensPaginados);
 
             cardsProficienciaComparativoSmeDto.Total = itensOrdenados.Count;
@@ -67,9 +67,9 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             return cardsProficienciaComparativoSmeDto;
         }
 
-        private static void Paginacao(int? pagina, int? itensPorPagina, List<CardComparativoProficienciaDre> listaCardsDres, out List<CardComparativoProficienciaDre> itensOrdenados, out List<CardComparativoProficienciaDre> itensPaginados)
+        private static void Paginacao(int? pagina, int? itensPorPagina, List<CardComparativoProficienciaDreDto> listaCardsDres, out List<CardComparativoProficienciaDreDto> itensOrdenados, out List<CardComparativoProficienciaDreDto> itensPaginados)
         {
-            itensOrdenados = (listaCardsDres ?? new List<CardComparativoProficienciaDre>())
+            itensOrdenados = (listaCardsDres ?? new List<CardComparativoProficienciaDreDto>())
                 .OrderBy(x => x.DreNome)
                 .ToList();
             if (pagina.HasValue && itensPorPagina.HasValue && pagina > 0 && itensPorPagina > 0)
@@ -86,7 +86,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             }
         }
 
-        private async Task<CardComparativoProficienciaDre> CriaCardComparativoDre(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar, IEnumerable<ObterNivelProficienciaDto> niveisProficiencia)
+        private async Task<CardComparativoProficienciaDreDto> CriaCardComparativoDre(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar, IEnumerable<ObterNivelProficienciaDto> niveisProficiencia)
         {
             var proficienciasPsa = await mediator.Send(new ObterProficienciaProvaSaberesPorDreQuery(dreId, anoLetivo, disciplinaId, anoEscolar));
             var listaProficienciasPsp = await mediator.Send(new ObterProficienciaProvaSPAPorDreQuery(dreId, anoLetivo - 1, disciplinaId, anoEscolar - 1));
@@ -96,8 +96,9 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var proficienciaComparativaPspDreDto = new ProficienciaTabelaComparativaDre();
             var proficienciaPsp = listaProficienciasPsp?.FirstOrDefault();
 
-            var cardComparativoDreDto = new CardComparativoProficienciaDre()
+            var cardComparativoDreDto = new CardComparativoProficienciaDreDto()
             {
+                DreId = dreId.GetValueOrDefault(),
                 DreAbreviacao = proficienciaPsp?.DreAbreviacao,
                 DreNome = proficienciaPsp?.DreNome,
                 AplicacaoPsp = await MapeiaProficienciaDetalheDreDto(disciplinaId, niveisProficiencia, proficienciaPsp)
