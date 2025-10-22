@@ -45,7 +45,15 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSaberesAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null);
         Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSPAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null);
 
-        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int dreId, int anoLetivo, int disciplinaId, int anoEscolar);
-        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int dreId, int anoLetivo  , int disciplinaId , int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaDreProvaSaberesAsync(int? dreId, int anoLetivo, int disciplinaId, int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorDreProvaSPAsync(int? dreId, int anoLetivo  , int disciplinaId , int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaSme>> ObterProficienciaSmeProvaSaberesAsync(int anoLetivo, int disciplinaId, int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaSme>> ObterProficienciaSmeProvaSPAsync(int anoLetivo, int disciplinaId, int anoEscolar);
+
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciasPorSmeProvaSPAsync(int anoLetivo, int disciplinaId, int anoEscolar);
+        Task<IEnumerable<ResultadoProeficienciaPorDre>> ObterProficienciaPorSmeProvaSaberesAsync(int anoLetivo, int disciplinaId, int anoEscolar);
+
+
+        Task<IEnumerable<DreDto>> ObterDresComparativoSmeAsync(int anoAplicacao, int disciplinaId, int anoEscolar);
     }
 }

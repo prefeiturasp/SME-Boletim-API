@@ -1,10 +1,13 @@
 ﻿using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.Queries;
+using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaPorDisciplinaId;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSaberesPorDre;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaProvaSPAPorDre;
-using SME.SERAp.Boletim.Dados.Interfaces;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
+using SME.SERAp.Boletim.Infra.Exceptions;
 using SME.SERAp.Boletim.Infra.Extensions;
 
 namespace SME.SERAp.Boletim.Aplicacao.UseCase
@@ -12,21 +15,26 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
     public class ObterProficienciaComparativoDreUseCase : IObterProficienciaComparativoDreUseCase
     {
         private readonly IMediator mediator;
-        private readonly IRepositorioBoletimEscolar repositorioBoletimEscolar;
 
-        public ObterProficienciaComparativoDreUseCase(IMediator mediator, IRepositorioBoletimEscolar repositorioBoletimEscolar)
+        public ObterProficienciaComparativoDreUseCase(IMediator mediator)
         {
             this.mediator = mediator;
-            this.repositorioBoletimEscolar = repositorioBoletimEscolar;
         }
 
-        public async Task<TabelaComparativaDrePspPsaDto> Executar(int dreId, int anoLetivo  , int disciplinaId, int anoEscolar)
+        public async Task<TabelaComparativaDrePspPsaDto> Executar(int dreId, int anoLetivo, int disciplinaId, int anoEscolar)
         {
+            var dresAbrangenciaUsuarioLogado = await mediator
+                .Send(new ObterDresAbrangenciaUsuarioLogadoQuery());
 
+            var tipoPerfilUsuarioLogado = await mediator
+                .Send(new ObterTipoPerfilUsuarioLogadoQuery());
+
+            if ((!dresAbrangenciaUsuarioLogado?.Any(x => x.Id == dreId) ?? true) || tipoPerfilUsuarioLogado is null || !Perfis.PodeVisualizarDre(tipoPerfilUsuarioLogado.Value))
+                throw new NaoAutorizadoException("Usuário não possui abrangências para essa DRE.");
 
             var proficienciasPsa = await mediator.Send(new ObterProficienciaProvaSaberesPorDreQuery(dreId, anoLetivo, disciplinaId, anoEscolar));
             var listaProficienciasPsp = await mediator.Send(new ObterProficienciaProvaSPAPorDreQuery(dreId, anoLetivo - 1, disciplinaId, anoEscolar - 1));
-            var niveisProficiencia = await repositorioBoletimEscolar.ObterNiveisProficienciaPorDisciplinaIdAsync(disciplinaId, anoEscolar);
+            var niveisProficiencia = await mediator.Send(new ObterNiveisProficienciaPorDisciplinaIdQuery(disciplinaId, anoEscolar));
 
             var listaProdificiencasComparativaPorDre = new List<ProficienciaTabelaComparativaDre>();
 
@@ -35,20 +43,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             proficienciaComparativaPspDreDto.Descricao = proficienciasPsp?.NomeAplicacao;
             proficienciaComparativaPspDreDto.Mes = proficienciasPsp?.Periodo;
-            proficienciaComparativaPspDreDto.ValorProficiencia = Math.Round((decimal)proficienciasPsp.MediaProficiencia, 2);
-            proficienciaComparativaPspDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia));
-            proficienciaComparativaPspDreDto.QtdeEstudante = proficienciasPsp.RealizaramProva;
-            proficienciaComparativaPspDreDto.QtdeUe = proficienciasPsp.QuantidadeUes;
-
-
-
+            proficienciaComparativaPspDreDto.ValorProficiencia = proficienciasPsp != null ? Math.Round((decimal)proficienciasPsp?.MediaProficiencia, 2) : 0;
+            proficienciaComparativaPspDreDto.NivelProficiencia = proficienciasPsp != null ? await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficienciasPsp?.MediaProficiencia, disciplinaId, niveisProficiencia)) : string.Empty;
+            proficienciaComparativaPspDreDto.QtdeEstudante = proficienciasPsp != null ? proficienciasPsp.RealizaramProva : 0;
+            proficienciaComparativaPspDreDto.QtdeUe = proficienciasPsp != null ? proficienciasPsp.QuantidadeUes : 0;
             listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPspDreDto);
-
 
             if (proficienciasPsa.Any())
             {
-
-
                 foreach (var proficiencia in proficienciasPsa)
                 {
                     var proficienciaComparativaPsaDreDto = new ProficienciaTabelaComparativaDre();
@@ -59,6 +61,8 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     proficienciaComparativaPsaDreDto.NivelProficiencia = await mediator.Send(new ObterNivelProficienciaDisciplinaQuery((decimal)proficiencia.MediaProficiencia, disciplinaId, niveisProficiencia));
                     proficienciaComparativaPsaDreDto.QtdeEstudante = proficiencia.RealizaramProva;
                     proficienciaComparativaPsaDreDto.QtdeUe = proficiencia.QuantidadeUes;
+                    proficienciaComparativaPspDreDto.DreAbreviacao = proficiencia.DreAbreviacao;
+                    proficienciaComparativaPspDreDto.DreNome = proficiencia.DreNome;
                     listaProdificiencasComparativaPorDre.Add(proficienciaComparativaPsaDreDto);
                 }
 
@@ -75,7 +79,8 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         private static decimal calculaVariacao(IEnumerable<ResultadoProeficienciaPorDre> proficienciasPsa, ResultadoProeficienciaPorDre proficienciasPsp)
         {
             var proficienciaFinal = proficienciasPsa.LastOrDefault() != null ? proficienciasPsa.LastOrDefault().MediaProficiencia : 0;
-            var variacao = (decimal)BoletimExtensions.CalcularPercentual((decimal)proficienciaFinal, (decimal)proficienciasPsp.MediaProficiencia);
+            var mediaProficiencia = proficienciasPsp != null ? proficienciasPsp.MediaProficiencia : 0;
+            var variacao = (decimal)BoletimExtensions.CalcularPercentual((decimal)proficienciaFinal, (decimal)mediaProficiencia);
             return variacao;
         }
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
+using SME.SERAp.Boletim.Aplicacao.UseCase;
 using SME.SERAp.Boletim.Infra.Dtos;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -362,6 +363,70 @@ namespace SME.SERAp.Boletim.Api.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("anos-aplicacao-sme")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public async Task<IActionResult> ObterAnosAplicacaoPorSme([FromServices] IObterAnosAplicacaoPorSmeUseCase obterAnosAplicacaoPorSmeUseCase)
+        {
+            return Ok(await obterAnosAplicacaoPorSmeUseCase.Executar());
+        }
+        [HttpGet("componentes-curriculares-sme/{anoAplicacao}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterComponentesCurricularesSmePorAno(int anoAplicacao, [FromServices] IObterComponentesCurricularesSmePorAnoUseCase obterComponentesCurricularesSmePorAnoUseCase)
+        {
+            return Ok(await obterComponentesCurricularesSmePorAnoUseCase.Executar(anoAplicacao));
+        }
 
+        [HttpGet("anos-escolares-sme/{anoAplicacao}/{disciplinaId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<OpcaoFiltroDto<int>>), 200)]
+        public async Task<IActionResult> ObterAnosEscolaresPorSmeAnoAplicacao(int anoAplicacao, int disciplinaId, [FromServices] IObterAnosEscolaresPorSmeAnoAplicacaoUseCase obterAnosEscolaresPorSmeAnoAplicacaoUseCase)
+        {
+            return Ok(await obterAnosEscolaresPorSmeAnoAplicacaoUseCase.Executar(anoAplicacao, disciplinaId));
+        }
+
+        [HttpGet("comparacao-grafico-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterGraficoComparativoPorSme(int anoAplicacao, int disciplinaId, int anoEscolar,
+         [FromServices] IObterGraficoComparativoProficienciaSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
+            if(resultado is not null)
+                 return Ok(resultado);
+
+            return NoContent();
+
+        }
+        [HttpGet("dados-tabela-comparativa-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaSmePspPsaDto), 200)]
+        public async Task<IActionResult> ObterTabelaComparativaSme(int anoAplicacao, int disciplinaId, int anoEscolar,
+            [FromServices] IObterProficienciaComparativoSmeUseCase useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar);
+            return Ok(resultado);
+        }
+
+
+        [HttpGet("cards-comparativo-sme-por-dre/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(TabelaComparativaDrePspPsaDto), 200)]
+        public async Task<IActionResult> ObterCardsComparativoSMEPorDreAnoAplicacao( int anoAplicacao, int disciplinaId, int anoEscolar, 
+            [FromQuery] int? dreId,
+            [FromQuery] int? pagina,
+            [FromQuery] int? itensPorPagina,
+            [FromServices] IObterCardComparativoProficienciasSme useCase)
+        {
+            var resultado = await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar, dreId, pagina, itensPorPagina);
+            return Ok(resultado);
+        }
+
+
+        [HttpGet("dres-comparativo-sme/{anoAplicacao}/{disciplinaId}/{anoEscolar}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(IEnumerable<DreDto>), 200)]
+        public async Task<IActionResult> ObterDresComparativoSme(int anoAplicacao, int disciplinaId, int anoEscolar, [FromServices] IObterDresComparativoSmeUseCase useCase)
+        {
+            return Ok(await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar));
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterDre
                 .Setup(r => r.ObterDreAsync(anoEscolar, loteId))
                 .ReturnsAsync(dres);
 
-            var query = new ObterDreQuery(anoEscolar, loteId);
+            var query = new ObterDrePorAnoEscolarLoteIdQuery(anoEscolar, loteId);
 
             // Act
             var resultado = await queryHandler.Handle(query, CancellationToken.None);
@@ -56,7 +56,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterDre
                 .Setup(r => r.ObterDreAsync(anoEscolar, loteId))
                 .ReturnsAsync(new List<DreDto>());
 
-            var query = new ObterDreQuery(anoEscolar, loteId);
+            var query = new ObterDrePorAnoEscolarLoteIdQuery(anoEscolar, loteId);
 
             // Act
             var resultado = await queryHandler.Handle(query, CancellationToken.None);
@@ -78,7 +78,7 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterDre
                 .Setup(r => r.ObterDreAsync(anoEscolar, loteId))
                 .ReturnsAsync((IEnumerable<DreDto>)null);
 
-            var query = new ObterDreQuery(anoEscolar, loteId);
+            var query = new ObterDrePorAnoEscolarLoteIdQuery(anoEscolar, loteId);
 
             // Act
             var resultado = await queryHandler.Handle(query, CancellationToken.None);

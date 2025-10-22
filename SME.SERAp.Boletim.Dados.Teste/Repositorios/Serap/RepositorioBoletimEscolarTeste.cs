@@ -1184,5 +1184,149 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             conexaoLeitura.Verify(c => c.Close(), Times.Once);
             conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
         }
+
+        [Fact]
+        public async Task ObterProficienciaSmeProvaSaberesAsync_DeveRetornarDados()
+        {
+            var esperado = new List<ResultadoProeficienciaSme>
+            {
+                new ResultadoProeficienciaSme
+                {
+                    LoteId = 1,
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    Periodo = "2025-1",
+                    QuantidadeDres = 5,
+                    QuantidadeUes = 10,
+                    AnoEscolar = "5º Ano",
+                    DisciplinaId = 2,
+                    MediaProficiencia = 650.50m,
+                    RealizaramProva = 1200
+                }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(d => d.QueryAsync<ResultadoProeficienciaSme>(It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterProficienciaSmeProvaSaberesAsync(2025, 2, 5);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("Prova Saberes e Aprendizagens", ((List<ResultadoProeficienciaSme>)resultado)[0].NomeAplicacao);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaSmeProvaSPAsync_DeveRetornarDados()
+        {
+            var esperado = new List<ResultadoProeficienciaSme>
+            {
+                new ResultadoProeficienciaSme
+                {
+                    LoteId = 2,
+                    NomeAplicacao = "Prova São Paulo",
+                    Periodo = "2025",
+                    QuantidadeDres = 7,
+                    QuantidadeUes = 20,
+                    AnoEscolar = "9º Ano",
+                    DisciplinaId = 3,
+                    MediaProficiencia = 720.75m,
+                    RealizaramProva = 2000
+                }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(d => d.QueryAsync<ResultadoProeficienciaSme>(It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterProficienciaSmeProvaSPAsync(2025, 3, 9);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("Prova São Paulo", ((List<ResultadoProeficienciaSme>)resultado)[0].NomeAplicacao);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaSmeProvaSaberesAsync_DeveRetornarListaVazia_QuandoNaoExistiremDados()
+        {
+            conexaoLeitura
+                .SetupDapperAsync(d => d.QueryAsync<ResultadoProeficienciaSme>(It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<ResultadoProeficienciaSme>());
+
+            var resultado = await repositorio.ObterProficienciaSmeProvaSaberesAsync(2025, 2, 5);
+
+            Assert.NotNull(resultado);
+            Assert.Empty(resultado);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaSmeProvaSPAsync_DeveRetornarListaVazia_QuandoNaoExistiremDados()
+        {
+            conexaoLeitura
+                .SetupDapperAsync(d => d.QueryAsync<ResultadoProeficienciaSme>(It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<ResultadoProeficienciaSme>());
+
+            var resultado = await repositorio.ObterProficienciaSmeProvaSPAsync(2025, 3, 9);
+
+            Assert.NotNull(resultado);
+            Assert.Empty(resultado);
+        }
+
+        [Fact]
+        public async Task ObterDresComparativoSmeAsync_Deve_Retornar_Lista_De_Dres_Quando_Ha_Dados()
+        {
+            var esperado = new List<DreDto>
+            {
+                new DreDto { DreId = 1, DreNome = "Teste 1", DreNomeAbreviado = "T1" },
+                new DreDto { DreId = 2, DreNome = "Teste 2", DreNomeAbreviado = "T2" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<DreDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(esperado);
+
+            var resultado = await repositorio.ObterDresComparativoSmeAsync(2025, 10, 3);
+
+            Assert.NotNull(resultado);
+            Assert.Collection(resultado,
+                item => Assert.Equal("Teste 1", item.DreNome),
+                item => Assert.Equal("Teste 2", item.DreNome));
+        }
+
+        [Fact]
+        public async Task ObterDresComparativoSmeAsync_Deve_Fechar_E_Excluir_Conexao_Apos_Execucao()
+        {
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<DreDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(new List<DreDto>());
+
+            await repositorio.ObterDresComparativoSmeAsync(2025, 10, 3);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.AtLeastOnce);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
     }
 }

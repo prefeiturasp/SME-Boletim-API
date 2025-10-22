@@ -208,6 +208,209 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaDre
             Assert.Empty(resultado.Itens);
         }
 
+        [Fact(DisplayName = "Deve retornar nível 'Avançado' se média maior que todos valores de referência")]
+        public async Task Deve_Retornar_Nivel_Avancado()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 1, DreNome = "DRE TESTE", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 }
+            };
+
+            var mediasProficiencia = new List<DreMediaProficienciaDto>
+            {
+                new DreMediaProficienciaDto { DreId = 1, Disciplina = "Matemática", DisciplinaId = 2, MediaProficiencia = 999 }
+            };
+
+            var niveisProficiencia = new List<DreNivelProficienciaDto>
+            {
+                new DreNivelProficienciaDto { DisciplinaId = 2, Ano = 5, Descricao = "Básico", ValorReferencia = 190 },
+                new DreNivelProficienciaDto { DisciplinaId = 2, Ano = 5, Descricao = "Adequado", ValorReferencia = 210 },
+                new DreNivelProficienciaDto { DisciplinaId = 2, Ano = 5, Descricao = "Avançado", ValorReferencia = null }
+            };
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(mediasProficiencia);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(niveisProficiencia);
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Single(resultado.Itens);
+            Assert.Equal("Avançado", resultado.Itens.First().Disciplinas.First().NivelProficiencia);
+        }
+
+        [Fact(DisplayName = "Deve retornar 'Nível não definido' se não houver nível sem referência")]
+        public async Task Deve_Retornar_NivelNaoDefinido_Se_NaoHouverNivelSemReferencia()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 1, DreNome = "DRE TESTE", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 }
+            };
+
+            var mediasProficiencia = new List<DreMediaProficienciaDto>
+            {
+                new DreMediaProficienciaDto { DreId = 1, Disciplina = "Matemática", DisciplinaId = 2, MediaProficiencia = 999 }
+            };
+
+            var niveisProficiencia = new List<DreNivelProficienciaDto>
+            {
+                new DreNivelProficienciaDto { DisciplinaId = 2, Ano = 5, Descricao = "Básico", ValorReferencia = 190 },
+                new DreNivelProficienciaDto { DisciplinaId = 2, Ano = 5, Descricao = "Adequado", ValorReferencia = 210 }
+            };
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(mediasProficiencia);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(niveisProficiencia);
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Single(resultado.Itens);
+            Assert.Equal("Nível não definido", resultado.Itens.First().Disciplinas.First().NivelProficiencia);
+        }
+
+        [Fact(DisplayName = "Deve retornar percentual de participação = 0 quando TotalAlunos = 0")]
+        public async Task Deve_Retornar_PercentualParticipacao_Zero_Se_TotalAlunos_Zero()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 1, DreNome = "DRE ZERO", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 0, TotalRealizaramProva = 0 }
+            };
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(new List<DreMediaProficienciaDto>());
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(new List<DreNivelProficienciaDto>());
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Single(resultado.Itens);
+            Assert.Equal(0, resultado.Itens.First().PercentualParticipacao);
+        }
+
+        [Fact(DisplayName = "Deve retornar disciplinas vazias se nenhuma média existir para a DRE")]
+        public async Task Deve_Retornar_Disciplinas_Vazias_Se_Nenhuma_Media_Existir()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 1, DreNome = "DRE SEM MEDIA", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 }
+            };
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(new List<DreMediaProficienciaDto>());
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(new List<DreNivelProficienciaDto>());
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Single(resultado.Itens);
+            Assert.Empty(resultado.Itens.First().Disciplinas);
+            Assert.Equal(0, resultado.TotalTipoDisciplina);
+        }
+
+        [Fact(DisplayName = "Deve ordenar itens por DreNome")]
+        public async Task Deve_Ordenar_Itens_Por_DreNome()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 2, DreNome = "Z DRE", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 },
+                new DreResumoDto { DreId = 1, DreNome = "A DRE", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 }
+            };
+
+            var mediasProficiencia = new List<DreMediaProficienciaDto>();
+            var niveisProficiencia = new List<DreNivelProficienciaDto>();
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(mediasProficiencia);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(niveisProficiencia);
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Equal("A DRE", resultado.Itens.FirstOrDefault()?.DreNome);
+            Assert.Equal("Z DRE", resultado.Itens.LastOrDefault()?.DreNome);
+        }
+
+        [Fact(DisplayName = "Deve retornar 'Nível não definido' se disciplina não existir nos níveis")]
+        public async Task Deve_Retornar_NivelNaoDefinido_Se_Disciplina_Inexistente()
+        {
+            var anoEscolar = 5;
+            var loteId = 10L;
+
+            var resumoDres = new List<DreResumoDto>
+            {
+                new DreResumoDto { DreId = 1, DreNome = "DRE TESTE", AnoEscolar = 5, TotalUes = 1, TotalAlunos = 10, TotalRealizaramProva = 5 }
+            };
+
+            var mediasProficiencia = new List<DreMediaProficienciaDto>
+            {
+                new DreMediaProficienciaDto { DreId = 1, Disciplina = "Geografia", DisciplinaId = 99, MediaProficiencia = 100 }
+            };
+
+            var niveisProficiencia = new List<DreNivelProficienciaDto>(); // Nenhum nível definido
+
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterResumoDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(resumoDres);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterMediaProficienciaDreAsync(anoEscolar, loteId))
+                .ReturnsAsync(mediasProficiencia);
+            repositorioBoletimEscolar
+                .Setup(r => r.ObterNiveisProficienciaAsync(anoEscolar))
+                .ReturnsAsync(niveisProficiencia);
+
+            var query = new ObterProficienciaDreQuery(anoEscolar, loteId);
+            var resultado = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.Single(resultado.Itens);
+            Assert.Equal("Nível não definido", resultado.Itens.First().Disciplinas.First().NivelProficiencia);
+        }
+
         private List<DreResumoDto> ObterDadosResumoDres()
         {
             return new List<DreResumoDto>
