@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaPorSmeProvaSaberes
 {
-    internal class ObterProficienciaPorSmeProvaSaberesQueryHandler : IRequestHandler<ObterProficienciaPorSmeProvaSaberesQuery, IEnumerable<ResultadoProeficienciaPorDre>>
+    public class ObterProficienciaPorSmeProvaSaberesQueryHandler : IRequestHandler<ObterProficienciaPorSmeProvaSaberesQuery, IEnumerable<ResultadoProeficienciaPorDre>>
     {
         private readonly IRepositorioBoletimEscolar repositorio;
 
