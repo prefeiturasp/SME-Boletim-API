@@ -210,7 +210,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     where
 	                                    blu.dre_id = @dreId
 	                                    and blu.ano_escolar = @anoEscolar
-	                                    and blu.lote_id = @loteId;";
+	                                    and blu.lote_id = @loteId
+                                        and blu.realizaram_prova > 0;";
 
             using var conn = ObterConexaoLeitura();
             try
@@ -836,12 +837,11 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             using var conn = ObterConexaoLeitura();
             try
             {
-                const string query = @"
-                                        select
+                const string query = @"select
 	                                        d.id as DreId,
 	                                        d.nome as DreNome,
 	                                        blu.ano_escolar as AnoEscolar,
-	                                        COUNT(distinct blu.ue_id) as TotalUes,
+	                                        COUNT(distinct blu.ue_id) filter (where blu.realizaram_prova > 0) as TotalUes,
 	                                        SUM(blu.total_alunos) as TotalAlunos,
 	                                        SUM(blu.realizaram_prova) as TotalRealizaramProva
                                         from
