@@ -60,8 +60,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                 var listaProficienciaGraficoComparativoDto = new List<ProficienciasGraficoComparativoDreDto>();
                 proficienciaGraficoComparativoSme.ListaProficienciaGraficoComparativoDto = listaProficienciaGraficoComparativoDto;
                
-                var proficienciaPSPGraficoComparativoDre = MapeamentoProvaSP(proficienciasDresProvaSP, aplicacoesProvaPsaDre, proficienciaGraficoComparativoSme);
-                listaProficienciaGraficoComparativoDto.Add(proficienciaPSPGraficoComparativoDre);
+                if(proficienciasDresProvaSP?.Any() ?? false)
+                {
+                    var proficienciaPSPGraficoComparativoDre = MapeamentoProvaSP(proficienciasDresProvaSP, aplicacoesProvaPsaDre, proficienciaGraficoComparativoSme);
+                    listaProficienciaGraficoComparativoDto.Add(proficienciaPSPGraficoComparativoDre);
+                }
 
                 foreach (var aplicacaoDre in aplicacoesProvaPsaDre)
                 {
