@@ -720,5 +720,55 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             Assert.Contains(resultado, c => c.Valor == 4 && c.Texto == "Matemática");
             Assert.Contains(resultado, c => c.Valor == 5 && c.Texto == "Português");
         }
+
+        [Fact]
+        public async Task ObterAnosAplicacaoPorSme_DeveRetornarListaCorreta()
+        {
+            var anosEsperados = new List<int> { 2023, 2024 };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<int>(
+                    It.IsAny<string>(),
+                    null, null, null, null))
+                .ReturnsAsync(anosEsperados);
+
+            var resultado = await repositorio.ObterAnosAplicacaoPorSme();
+
+            Assert.NotNull(resultado);
+            Assert.Equal(2, resultado.Count());
+            Assert.Contains(2023, resultado);
+            Assert.Contains(2024, resultado);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ObterAnosEscolaresPorSmeAnoAplicacao_DeveRetornarListaCorreta()
+        {
+            var anoAplicacao = 2024;
+            var disciplinaId = 5;
+            var anosMock = new List<OpcaoFiltroDto<int>>
+            {
+                new OpcaoFiltroDto<int> { Valor = 1, Texto = "1º Ano" },
+                new OpcaoFiltroDto<int> { Valor = 2, Texto = "2º Ano" }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<OpcaoFiltroDto<int>>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(anosMock);
+
+
+            var resultado = await repositorio.ObterAnosEscolaresPorSmeAnoAplicacao(anoAplicacao, disciplinaId);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(anosMock.Count, resultado.Count());
+            Assert.Contains(resultado, a => a.Valor == 1 && a.Texto == "1º Ano");
+            Assert.Contains(resultado, a => a.Valor == 2 && a.Texto == "2º Ano");
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
     }
 }
