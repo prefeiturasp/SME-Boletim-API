@@ -1328,5 +1328,223 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             conexaoLeitura.Verify(c => c.Close(), Times.AtLeastOnce);
             conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
         }
+
+        [Fact]
+        public async Task ObterProficienciaDreProvaSaberesAsync_DeveRetornarListaCorreta()
+        {
+            int? dreId = 1;
+            int anoLetivo = 2024;
+            int disciplinaId = 5;
+            int anoEscolar = 2;
+
+            var resultadosMock = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre
+                {
+                    DisciplinaId = 5,
+                    LoteId = 10,
+                    AnoEscolar = "2",
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    Periodo = "1º Bimestre",
+                    QuantidadeUes = 3,
+                    DreId = 1,
+                    DreAbreviacao = "DRE-N",
+                    DreNome = "DRE Norte",
+                    MediaProficiencia = 250.5m,
+                    RealizaramProva = 120
+                },
+                new ResultadoProeficienciaPorDre
+                {
+                    DisciplinaId = 5,
+                    LoteId = 11,
+                    AnoEscolar = "2",
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    Periodo = "2º Bimestre",
+                    QuantidadeUes = 4,
+                    DreId = 1,
+                    DreAbreviacao = "DRE-N",
+                    DreNome = "DRE Norte",
+                    MediaProficiencia = 270.8m,
+                    RealizaramProva = 130
+                }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<ResultadoProeficienciaPorDre>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(resultadosMock);
+
+            var resultado = await repositorio.ObterProficienciaDreProvaSaberesAsync(dreId, anoLetivo, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(resultadosMock.Count, resultado.Count());
+            Assert.Contains(resultado, r => r.LoteId == 10 && r.MediaProficiencia == 250.5m);
+            Assert.Contains(resultado, r => r.LoteId == 11 && r.RealizaramProva == 130);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaPorDreProvaSPAsync_DeveRetornarListaCorreta()
+        {
+            int? dreId = 1;
+            int anoLetivo = 2024;
+            int disciplinaId = 5;
+            int anoEscolar = 3;
+
+            var resultadosMock = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre
+                {
+                    DisciplinaId = 5,
+                    AnoEscolar = "3",
+                    NomeAplicacao = "Prova São Paulo",
+                    Periodo = "2024",
+                    QuantidadeUes = 2,
+                    DreId = 1,
+                    DreAbreviacao = "DRE-S",
+                    DreNome = "DRE Sul",
+                    MediaProficiencia = 260.7m,
+                    RealizaramProva = 150
+                },
+                new ResultadoProeficienciaPorDre
+                {
+                    DisciplinaId = 5,
+                    AnoEscolar = "3",
+                    NomeAplicacao = "Prova São Paulo",
+                    Periodo = "2024",
+                    QuantidadeUes = 3,
+                    DreId = 1,
+                    DreAbreviacao = "DRE-S",
+                    DreNome = "DRE Sul",
+                    MediaProficiencia = 275.2m,
+                    RealizaramProva = 170
+                }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<ResultadoProeficienciaPorDre>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(resultadosMock);
+
+            var resultado = await repositorio.ObterProficienciaPorDreProvaSPAsync(dreId, anoLetivo, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(resultadosMock.Count, resultado.Count());
+            Assert.Contains(resultado, r => r.MediaProficiencia == 260.7m && r.RealizaramProva == 150);
+            Assert.Contains(resultado, r => r.MediaProficiencia == 275.2m && r.RealizaramProva == 170);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ObterProficienciasPorSmeProvaSPAsync_DeveRetornarListaCorreta()
+        {
+            int anoLetivo = 2024;
+            int disciplinaId = 5;
+            int anoEscolar = 3;
+
+            var resultadosMock = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre
+                {
+                    DreId = 1,
+                    DreAbreviacao = "DRE-L",
+                    DreNome = "DRE Leste",
+                    DisciplinaId = 5,
+                    AnoEscolar = "3",
+                    NomeAplicacao = "Prova São Paulo",
+                    Periodo = "2024",
+                    QuantidadeUes = 2,
+                    MediaProficiencia = 265.4m,
+                    RealizaramProva = 180
+                },
+                new ResultadoProeficienciaPorDre
+                {
+                    DreId = 2,
+                    DreAbreviacao = "DRE-O",
+                    DreNome = "DRE Oeste",
+                    DisciplinaId = 5,
+                    AnoEscolar = "3",
+                    NomeAplicacao = "Prova São Paulo",
+                    Periodo = "2024",
+                    QuantidadeUes = 3,
+                    MediaProficiencia = 278.6m,
+                    RealizaramProva = 190
+                }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<ResultadoProeficienciaPorDre>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(resultadosMock);
+
+            var resultado = await repositorio.ObterProficienciasPorSmeProvaSPAsync(anoLetivo, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(resultadosMock.Count, resultado.Count());
+            Assert.Contains(resultado, r => r.DreNome == "DRE Leste" && r.MediaProficiencia == 265.4m);
+            Assert.Contains(resultado, r => r.DreNome == "DRE Oeste" && r.RealizaramProva == 190);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaPorSmeProvaSaberesAsync_DeveRetornarListaCorreta()
+        {
+            int anoLetivo = 2024;
+            int disciplinaId = 5;
+            int anoEscolar = 2;
+
+            var resultadosMock = new List<ResultadoProeficienciaPorDre>
+            {
+                new ResultadoProeficienciaPorDre
+                {
+                    DreId = 1,
+                    DreAbreviacao = "DRE-C",
+                    DreNome = "DRE Centro",
+                    DisciplinaId = 5,
+                    AnoEscolar = "2",
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    Periodo = "1º Bimestre",
+                    QuantidadeUes = 4,
+                    MediaProficiencia = 255.6m
+                },
+                new ResultadoProeficienciaPorDre
+                {
+                    DreId = 2,
+                    DreAbreviacao = "DRE-L",
+                    DreNome = "DRE Leste",
+                    DisciplinaId = 5,
+                    AnoEscolar = "2",
+                    NomeAplicacao = "Prova Saberes e Aprendizagens",
+                    Periodo = "2º Bimestre",
+                    QuantidadeUes = 5,
+                    MediaProficiencia = 268.9m
+                }
+            };
+
+            conexaoLeitura.SetupDapperAsync(c => c.QueryAsync<ResultadoProeficienciaPorDre>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    null, null, null))
+                .ReturnsAsync(resultadosMock);
+
+            var resultado = await repositorio.ObterProficienciaPorSmeProvaSaberesAsync(anoLetivo, disciplinaId, anoEscolar);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(resultadosMock.Count, resultado.Count());
+            Assert.Contains(resultado, r => r.DreNome == "DRE Centro" && r.MediaProficiencia == 255.6m);
+            Assert.Contains(resultado, r => r.DreNome == "DRE Leste" && r.QuantidadeUes == 5);
+
+            conexaoLeitura.Verify(c => c.Close(), Times.Once);
+            conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
+        }
     }
 }
