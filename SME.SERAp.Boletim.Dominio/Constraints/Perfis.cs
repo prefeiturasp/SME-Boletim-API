@@ -20,6 +20,8 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
         public readonly static Guid PERFIL_PROFESSOR = Guid.Parse("E77E81B1-191E-E811-B259-782BCB3D2D76");
         public readonly static Guid PERFIL_PROFESSOR_OLD = Guid.Parse("067D9B21-A1FF-E611-9541-782BCB3D218E");
 
+        public readonly static Guid PERFIL_SUPERVISOR = Guid.Parse("4FF756D4-154A-E211-9B2A-00155D02E716");
+
         public static bool PerfilEhValido(Guid perfil)
         {
             return
@@ -55,6 +57,9 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
 
             if (perfil == PERFIL_COORDENADOR_PEDAGOGICO)
                 return TipoPerfil.Coordenador;
+
+            if (perfil == PERFIL_SUPERVISOR)
+                return TipoPerfil.Supervisor;
 
             return TipoPerfil.Professor;
         }
