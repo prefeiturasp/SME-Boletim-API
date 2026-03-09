@@ -28,14 +28,14 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
                 perfil == Perfis.PERFIL_ADMINISTRADOR ||
                 perfil == Perfis.PERFIL_ADMINISTRADOR_NTA ||
                 perfil == Perfis.PERFIL_PROFESSOR ||
-                perfil == Perfis.PERFIL_PROFESSOR_OLD;
+                perfil == Perfis.PERFIL_PROFESSOR_OLD || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA;
         }
 
         public static bool PerfilEhAdministrador(Guid perfil)
         {
             return
                 PerfilEhValido(perfil) &&
-                (perfil == Perfis.PERFIL_ADMINISTRADOR || perfil == Perfis.PERFIL_ADMINISTRADOR_NTA);
+                (perfil == Perfis.PERFIL_ADMINISTRADOR || perfil == Perfis.PERFIL_ADMINISTRADOR_NTA || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA);
         }
 
         public static bool PerfilEhProfessor(Guid perfil)
@@ -46,7 +46,7 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
 
         public static TipoPerfil ObterTipoPerfil(Guid perfil)
         {
-            if (PerfilEhAdministrador(perfil) || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA)
+            if (PerfilEhAdministrador(perfil))
                 return TipoPerfil.Administrador;
 
             if (perfil == PERFIL_ADMINISTRADOR_DRE || perfil == PERFIL_ADMINISTRADOR_NA_DRE)
