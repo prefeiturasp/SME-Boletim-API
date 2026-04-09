@@ -20,20 +20,23 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
         public readonly static Guid PERFIL_PROFESSOR = Guid.Parse("E77E81B1-191E-E811-B259-782BCB3D2D76");
         public readonly static Guid PERFIL_PROFESSOR_OLD = Guid.Parse("067D9B21-A1FF-E611-9541-782BCB3D218E");
 
+        public readonly static Guid PERFIL_SUPERVISOR = Guid.Parse("4FF756D4-154A-E211-9B2A-00155D02E716");
+        public readonly static Guid PERFIL_SUPERVISOR_SERAP = Guid.Parse("66C70452-1A1E-E811-B259-782BCB3D2D76");
+
         public static bool PerfilEhValido(Guid perfil)
         {
             return
                 perfil == Perfis.PERFIL_ADMINISTRADOR ||
                 perfil == Perfis.PERFIL_ADMINISTRADOR_NTA ||
                 perfil == Perfis.PERFIL_PROFESSOR ||
-                perfil == Perfis.PERFIL_PROFESSOR_OLD;
+                perfil == Perfis.PERFIL_PROFESSOR_OLD || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA;
         }
 
         public static bool PerfilEhAdministrador(Guid perfil)
         {
             return
                 PerfilEhValido(perfil) &&
-                (perfil == Perfis.PERFIL_ADMINISTRADOR || perfil == Perfis.PERFIL_ADMINISTRADOR_NTA);
+                (perfil == Perfis.PERFIL_ADMINISTRADOR || perfil == Perfis.PERFIL_ADMINISTRADOR_NTA || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA);
         }
 
         public static bool PerfilEhProfessor(Guid perfil)
@@ -44,7 +47,7 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
 
         public static TipoPerfil ObterTipoPerfil(Guid perfil)
         {
-            if (PerfilEhAdministrador(perfil) || perfil == PERFIL_ADMINISTRADOR_COPED_LEITURA)
+            if (PerfilEhAdministrador(perfil))
                 return TipoPerfil.Administrador;
 
             if (perfil == PERFIL_ADMINISTRADOR_DRE || perfil == PERFIL_ADMINISTRADOR_NA_DRE)
@@ -55,6 +58,9 @@ namespace SME.SERAp.Boletim.Dominio.Constraints
 
             if (perfil == PERFIL_COORDENADOR_PEDAGOGICO)
                 return TipoPerfil.Coordenador;
+
+            if (perfil == PERFIL_SUPERVISOR || perfil == PERFIL_SUPERVISOR_SERAP)
+                return TipoPerfil.Supervisor;
 
             return TipoPerfil.Professor;
         }
