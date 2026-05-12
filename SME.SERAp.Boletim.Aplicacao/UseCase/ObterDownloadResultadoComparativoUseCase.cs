@@ -53,6 +53,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<MemoryStream> Executar(int ueId, int disciplinaId, int anoEscolar, long loteId, string? turma, List<int>? tiposVariacao, string? nomeAluno)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
