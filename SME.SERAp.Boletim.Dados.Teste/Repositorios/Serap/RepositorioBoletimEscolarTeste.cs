@@ -1328,5 +1328,86 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
             conexaoLeitura.Verify(c => c.Close(), Times.AtLeastOnce);
             conexaoLeitura.Verify(c => c.Dispose(), Times.AtLeastOnce);
         }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSaberesAsync_DeveRetornarProficiencias_QuandoHaFiltroNomeAluno()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Ana Paula", Proficiencia = 510m, Periodo = "Abril", Turma = "5A", DisciplinaNome = "Matemática", NomeLote = "Lote 2024" }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var resultado = await repositorio.ObterProficienciaAlunoProvaSaberesAsync(1, 1, 5, "5A", 2024);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("Ana Paula", resultado.First().NomeAluno);
+            Assert.Equal("Matemática", resultado.First().DisciplinaNome);
+            Assert.Equal("Lote 2024", resultado.First().NomeLote);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoProvaSPAsync_DeveRetornarProficiencias_ComDisciplinaNomeENomeLote()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Carlos Silva", Proficiencia = 480m, Periodo = string.Empty, DisciplinaNome = "Português", NomeLote = "PSP 2023" }
+            };
+            var alunosRa = new List<long> { 2 };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var resultado = await repositorio.ObterProficienciaAlunoProvaSPAsync(1, 2023, alunosRa);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado);
+            Assert.Equal("Carlos Silva", resultado.First().NomeAluno);
+            Assert.Equal("Português", resultado.First().DisciplinaNome);
+            Assert.Equal("PSP 2023", resultado.First().NomeLote);
+        }
+
+        [Fact]
+        public async Task ObterNiveisProficienciaComparativoProvaSP_DeveRetornarNiveis_QuandoHaDados()
+        {
+            var niveisMock = new List<ObterNivelProficienciaDto>
+            {
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 5, Descricao = "Abaixo do Básico", ValorReferencia = 400 },
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 5, Descricao = "Básico", ValorReferencia = 500 },
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 5, Descricao = "Adequado", ValorReferencia = 600 },
+                new ObterNivelProficienciaDto { DisciplinaId = 1, Ano = 5, Descricao = "Avançado", ValorReferencia = 700 }
+            };
+
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<ObterNivelProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(niveisMock);
+
+            var resultado = await repositorio.ObterNiveisProficienciaPorDisciplinaIdAsync(1, 5);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(4, resultado.Count());
+            Assert.Equal("Abaixo do Básico", resultado.First().Descricao);
+            Assert.Equal("Avançado", resultado.Last().Descricao);
+        }
     }
 }

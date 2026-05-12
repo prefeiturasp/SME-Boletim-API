@@ -1205,7 +1205,9 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             blp.lote_id as LoteId,
                                             bpa.turma as Turma,
                                             'PSA' as NomeAplicacao,
-                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as Periodo
+                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as Periodo,
+                                            bpa.disciplina as DisciplinaNome,
+                                            lp.nome as NomeLote
                                         from
                                             boletim_prova_aluno bpa
                                         inner join prova p on
@@ -1230,11 +1232,63 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             and p.exibir_no_boletim = true
                                             and bpa.proficiencia is not null
                                         group by
-                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma
+                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
                                         order by
                                             a.nome;
                                     ";
                 return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, turma, loteId });
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoTodasTurmasProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, long loteId)
+        {
+            using var conn = ObterConexaoLeitura();
+            try
+            {
+                const string query = @"
+                                        select
+                                            bpa.aluno_ra as AlunoRa,
+                                            a.nome as NomeAluno,
+                                            avg(bpa.proficiencia) as Proficiencia,
+                                            blp.lote_id as LoteId,
+                                            bpa.turma as Turma,
+                                            'PSA' as NomeAplicacao,
+                                            initcap(regexp_replace(lp.nome, '.*\(([^)]*)\).*', '\1')) as Periodo,
+                                            bpa.disciplina as DisciplinaNome,
+                                            lp.nome as NomeLote
+                                        from
+                                            boletim_prova_aluno bpa
+                                        inner join prova p on
+                                            p.id = bpa.prova_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = p.id
+                                        inner join lote_prova lp on
+                                            lp.id = blp.lote_id
+                                        inner join aluno a on
+                                            a.ra = bpa.aluno_ra
+                                        inner join ue u on u.ue_id = bpa.ue_codigo
+                                        where
+                                            u.id = @ueId
+                                            and EXTRACT(YEAR FROM lp.data_criacao) = (
+                                                select EXTRACT(YEAR FROM data_criacao)
+                                                from lote_prova
+                                                where id = @loteId
+                                            )
+                                            and bpa.disciplina_id = @disciplinaId
+                                            and bpa.ano_escolar = @anoEscolar
+                                            and p.exibir_no_boletim = true
+                                            and bpa.proficiencia is not null
+                                        group by
+                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
+                                        order by
+                                            bpa.turma, a.nome;
+                                    ";
+                return await conn.QueryAsync<AlunoProficienciaDto>(query, new { ueId, disciplinaId, anoEscolar, loteId });
             }
             finally
             {
