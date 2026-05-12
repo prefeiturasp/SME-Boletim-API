@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+ï»¿using ClosedXML.Excel;
 using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaComparativoProvaSP;
@@ -25,7 +25,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         private static readonly XLColor CorTextoEscuro = XLColor.FromHtml("#111827");
         private static readonly XLColor CorBranco = XLColor.White;
 
-        // Cores de nível de proficiência
+        // Cores de nÃ­vel de proficiÃªncia
         private static readonly XLColor CorAbaixoBasicoBg = XLColor.FromHtml("#FEF2F2");
         private static readonly XLColor CorAbaixoBasicoFonte = XLColor.FromHtml("#EF4444");
         private static readonly XLColor CorBasicoBg = XLColor.FromHtml("#EEF2FF");
@@ -35,7 +35,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         private static readonly XLColor CorAvancadoBg = XLColor.FromHtml("#FFFBEB");
         private static readonly XLColor CorAvancadoFonte = XLColor.FromHtml("#B45309");
 
-        // Cores de variação
+        // Cores de variaÃ§Ã£o
         private static readonly XLColor CorVariacaoPositiva = XLColor.FromHtml("#00B050");
         private static readonly XLColor CorVariacaoNeutra = XLColor.FromHtml("#A5A5A5");
         private static readonly XLColor CorVariacaoNegativa = XLColor.FromHtml("#FF5959");
@@ -53,12 +53,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         public async Task<MemoryStream> Executar(int ueId, int disciplinaId, int anoEscolar, long loteId, string? turma, List<int>? tiposVariacao, string? nomeAluno)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var abrangenciasUsuarioLogado = await mediator
                 .Send(new ObterUesAbrangenciaUsuarioLogadoQuery());
 
             if (!abrangenciasUsuarioLogado?.Any(x => x.UeId == ueId) ?? true)
-                throw new NaoAutorizadoException("Usuário não possui abrangências para essa UE.");
+                throw new NaoAutorizadoException("UsuÃ¡rio nÃ£o possui abrangÃªncias para essa UE.");
 
             var ueDescricao = abrangenciasUsuarioLogado?.FirstOrDefault(x => x.UeId == ueId)?.Descricao ?? string.Empty;
 
@@ -151,7 +150,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             row++;
 
             ws.Row(row).Height = AlturaLinha;
-            var subtitulo = $"{nomeLote} - {nomeDisciplina} - {anoEscolar}º ano";
+            var subtitulo = $"{nomeLote} - {nomeDisciplina} - {anoEscolar}Âº ano";
             ws.Cell(row, 1).Value = subtitulo;
             EstilarSubtituloRelatorio(ws.Range(row, 1, row, totalColunas));
             row++;
@@ -175,7 +174,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                 var (label, isPsp) = todasColunas[i];
                 var avg = CalcularMediaColuna(dadosProvaSP, itens, label, isPsp);
                 var cell = ws.Cell(row, i + 1);
-                cell.Value = $"{avg.ToString("N2", new CultureInfo("pt-BR"))} Proficiência";
+                cell.Value = $"{avg.ToString("N2", new CultureInfo("pt-BR"))} ProficiÃªncia";
                 var nivel = ObterNivelMaisComum(itens, isPsp ? null : label, isPsp);
                 AplicarEstiloNivel(cell, nivel);
             }
@@ -208,7 +207,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var rangeInfoUe = ws.Range(row, 1, row, totalColunas);
             rangeInfoUe.Merge();
             var cell = ws.Cell(row, 1);
-            cell.Value = $"Informações da {ueDescricao} nas provas São Paulo (PSP) e Saberes e Aprendizagens (PSA)";
+            cell.Value = $"InformaÃ§Ãµes da {ueDescricao} nas provas SÃ£o Paulo (PSP) e Saberes e Aprendizagens (PSA)";
             cell.Style.Fill.BackgroundColor = CorAzulInfoUe;
             cell.Style.Font.FontColor = CorBranco;
             cell.Style.Font.FontName = "Arial";
@@ -269,11 +268,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var rangePsa = ws.Range(row, 2, row, todasColunas.Count + 1);
             rangePsa.Merge();
             var cellPsa = ws.Cell(row, 2);
-            cellPsa.Value = "Aplicação PSA";
+            cellPsa.Value = "AplicaÃ§Ã£o PSA";
             EstilarCabecalho(cellPsa);
 
             var cellVariacao = ws.Cell(row, todasColunas.Count + 2);
-            cellVariacao.Value = "Variação";
+            cellVariacao.Value = "VariaÃ§Ã£o";
             EstilarCabecalho(cellVariacao);
             row++;
 
