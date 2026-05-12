@@ -40,6 +40,7 @@ namespace SME.SERAp.Boletim.Dados.Interfaces
         Task<IEnumerable<ObterNivelProficienciaDto>> ObterNiveisProficienciaPorDisciplinaIdAsync(int disciplinaId, int anoEscolar);
         Task<int> ObterTotalAlunosComProficienciaAsync(int ueId, int disciplinaId, int anoEscolar, string turma, int anoCriacao);
         Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, string turma, long loteId);
+        Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoTodasTurmasProvaSaberesAsync(int ueId, int disciplinaId, int anoEscolar, long loteId);
         Task<IEnumerable<AlunoProficienciaDto>> ObterProficienciaAlunoProvaSPAsync(int disciplinaId, int anoLetivo, IEnumerable<long> alunosRa);
         Task<int> ObterAnoPorLoteIdAsync(long loteId);
         Task<IEnumerable<UeProficienciaQueryResultDto>> ObterProficienciaUeProvaSaberesAsync(int dreId, int disciplinaId, int anoLetivo, int anoEscolar, int? ueId = null);

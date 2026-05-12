@@ -1,10 +1,4 @@
-﻿using FluentAssertions;
-using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 
 namespace SME.SERAp.Boletim.Infra.Teste.Dtos.BoletimEscolar
 {
@@ -13,24 +7,46 @@ namespace SME.SERAp.Boletim.Infra.Teste.Dtos.BoletimEscolar
         [Fact(DisplayName = "DTO AlunoProficienciaDto deve ser criado com sucesso.")]
         public void AlunoProficienciaDto_DeveSerCriadoComSucesso()
         {
-            var alunoProficienciaDto = new AlunoProficienciaDto();
+            var dto = new AlunoProficienciaDto();
 
-            alunoProficienciaDto.AlunoRa = 12345;
-            alunoProficienciaDto.NomeAluno = "Teste de Nome";
-            alunoProficienciaDto.Proficiencia = 250.5M;
-            alunoProficienciaDto.LoteId = 1;
-            alunoProficienciaDto.Turma = "TURMA A";
-            alunoProficienciaDto.NomeAplicacao = "PSA";
-            alunoProficienciaDto.Periodo = "Agosto";
+            dto.AlunoRa = 12345;
+            dto.NomeAluno = "Teste de Nome";
+            dto.Proficiencia = 250.5M;
+            dto.LoteId = 1;
+            dto.Turma = "TURMA A";
+            dto.NomeAplicacao = "PSA";
+            dto.Periodo = "Agosto";
+            dto.DisciplinaNome = "Matemática";
+            dto.NomeLote = "Lote 2024";
 
-            alunoProficienciaDto.Should().NotBeNull();
-            alunoProficienciaDto.AlunoRa.Should().Be(12345);
-            alunoProficienciaDto.NomeAluno.Should().Be("Teste de Nome");
-            alunoProficienciaDto.Proficiencia.Should().Be(250.5M);
-            alunoProficienciaDto.LoteId.Should().Be(1);
-            alunoProficienciaDto.Turma.Should().Be("TURMA A");
-            alunoProficienciaDto.NomeAplicacao.Should().Be("PSA");
-            alunoProficienciaDto.Periodo.Should().Be("Agosto");
+            Assert.NotNull(dto);
+            Assert.Equal(12345, dto.AlunoRa);
+            Assert.Equal("Teste de Nome", dto.NomeAluno);
+            Assert.Equal(250.5M, dto.Proficiencia);
+            Assert.Equal(1, dto.LoteId);
+            Assert.Equal("TURMA A", dto.Turma);
+            Assert.Equal("PSA", dto.NomeAplicacao);
+            Assert.Equal("Agosto", dto.Periodo);
+            Assert.Equal("Matemática", dto.DisciplinaNome);
+            Assert.Equal("Lote 2024", dto.NomeLote);
+        }
+
+        [Fact(DisplayName = "DTO AlunoProficienciaDto deve aceitar valores nulos em propriedades opcionais.")]
+        public void AlunoProficienciaDto_DeveAceitarValoresNulos()
+        {
+            var dto = new AlunoProficienciaDto
+            {
+                AlunoRa = 99999,
+                NomeAluno = "Aluno Sem Lote",
+                Proficiencia = 300m,
+                LoteId = 0
+            };
+
+            Assert.Null(dto.DisciplinaNome);
+            Assert.Null(dto.NomeLote);
+            Assert.Null(dto.NomeAplicacao);
+            Assert.Null(dto.Periodo);
+            Assert.Null(dto.Turma);
         }
     }
 }

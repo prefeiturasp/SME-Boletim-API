@@ -1,16 +1,10 @@
-﻿using FluentAssertions;
-using MediatR;
+﻿using MediatR;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterAnoLoteProva;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNivelProficienciaDisciplina;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoSp;
 using SME.SERAp.Boletim.Dados.Interfaces;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoAlunoSp
 {
@@ -64,47 +58,47 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(2);
-            resultado.Pagina.Should().Be(1);
-            resultado.ItensPorPagina.Should().Be(10);
-            resultado.Aplicacoes.Should().HaveCount(2).And.Contain("1 Bim", "2 Bim");
-            resultado.Itens.Should().HaveCount(2);
+            Assert.NotNull(resultado);
+            Assert.Equal(2, resultado.Total);
+            Assert.Equal(1, resultado.Pagina);
+            Assert.Equal(10, resultado.ItensPorPagina);
+            Assert.Equal(2, resultado.Aplicacoes.Count());
+            Assert.Contains("1 Bim", resultado.Aplicacoes);
+            Assert.Contains("2 Bim", resultado.Aplicacoes);
+            Assert.Equal(2, resultado.Itens.Count());
 
             var alunoB = resultado.Itens.FirstOrDefault(x => x.Nome == "Aluno B");
-            alunoB.Should().NotBeNull();
-            alunoB.Variacao.Should().BeApproximately(22.22, 0.01);
-            alunoB.Proficiencias.Should().HaveCount(3);
-            alunoB.Proficiencias.ElementAt(0).Descricao.Should().Be("PSP");
-            alunoB.Proficiencias.ElementAt(0).Valor.Should().Be(450);
-            alunoB.Proficiencias.ElementAt(1).Descricao.Should().Be("1 Bim");
-            alunoB.Proficiencias.ElementAt(1).Valor.Should().Be(500);
-            alunoB.Proficiencias.ElementAt(2).Descricao.Should().Be("2 Bim");
-            alunoB.Proficiencias.ElementAt(2).Valor.Should().Be(550);
+            Assert.NotNull(alunoB);
+            Assert.Equal(22.22, alunoB.Variacao, 2);
+            Assert.Equal(3, alunoB.Proficiencias.Count());
+            Assert.Equal("PSP", alunoB.Proficiencias.ElementAt(0).Descricao);
+            Assert.Equal(450, alunoB.Proficiencias.ElementAt(0).Valor);
+            Assert.Equal("1 Bim", alunoB.Proficiencias.ElementAt(1).Descricao);
+            Assert.Equal(500, alunoB.Proficiencias.ElementAt(1).Valor);
+            Assert.Equal("2 Bim", alunoB.Proficiencias.ElementAt(2).Descricao);
+            Assert.Equal(550, alunoB.Proficiencias.ElementAt(2).Valor);
 
             var alunoC = resultado.Itens.FirstOrDefault(x => x.Nome == "Aluno C");
-            alunoC.Should().NotBeNull();
-            alunoC.Variacao.Should().Be(0.0);
-            alunoC.Proficiencias.Should().HaveCount(1);
-            alunoC.Proficiencias.First().Valor.Should().Be(600);
+            Assert.NotNull(alunoC);
+            Assert.Equal(0.0, alunoC.Variacao);
+            Assert.Single(alunoC.Proficiencias);
+            Assert.Equal(600, alunoC.Proficiencias.First().Valor);
         }
 
         [Fact]
         public async Task Handle_Deve_Retornar_Vazio_Quando_Nao_Houver_Proficiencia_No_Ano_Corrente()
         {
             var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null, null);
-            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>();
-            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>();
-            ConfigurarMocks(proficienciasAnoCorrente, proficienciasAnoAnterior);
+            ConfigurarMocks(new List<AlunoProficienciaDto>(), new List<AlunoProficienciaDto>());
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(0);
-            resultado.Pagina.Should().Be(1);
-            resultado.ItensPorPagina.Should().Be(0);
-            resultado.Aplicacoes.Should().BeEmpty();
-            resultado.Itens.Should().BeEmpty();
+            Assert.NotNull(resultado);
+            Assert.Equal(0, resultado.Total);
+            Assert.Equal(1, resultado.Pagina);
+            Assert.Equal(0, resultado.ItensPorPagina);
+            Assert.Empty(resultado.Aplicacoes);
+            Assert.Empty(resultado.Itens);
         }
 
         [Theory]
@@ -129,16 +123,16 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(totalEsperado);
+            Assert.NotNull(resultado);
+            Assert.Equal(totalEsperado, resultado.Total);
             if (totalEsperado > 0)
             {
-                resultado.Itens.Should().HaveCount(1);
-                resultado.Itens.First().Nome.Should().Contain(nomeAlunoEsperado);
+                Assert.Single(resultado.Itens);
+                Assert.Contains(nomeAlunoEsperado, resultado.Itens.First().Nome);
             }
             else
             {
-                resultado.Itens.Should().BeEmpty();
+                Assert.Empty(resultado.Itens);
             }
         }
 
@@ -162,9 +156,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(3);
-            resultado.Itens.Should().HaveCount(3);
+            Assert.NotNull(resultado);
+            Assert.Equal(3, resultado.Total);
+            Assert.Equal(3, resultado.Itens.Count());
         }
 
         [Fact]
@@ -186,10 +180,10 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(1);
-            resultado.Itens.Should().HaveCount(1);
-            resultado.Itens.First().Nome.Should().Be(nomeAlunoFiltro);
+            Assert.NotNull(resultado);
+            Assert.Equal(1, resultado.Total);
+            Assert.Single(resultado.Itens);
+            Assert.Equal(nomeAlunoFiltro, resultado.Itens.First().Nome);
         }
 
         [Fact]
@@ -204,18 +198,17 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
                 new AlunoProficienciaDto { AlunoRa = 4, NomeAluno = "Aluno D", Proficiencia = 500, Periodo = "1 Bim" },
                 new AlunoProficienciaDto { AlunoRa = 5, NomeAluno = "Aluno E", Proficiencia = 500, Periodo = "1 Bim" },
             };
-            var proficienciasAnoAnterior = new List<AlunoProficienciaDto>();
-            ConfigurarMocks(proficienciasAnoCorrente, proficienciasAnoAnterior);
+            ConfigurarMocks(proficienciasAnoCorrente, new List<AlunoProficienciaDto>());
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(5);
-            resultado.Pagina.Should().Be(2);
-            resultado.ItensPorPagina.Should().Be(2);
-            resultado.Itens.Should().HaveCount(2);
-            resultado.Itens.First().Nome.Should().Be("Aluno C");
-            resultado.Itens.Last().Nome.Should().Be("Aluno D");
+            Assert.NotNull(resultado);
+            Assert.Equal(5, resultado.Total);
+            Assert.Equal(2, resultado.Pagina);
+            Assert.Equal(2, resultado.ItensPorPagina);
+            Assert.Equal(2, resultado.Itens.Count());
+            Assert.Equal("Aluno C", resultado.Itens.First().Nome);
+            Assert.Equal("Aluno D", resultado.Itens.Last().Nome);
         }
 
         [Fact]
@@ -226,15 +219,14 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             {
                 new AlunoProficienciaDto { AlunoRa = 3, NomeAluno = "Aluno Sem PSP", Proficiencia = 700, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
             };
-            var profAnterior = new List<AlunoProficienciaDto>();
-            ConfigurarMocks(profCorrente, profAnterior);
+            ConfigurarMocks(profCorrente, new List<AlunoProficienciaDto>());
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Itens.Should().HaveCount(1);
-            resultado.Itens.First().Proficiencias.Should().HaveCount(1);
-            resultado.Itens.First().Proficiencias.First().Descricao.Should().Be("1 Bim");
+            Assert.NotNull(resultado);
+            Assert.Single(resultado.Itens);
+            Assert.Single(resultado.Itens.First().Proficiencias);
+            Assert.Equal("1 Bim", resultado.Itens.First().Proficiencias.First().Descricao);
         }
 
         [Fact]
@@ -254,9 +246,9 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Itens.Should().HaveCount(1);
-            resultado.Itens.First().Proficiencias.Should().HaveCount(3);
+            Assert.NotNull(resultado);
+            Assert.Single(resultado.Itens);
+            Assert.Equal(3, resultado.Itens.First().Proficiencias.Count());
         }
 
         [Fact]
@@ -276,8 +268,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Itens.First().Proficiencias.All(p => p.NivelProficiencia == null).Should().BeTrue();
+            Assert.NotNull(resultado);
+            Assert.True(resultado.Itens.First().Proficiencias.All(p => p.NivelProficiencia == null));
         }
 
         [Fact]
@@ -297,24 +289,22 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Itens.Should().HaveCount(1);
-            resultado.Itens.First().Nome.Should().Be("Aluno B");
+            Assert.NotNull(resultado);
+            Assert.Single(resultado.Itens);
+            Assert.Equal("Aluno B", resultado.Itens.First().Nome);
         }
 
         [Fact]
         public async Task Handle_Deve_Lidar_Com_Parametros_Nulos()
         {
             var query = new ObterProficienciaComparativoAlunoSpQuery(0, 0, 0, null, 0, null, null, null, null);
-            var profCorrente = new List<AlunoProficienciaDto>();
-            var profAnterior = new List<AlunoProficienciaDto>();
-            ConfigurarMocks(profCorrente, profAnterior);
+            ConfigurarMocks(new List<AlunoProficienciaDto>(), new List<AlunoProficienciaDto>());
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
-            resultado.Should().NotBeNull();
-            resultado.Total.Should().Be(0);
-            resultado.Itens.Should().BeEmpty();
+            Assert.NotNull(resultado);
+            Assert.Equal(0, resultado.Total);
+            Assert.Empty(resultado.Itens);
         }
 
         [Fact]
@@ -325,7 +315,6 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
                 new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim" },
                 new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Proficiencia = 600, Periodo = "1 Bim", NomeAplicacao = "1 Bim" }
             };
-
             var profAnterior = new List<AlunoProficienciaDto>
             {
                 new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 400, NomeAplicacao = "PSP" }
@@ -333,16 +322,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             ConfigurarMocks(profCorrente, profAnterior);
 
             var query = new ObterProficienciaComparativoAlunoSpQuery(
-                ueId: 1,
-                disciplinaId: 10,
-                anoEscolar: 5,
-                turma: "Turma A",
-                loteId: 100,
-                tiposVariacao: null,
-                nomeAluno: null,
-                pagina: null,
-                itensPorPagina: null
-            );
+                ueId: 1, disciplinaId: 10, anoEscolar: 5, turma: "Turma A",
+                loteId: 100, tiposVariacao: null, nomeAluno: null, pagina: null, itensPorPagina: null);
 
             var resultado = await handler.Handle(query, CancellationToken.None);
 
@@ -351,6 +332,46 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
             Assert.Equal(2, resultado.Itens.Count());
             Assert.Contains(resultado.Itens, x => x.Nome == "Aluno A");
             Assert.Contains(resultado.Itens, x => x.Nome == "Aluno B");
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Preencher_Turma_No_Item_Resultado()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "5A", 100, null, null, 1, 10);
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 500, Periodo = "1 Bim", NomeAplicacao = "1 Bim", Turma = "5A" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Proficiencia = 600, Periodo = "1 Bim", NomeAplicacao = "1 Bim", Turma = "5B" }
+            };
+            ConfigurarMocks(profCorrente, new List<AlunoProficienciaDto>());
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(resultado);
+            Assert.Equal(2, resultado.Itens.Count());
+            Assert.Equal("5A", resultado.Itens.First(x => x.Nome == "Aluno A").Turma);
+            Assert.Equal("5B", resultado.Itens.First(x => x.Nome == "Aluno B").Turma);
+        }
+
+        [Fact]
+        public async Task Handle_Deve_Calcular_Variacao_Zero_Quando_Proficiencia_Nao_Muda()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "5A", 100, null, null, 1, 10);
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Proficiencia = 500, Periodo = "1 Bim", Turma = "5A" }
+            };
+            var profAnterior = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, Proficiencia = 500 }
+            };
+            ConfigurarMocks(profCorrente, profAnterior);
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(resultado);
+            Assert.Single(resultado.Itens);
+            Assert.Equal(0.0, resultado.Itens.First().Variacao);
         }
     }
 }
