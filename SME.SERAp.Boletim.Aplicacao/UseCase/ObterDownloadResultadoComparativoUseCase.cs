@@ -167,7 +167,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             for (int i = 0; i < todasColunas.Count; i++)
             {
                 var (label, isPsp) = todasColunas[i];
-                var avg = CalcularMediaColuna(dadosProvaSP, itens, label, isPsp);
+                var avg = CalcularMediaColuna(dadosProvaSP, label, isPsp);
                 var cell = ws.Cell(row, i + 1);
                 cell.Value = $"{avg.ToString("N2", new CultureInfo("pt-BR"))} Proficiência";
                 var nivel = ObterNivelMaisComum(itens, isPsp ? null : label, isPsp);
@@ -185,8 +185,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             for (int i = 0; i < todasColunas.Count; i++)
             {
                 var (label, isPsp) = todasColunas[i];
-                var count = CalcularContagemColuna(itens, label, isPsp);
+                var count = CalcularContagemColuna(dadosProvaSP, label, isPsp);
                 var pct = total > 0 ? (count * 100.0 / total) : 0;
+                if(pct > 100)
+                    pct = 100;
+
+                if(pct < 0) 
+                    pct = 0;
+
                 var cell = ws.Cell(row, i + 1);
                 cell.Value = $"{count} ({pct.ToString("N1", new CultureInfo("pt-BR"))}%)";
                 EstilarPadrao(cell);
@@ -473,24 +479,19 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             border.TopBorderColor = border.BottomBorderColor = border.LeftBorderColor = border.RightBorderColor = CorBordaCinza;
         }
 
-        private static decimal CalcularMediaColuna(ProficienciaUeComparacaoProvaSPDto dadosProvaSP, List<ProficienciaAlunoDto> itens, string label, bool isPsp)
+        private static decimal CalcularMediaColuna(ProficienciaUeComparacaoProvaSPDto dadosProvaSP, string label, bool isPsp)
         {
             if (isPsp)
                 return dadosProvaSP?.ProvaSP?.MediaProficiencia ?? 0;
 
-            return itens
-                .SelectMany(i => i.Proficiencias ?? Enumerable.Empty<ProficienciaDetalheDto>())
-                .Where(p => p.Mes == label)
-                .Select(p => p.Valor)
-                .DefaultIfEmpty(0)
-                .Average();
+            return dadosProvaSP?.Lotes?.FirstOrDefault(x => x.Periodo?.ToLower() == label.ToLower())?.MediaProficiencia ?? 0;
         }
 
-        private static int CalcularContagemColuna(List<ProficienciaAlunoDto> itens, string label, bool isPsp)
+        private static int CalcularContagemColuna(ProficienciaUeComparacaoProvaSPDto dadosProvaSP, string label, bool isPsp)
         {
             return isPsp
-                ? itens.Count(x => x.Proficiencias != null && x.Proficiencias.Any(p => string.IsNullOrEmpty(p.Mes)))
-                : itens.Count(x => x.Proficiencias != null && x.Proficiencias.Any(p => p.Mes == label));
+                ? dadosProvaSP?.ProvaSP?.TotalRealizaramProva ?? 0
+                : dadosProvaSP?.Lotes?.FirstOrDefault(x => x.Periodo?.ToLower() == label?.ToLower())?.TotalRealizaramProva ?? 0;
         }
 
         private static string? ObterNivelMaisComum(List<ProficienciaAlunoDto> itens, string? periodo, bool isPsp)
