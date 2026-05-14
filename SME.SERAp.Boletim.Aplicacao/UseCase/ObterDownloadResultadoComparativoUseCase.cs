@@ -2,7 +2,6 @@
 using MediatR;
 using SME.SERAp.Boletim.Aplicacao.Interfaces.UseCase;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaComparativoProvaSP;
-using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoSp;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoTodasTurmasAlunoSp;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterUesAbrangenciaUsuarioLogado;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
@@ -63,18 +62,8 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             var dadosProvaSP = await mediator.Send(new ObterNiveisProficienciaComparativoProvaSPQuery(loteId, ueId, disciplinaId, anoEscolar));
 
-            ProficienciaComparativoAlunoSpDto dados;
-
-            if (string.IsNullOrEmpty(turma))
-            {
-                dados = await mediator
+            var dados = await mediator
                     .Send(new ObterProficienciaComparativoTodasTurmasAlunoSpQuery(ueId, disciplinaId, anoEscolar, loteId, tiposVariacao, nomeAluno));
-            }
-            else
-            {
-                dados = await mediator
-                    .Send(new ObterProficienciaComparativoAlunoSpQuery(ueId, disciplinaId, anoEscolar, turma, loteId, tiposVariacao, nomeAluno, null, null));
-            }
 
             if (dados != null)
                 dados.UeDescricao = ueDescricao;
@@ -133,7 +122,13 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var colunas = new List<(string label, bool isPsp)>();
 
             if (!string.IsNullOrEmpty(dadosProvaSP?.ProvaSP?.NomeAplicacao))
-                colunas.Add((dadosProvaSP.ProvaSP.NomeAplicacao + " " + dadosProvaSP.ProvaSP.Periodo, true));
+            {
+                var label = dadosProvaSP.ProvaSP.NomeAplicacao;
+                if (label != null && dadosProvaSP.ProvaSP.Periodo != dadosProvaSP.ProvaSP.NomeAplicacao)
+                    label += $" {dadosProvaSP.ProvaSP.Periodo}";
+                colunas.Add((label, true));
+            }
+
 
             foreach (var ap in aplicacoes)
                 colunas.Add((ap, false));
@@ -228,7 +223,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
         {
             var grupos = string.IsNullOrEmpty(turma)
                 ? itens.GroupBy(x => x.Turma ?? string.Empty).OrderBy(g => g.Key)
-                : itens.GroupBy(x => turma);
+                : itens.Where(x => x.Turma?.ToLower() == turma.ToLower()).GroupBy(x => x.Turma);
 
             foreach (var grupo in grupos)
             {
