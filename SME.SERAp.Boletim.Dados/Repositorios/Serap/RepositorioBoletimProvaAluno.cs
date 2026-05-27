@@ -145,7 +145,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         }
 
         public async Task<(IEnumerable<AbaEstudanteListaDto> estudantes, int totalRegistros)>
-            ObterAbaEstudanteBoletimEscolarPorUeId(long loteId, long ueId, FiltroBoletimEstudantePaginadoDto filtros)
+        ObterAbaEstudanteBoletimEscolarPorUeId(long loteId, long ueId, FiltroBoletimEstudantePaginadoDto filtros)
         {
             using var conn = ObterConexaoLeitura();
             try
@@ -209,42 +209,55 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 }
 
                 var totalQuery = new StringBuilder(@"SELECT 
-                                        COUNT(*) 
-                                    FROM 
-                                        boletim_prova_aluno bpa
-                                    INNER JOIN ue u ON
-	                                    u.ue_id = bpa.ue_codigo
-                                    INNER JOIN boletim_lote_prova blp ON 
-	                                    blp.prova_id = bpa.prova_id
-                                    INNER JOIN lote_prova lp ON
-	                                    lp.id = blp.lote_id");
+                                                            COUNT(*) 
+                                                        FROM 
+                                                            boletim_prova_aluno bpa
+                                                        INNER JOIN ue u ON
+                                                            u.ue_id = bpa.ue_codigo
+                                                        INNER JOIN boletim_lote_prova blp ON 
+                                                            blp.prova_id = bpa.prova_id
+                                                        INNER JOIN lote_prova lp ON
+                                                            lp.id = blp.lote_id");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn
                     .ExecuteScalarAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"SELECT 
-                                    bpa.disciplina as disciplina,
-                                    bpa.ano_escolar as anoescolar,
-                                    bpa.turma as turma,
-                                    bpa.aluno_ra as alunora, 
-                                    bpa.aluno_nome as alunonome,
-                                    bpa.proficiencia as proficiencia,
-                                    bpa.nivel_codigo as nivelcodigo
-                              FROM boletim_prova_aluno bpa
-                              INNER JOIN ue u ON
-	                            u.ue_id = bpa.ue_codigo
-                              INNER JOIN boletim_lote_prova blp ON 
-	                            blp.prova_id = bpa.prova_id
-                              INNER JOIN lote_prova lp ON
-	                            lp.id = blp.lote_id");
+                                                        bpa.disciplina                  AS disciplina,
+                                                        bpa.ano_escolar                 AS anoescolar,
+                                                        bpa.turma                       AS turma,
+                                                        bpa.aluno_ra                    AS alunora, 
+                                                        bpa.aluno_nome                  AS alunonome,
+                                                        bpa.proficiencia                AS proficiencia,
+                                                        bpa.nivel_codigo                AS nivelcodigo,
+                                                        a.sexo                          AS sexo,
+                                                        COALESCE(a.pap, false)          AS pap,
+                                                        COALESCE(a.aee, false)          AS aee,
+                                                        a.raca                          AS raca,
+                                                        EXISTS (
+                                                            SELECT 1
+                                                            FROM aluno_deficiencia ad
+                                                            WHERE ad.aluno_ra = bpa.aluno_ra
+                                                              AND ad.deficiencia_id <> 10
+                                                        )                               AS possuideficiencia  
+                                                  FROM boletim_prova_aluno bpa
+                                                  INNER JOIN ue u ON
+                                                    u.ue_id = bpa.ue_codigo
+                                                  INNER JOIN boletim_lote_prova blp ON 
+                                                    blp.prova_id = bpa.prova_id
+                                                  INNER JOIN lote_prova lp ON
+                                                    lp.id = blp.lote_id
+                                                  LEFT JOIN aluno a ON
+                                                    a.ra = bpa.aluno_ra");
 
                 query.Append(where);
                 query.Append(@" ORDER BY bpa.turma, bpa.aluno_nome
-                              LIMIT @TamanhoPagina OFFSET @Offset");
+              LIMIT @TamanhoPagina OFFSET @Offset");
 
                 parameters.Add("TamanhoPagina", filtros.PageSize);
                 parameters.Add("Offset", (filtros.PageNumber - 1) * filtros.PageSize);
+
                 var estudantes = await conn
                     .QueryAsync<AbaEstudanteListaDto>(query.ToString(), parameters);
 

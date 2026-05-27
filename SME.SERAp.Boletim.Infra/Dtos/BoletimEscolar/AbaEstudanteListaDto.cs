@@ -1,11 +1,6 @@
 ﻿using SME.SERAp.Boletim.Dominio.Enumerados;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
 {
@@ -26,11 +21,29 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public long NivelCodigo { get; set; }
         public string NivelDescricao => ObterDescricaoDoNivel(NivelCodigo);
 
+        private string _sexo;
+        public string Sexo
+        {
+            get => _sexo;
+            set => _sexo = value;
+        }
+
+        public string SexoDescricao => _sexo switch
+        {
+            "M" => "Masculino",
+            "F" => "Feminino",
+            _ => "Não informado"
+        };
+
+        public bool Pap { get; set; }
+        public bool Aee { get; set; }
+        public string? Raca { get; set; }
+        public bool PossuiDeficiencia { get; set; }
+
         private static string ObterDescricaoDoNivel(long codigo)
         {
             var tipo = typeof(TipoNivelProficiencia);
             var membro = tipo.GetMember(((TipoNivelProficiencia)codigo).ToString()).FirstOrDefault();
-
             return membro?.GetCustomAttribute<DisplayAttribute>()?.Name ?? "Nível desconhecido";
         }
     }
