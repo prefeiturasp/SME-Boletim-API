@@ -15,5 +15,7 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public string Turma { get; set; }
         public string NomeAplicacao { get; set; }
         public string Periodo { get; set; }
+        public string DisciplinaNome { get; set; }
+        public string NomeLote { get; set; }
     }
 }

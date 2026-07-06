@@ -428,5 +428,18 @@ namespace SME.SERAp.Boletim.Api.Controllers
         {
             return Ok(await useCase.Executar(anoAplicacao, disciplinaId, anoEscolar));
         }
+
+        [HttpGet("download-comparativo/{ueId}/{disciplinaId}/{anoEscolar}/{loteId}")]
+        [ProducesResponseType(typeof(RetornoBaseDto), 500)]
+        [ProducesResponseType(typeof(FileStreamResult), 200)]
+        public async Task<IActionResult> ObterDownloadResultadoComparativo(int ueId, int disciplinaId, int anoEscolar, long loteId,
+            [FromQuery] List<int>? tiposVariacao,
+            [FromQuery] string? nomeAluno,
+            [FromQuery] string? turma,
+            [FromServices] IObterDownloadResultadoComparativoUseCase obterDownloadResultadoComparativoUseCase)
+        {
+            var file = await obterDownloadResultadoComparativoUseCase.Executar(ueId, disciplinaId, anoEscolar, loteId, turma, tiposVariacao, nomeAluno);
+            return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"resultado_comparativo_{DateTime.Now:dd-MM-yyyy}.xlsx", enableRangeProcessing: true);
+        }
     }
 }

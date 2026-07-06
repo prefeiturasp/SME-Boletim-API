@@ -13,5 +13,9 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
         public int ItensPorPagina { get; set; }
         public IEnumerable<string> Aplicacoes { get; set; }
         public IEnumerable<ProficienciaAlunoDto> Itens { get; set; }
+        public string NomeDisciplina { get; set; }
+        public string NomeLote { get; set; }
+        public string UeDescricao { get; set; }
+        public string NomeAplicacaoPSP { get; set; }
     }
 }
