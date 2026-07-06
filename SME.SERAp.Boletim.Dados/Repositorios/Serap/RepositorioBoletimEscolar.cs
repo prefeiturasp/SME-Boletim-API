@@ -452,8 +452,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                     where
 	                                    u.dre_id = @dreId
 	                                    and pao.ano::int = @anoEscolar
-	                                    and blp.lote_id = @loteId
-                                        and u.id = ANY(@uesIds)     
+                                            AND blp.lote_id = @loteId
+                                            AND u.id = ANY(@uesIds)     
 	                                    and be.nivel_ue_codigo is not null
                                     order by
 	                                    be.ue_id,
