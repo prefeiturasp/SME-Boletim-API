@@ -428,43 +428,43 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
             try
             {
                 const string query = @"select
-	                                    distinct on
-	                                    (be.ue_id,
-	                                    p.disciplina,
-	                                    be.disciplina_id,
-	                                    pao.ano)
-	                                    be.ue_id  as ueId,
-	                                    p.disciplina,
-	                                    be.disciplina_id as disciplinaid,
-	                                    pao.ano as anoescolar,
-	                                    be.media_proficiencia as mediaproficiencia,
-	                                    be.nivel_ue_codigo as nivelCodigo,
-	                                    be.nivel_ue_descricao as nivelDescricao,
-	                                    blp.lote_id
-                                    from
-	                                    boletim_escolar be
-                                    inner join ue u on u.id = be.ue_id
-                                    inner join boletim_lote_prova blp on
-	                                    blp.prova_id = be.prova_id
-                                    inner join prova_ano_original pao on
-	                                    pao.prova_id = be.prova_id
-                                    inner join prova p on p.id = be.prova_id
-                                    where
-	                                    u.dre_id = @dreId
-	                                    and pao.ano::int = @anoEscolar
-	                                    and blp.lote_id = @loteId
-                                        and u.id = ANY(@uesIds)     
-	                                    and be.nivel_ue_codigo is not null
-                                    order by
-	                                    be.ue_id,
-	                                    p.disciplina,
-	                                    be.disciplina_id,
-	                                    pao.ano,
-	                                    be.id desc";
+                                            distinct on
+                                            (be.ue_id,
+                                            p.disciplina,
+                                            be.disciplina_id,
+                                            pao.ano)
+                                            be.ue_id  as ueId,
+                                            p.disciplina,
+                                            be.disciplina_id as disciplinaid,
+                                            pao.ano as anoescolar,
+                                            be.media_proficiencia as mediaproficiencia,
+                                            be.nivel_ue_codigo as nivelCodigo,
+                                            be.nivel_ue_descricao as nivelDescricao,
+                                            blp.lote_id
+                                        from
+                                            boletim_escolar be
+                                        inner join ue u on u.id = be.ue_id
+                                        inner join boletim_lote_prova blp on
+                                            blp.prova_id = be.prova_id
+                                        inner join prova_ano_original pao on
+                                            pao.prova_id = be.prova_id
+                                        inner join prova p on p.id = be.prova_id
+                                        where
+                                            u.dre_id = @dreId
+                                            and pao.ano = cast(@anoEscolar as varchar)
+                                            and blp.lote_id = @loteId
+                                            and u.id = any(@uesIds)     
+                                            and be.nivel_ue_codigo is not null
+                                        order by
+                                            be.ue_id,
+                                            p.disciplina,
+                                            be.disciplina_id,
+                                            pao.ano,
+                                            be.id desc";
 
                 var parameters = new DynamicParameters();
                 parameters.Add("dreId", dreId);
-                parameters.Add("anoEscolar", anoEscolar);
+                parameters.Add("anoEscolar", anoEscolar.ToString());
                 parameters.Add("loteId", loteId);
                 parameters.Add("uesIds", uesIds.ToList(), DbType.Object);
 
