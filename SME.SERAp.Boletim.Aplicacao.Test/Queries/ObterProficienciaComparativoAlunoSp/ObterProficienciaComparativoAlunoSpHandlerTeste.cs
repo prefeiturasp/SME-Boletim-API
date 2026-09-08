@@ -86,6 +86,45 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoA
         }
 
         [Fact]
+        public async Task Handle_Deve_Propagar_Raca_E_Sexo_Do_Aluno()
+        {
+            var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null, null);
+            var proficienciasAnoCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto {
+                    AlunoRa = 1,
+                    NomeAluno = "Aluno B",
+                    Raca = "Parda",
+                    Sexo = "F",
+                    Proficiencia = 500,
+                    Periodo = "1 Bim",
+                    NomeAplicacao = "1 Bim"
+                },
+
+                new AlunoProficienciaDto {
+                    AlunoRa = 2,
+                    NomeAluno = "Aluno C",
+                    Raca = null,
+                    Sexo = null,
+                    Proficiencia = 600,
+                    Periodo = "1 Bim",
+                    NomeAplicacao = "1 Bim"
+                },
+            };
+            ConfigurarMocks(proficienciasAnoCorrente, new List<AlunoProficienciaDto>());
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            var alunoB = resultado.Itens.Single(x => x.Nome == "Aluno B");
+            Assert.Equal("Parda", alunoB.Raca);
+            Assert.Equal("F", alunoB.Sexo);
+
+            var alunoC = resultado.Itens.Single(x => x.Nome == "Aluno C");
+            Assert.Null(alunoC.Raca);
+            Assert.Null(alunoC.Sexo);
+        }
+
+        [Fact]
         public async Task Handle_Deve_Retornar_Vazio_Quando_Nao_Houver_Proficiencia_No_Ano_Corrente()
         {
             var query = new ObterProficienciaComparativoAlunoSpQuery(1, 10, 5, "Turma A", 100, null, null, null, null);
