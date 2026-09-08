@@ -997,6 +997,53 @@ namespace SME.SERAp.Boletim.Dados.Teste.Repositorios.Serap
         }
 
         [Fact]
+        public async Task ObterProficienciaAlunoProvaSaberesAsync_DeveRetornarRacaESexo_QuandoExistemNosDados()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Raca = "Parda", Sexo = "F", Proficiencia = 200, Periodo = "Abril" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Raca = null, Sexo = null, Proficiencia = 210, Periodo = "Abril" }
+            };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var proficiencias = (await repositorio.ObterProficienciaAlunoProvaSaberesAsync(1, 1, 8, "8A", 2025)).ToList();
+
+            Assert.Equal("Parda", proficiencias.Single(p => p.AlunoRa == 1).Raca);
+            Assert.Equal("F", proficiencias.Single(p => p.AlunoRa == 1).Sexo);
+            Assert.Null(proficiencias.Single(p => p.AlunoRa == 2).Raca);
+            Assert.Null(proficiencias.Single(p => p.AlunoRa == 2).Sexo);
+        }
+
+        [Fact]
+        public async Task ObterProficienciaAlunoTodasTurmasProvaSaberesAsync_DeveRetornarRacaESexo_QuandoExistemNosDados()
+        {
+            var proficienciasEsperadas = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Raca = "Preta", Sexo = "M", Turma = "8A", Proficiencia = 200, Periodo = "Abril" }
+            };
+            conexaoLeitura
+                .SetupDapperAsync(c => c.QueryAsync<AlunoProficienciaDto>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(proficienciasEsperadas);
+
+            var proficiencias = await repositorio.ObterProficienciaAlunoTodasTurmasProvaSaberesAsync(1, 1, 8, 2025);
+
+            Assert.Equal("Preta", proficiencias.Single().Raca);
+            Assert.Equal("M", proficiencias.Single().Sexo);
+        }
+
+        [Fact]
         public async Task ObterProficienciaAlunoProvaSPAsync_DeveRetornarProficiencias_QuandoExistemResultados()
         {
             var proficienciasEsperadas = new List<AlunoProficienciaDto>

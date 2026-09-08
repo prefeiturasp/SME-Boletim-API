@@ -10,6 +10,8 @@ namespace SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar
     {
         public long AlunoRa { get; set; }
         public string NomeAluno { get; set; }
+        public string? Raca { get; set; }
+        public string? Sexo { get; set; }
         public decimal Proficiencia { get; set; }
         public long LoteId { get; set; }
         public string Turma { get; set; }
