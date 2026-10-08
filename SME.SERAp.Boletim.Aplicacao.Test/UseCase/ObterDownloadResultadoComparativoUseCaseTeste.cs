@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using ClosedXML.Excel;
+using MediatR;
 using Moq;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterNiveisProficienciaComparativoProvaSP;
 using SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoSp;
@@ -314,6 +315,72 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
 
             Assert.NotNull(result);
             Assert.True(result.Length > 0);
+        }
+
+        [Fact]
+        public async Task Deve_Escrever_Cabecalhos_Raca_Cor_E_Genero_Apos_Nome_Do_Estudante()
+        {
+            var ueId = 1;
+            var disciplinaId = 1;
+            var anoEscolar = 5;
+            var turma = "5A";
+            var loteId = 1L;
+            var abrangencias = ObterAbrangencias();
+            var dadosProvaSP = ObterDadosProvaSP();
+            var dados = ObterProficienciaComparativoComRacaSexo();
+
+            mediator.Setup(m => m.Send(It.IsAny<ObterUesAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(abrangencias);
+            mediator.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaComparativoProvaSPQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dadosProvaSP);
+            mediator.Setup(m => m.Send(It.IsAny<ObterProficienciaComparativoTodasTurmasAlunoSpQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dados);
+
+            var result = await useCase.Executar(ueId, disciplinaId, anoEscolar, loteId, turma, null, null);
+
+            using var workbook = new XLWorkbook(result);
+            var ws = workbook.Worksheet("Comparativo");
+            var linhaCabecalho = EncontrarLinhaPorValorNaColuna1(ws, "Nome do estudante");
+
+            Assert.Equal("Raça/Cor", ws.Cell(linhaCabecalho, 2).GetString());
+            Assert.Equal("Gênero", ws.Cell(linhaCabecalho, 3).GetString());
+        }
+
+        [Fact]
+        public async Task Deve_Escrever_Raca_E_Genero_De_Cada_Estudante_Com_Fallback_Nao_Informado()
+        {
+            var ueId = 1;
+            var disciplinaId = 1;
+            var anoEscolar = 5;
+            var turma = "5A";
+            var loteId = 1L;
+            var abrangencias = ObterAbrangencias();
+            var dadosProvaSP = ObterDadosProvaSP();
+            var dados = ObterProficienciaComparativoComRacaSexo();
+
+            mediator.Setup(m => m.Send(It.IsAny<ObterUesAbrangenciaUsuarioLogadoQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(abrangencias);
+            mediator.Setup(m => m.Send(It.IsAny<ObterNiveisProficienciaComparativoProvaSPQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dadosProvaSP);
+            mediator.Setup(m => m.Send(It.IsAny<ObterProficienciaComparativoTodasTurmasAlunoSpQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dados);
+
+            var result = await useCase.Executar(ueId, disciplinaId, anoEscolar, loteId, turma, null, null);
+
+            using var workbook = new XLWorkbook(result);
+            var ws = workbook.Worksheet("Comparativo");
+
+            var linhaJoao = EncontrarLinhaPorValorNaColuna1(ws, "João Silva");
+            Assert.Equal("Parda", ws.Cell(linhaJoao, 2).GetString());
+            Assert.Equal("Masculino", ws.Cell(linhaJoao, 3).GetString());
+
+            var linhaMaria = EncontrarLinhaPorValorNaColuna1(ws, "Maria Santos");
+            Assert.Equal("Não informado", ws.Cell(linhaMaria, 2).GetString());
+            Assert.Equal("Feminino", ws.Cell(linhaMaria, 3).GetString());
+
+            var linhaPedro = EncontrarLinhaPorValorNaColuna1(ws, "Pedro Costa");
+            Assert.Equal("Preta", ws.Cell(linhaPedro, 2).GetString());
+            Assert.Equal("Não informado", ws.Cell(linhaPedro, 3).GetString());
         }
 
         [Fact]
@@ -640,6 +707,64 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.UseCase
                     }
                 }
             };
+        }
+
+        private static ProficienciaComparativoAlunoSpDto ObterProficienciaComparativoComRacaSexo()
+        {
+            return new ProficienciaComparativoAlunoSpDto
+            {
+                NomeDisciplina = "Matemática",
+                NomeLote = "Lote 2024",
+                UeDescricao = "EMEF Teste",
+                Aplicacoes = new List<string> { "Abril" },
+                Itens = new List<ProficienciaAlunoDto>
+                {
+                    new ProficienciaAlunoDto
+                    {
+                        Nome = "João Silva",
+                        Raca = "Parda",
+                        Sexo = "M",
+                        Turma = "5A",
+                        Variacao = 10.5,
+                        Proficiencias = new List<ProficienciaDetalheDto>
+                        {
+                            new ProficienciaDetalheDto { Mes = string.Empty, Valor = 550m, NivelProficiencia = "Adequado" },
+                            new ProficienciaDetalheDto { Mes = "Abril", Valor = 520m, NivelProficiencia = "Básico" }
+                        }
+                    },
+                    new ProficienciaAlunoDto
+                    {
+                        Nome = "Maria Santos",
+                        Raca = null,
+                        Sexo = "F",
+                        Turma = "5A",
+                        Variacao = -5.2,
+                        Proficiencias = new List<ProficienciaDetalheDto>
+                        {
+                            new ProficienciaDetalheDto { Mes = string.Empty, Valor = 480m, NivelProficiencia = "Básico" }
+                        }
+                    },
+                    new ProficienciaAlunoDto
+                    {
+                        Nome = "Pedro Costa",
+                        Raca = "Preta",
+                        Sexo = null,
+                        Turma = "5A",
+                        Variacao = 0,
+                        Proficiencias = new List<ProficienciaDetalheDto>
+                        {
+                            new ProficienciaDetalheDto { Mes = string.Empty, Valor = 500m, NivelProficiencia = "Básico" }
+                        }
+                    }
+                }
+            };
+        }
+
+        private static int EncontrarLinhaPorValorNaColuna1(IXLWorksheet ws, string valor)
+        {
+            return ws.Column(1).CellsUsed()
+                .Single(c => c.GetString() == valor)
+                .Address.RowNumber;
         }
     }
 }

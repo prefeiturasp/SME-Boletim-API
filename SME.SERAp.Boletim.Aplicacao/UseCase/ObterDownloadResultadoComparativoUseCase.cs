@@ -80,7 +80,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             var aplicacoes = dados?.Aplicacoes?.ToList() ?? new List<string>();
             var todasColunas = MontarColunas(dadosProvaSP, aplicacoes);
             var totalColunas = todasColunas.Count;
-            var totalColunasTabela = totalColunas + 2;
+            var totalColunasTabela = totalColunas + 4;
 
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Comparativo");
@@ -259,6 +259,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             cellTitulo.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
             row++;
 
+            const int ColunaRaca = 2;
+            const int ColunaGenero = 3;
+            const int ColunaPrimeiraAplicacao = 4;
+            var colunaVariacao = todasColunas.Count + ColunaPrimeiraAplicacao;
+
             int rowCabNome = row;
             ws.Row(row).Height = AlturaLinha;
 
@@ -266,13 +271,21 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             cellNome.Value = "Nome do estudante";
             EstilarCabecalho(cellNome);
 
-            var rangePsa = ws.Range(row, 2, row, todasColunas.Count + 1);
+            var cellRaca = ws.Cell(row, ColunaRaca);
+            cellRaca.Value = "Raça/Cor";
+            EstilarCabecalho(cellRaca);
+
+            var cellGenero = ws.Cell(row, ColunaGenero);
+            cellGenero.Value = "Gênero";
+            EstilarCabecalho(cellGenero);
+
+            var rangePsa = ws.Range(row, ColunaPrimeiraAplicacao, row, colunaVariacao - 1);
             rangePsa.Merge();
-            var cellPsa = ws.Cell(row, 2);
+            var cellPsa = ws.Cell(row, ColunaPrimeiraAplicacao);
             cellPsa.Value = "Aplicação PSA";
             EstilarCabecalho(cellPsa);
 
-            var cellVariacao = ws.Cell(row, todasColunas.Count + 2);
+            var cellVariacao = ws.Cell(row, colunaVariacao);
             cellVariacao.Value = "Variação";
             EstilarCabecalho(cellVariacao);
             row++;
@@ -280,24 +293,34 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
             ws.Row(row).Height = AlturaLinha;
             var rangeNome = ws.Range(rowCabNome, 1, row, 1);
             rangeNome.Merge();
-            var rangeVar = ws.Range(rowCabNome, todasColunas.Count + 2, row, todasColunas.Count + 2);
+            var rangeRaca = ws.Range(rowCabNome, ColunaRaca, row, ColunaRaca);
+            rangeRaca.Merge();
+            var rangeGenero = ws.Range(rowCabNome, ColunaGenero, row, ColunaGenero);
+            rangeGenero.Merge();
+            var rangeVar = ws.Range(rowCabNome, colunaVariacao, row, colunaVariacao);
             rangeVar.Merge();
             AplicarBordaPreta(ws.Cell(rowCabNome, 1).Style.Border);
-            AplicarBordaPreta(ws.Cell(rowCabNome, todasColunas.Count + 2).Style.Border);
+            AplicarBordaPreta(ws.Cell(rowCabNome, ColunaRaca).Style.Border);
+            AplicarBordaPreta(ws.Cell(rowCabNome, ColunaGenero).Style.Border);
+            AplicarBordaPreta(ws.Cell(rowCabNome, colunaVariacao).Style.Border);
 
             for (int i = 0; i < todasColunas.Count; i++)
             {
                 var (label, isPsp) = todasColunas[i];
                 var subLabel = isPsp ? $"PSP ({label.ToLower()})" : $"PSA ({label.ToLower()})";
-                EstilarSubcabecalho(ws.Cell(row, i + 2)).Value = subLabel;
+                EstilarSubcabecalho(ws.Cell(row, i + ColunaPrimeiraAplicacao)).Value = subLabel;
             }
 
             rangePsa.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             rangePsa.Style.Border.OutsideBorderColor = CorBordaPreta;
             rangeNome.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             rangeNome.Style.Border.OutsideBorderColor = CorBordaPreta;
-            AplicarBordaPreta(ws.Cell(rowCabNome, todasColunas.Count + 2).Style.Border);
-            AplicarBordaPreta(ws.Cell(row, todasColunas.Count + 2).Style.Border);
+            rangeRaca.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            rangeRaca.Style.Border.OutsideBorderColor = CorBordaPreta;
+            rangeGenero.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            rangeGenero.Style.Border.OutsideBorderColor = CorBordaPreta;
+            AplicarBordaPreta(ws.Cell(rowCabNome, colunaVariacao).Style.Border);
+            AplicarBordaPreta(ws.Cell(row, colunaVariacao).Style.Border);
             row++;
 
             return row;
@@ -305,6 +328,11 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
         private static int EscreverLinhasAlunos(IXLWorksheet ws, int row, List<ProficienciaAlunoDto> alunos, List<(string label, bool isPsp)> todasColunas)
         {
+            const int ColunaRaca = 2;
+            const int ColunaGenero = 3;
+            const int ColunaPrimeiraAplicacao = 4;
+            var colunaVariacao = todasColunas.Count + ColunaPrimeiraAplicacao;
+
             for (int idx = 0; idx < alunos.Count; idx++)
             {
                 var aluno = alunos[idx];
@@ -315,6 +343,14 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                 cellNome.Value = aluno.Nome;
                 if (alt) EstilarLinhaAlternada(cellNome); else EstilarPadrao(cellNome);
 
+                var cellRaca = ws.Cell(row, ColunaRaca);
+                cellRaca.Value = string.IsNullOrWhiteSpace(aluno.Raca) ? "Não informado" : aluno.Raca;
+                if (alt) EstilarLinhaAlternada(cellRaca); else EstilarPadrao(cellRaca);
+
+                var cellGenero = ws.Cell(row, ColunaGenero);
+                cellGenero.Value = FormatarGenero(aluno.Sexo);
+                if (alt) EstilarLinhaAlternada(cellGenero); else EstilarPadrao(cellGenero);
+
                 for (int i = 0; i < todasColunas.Count; i++)
                 {
                     var (label, isPsp) = todasColunas[i];
@@ -322,7 +358,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                         ? aluno.Proficiencias?.FirstOrDefault(p => string.IsNullOrEmpty(p.Mes))
                         : aluno.Proficiencias?.FirstOrDefault(p => p.Mes == label);
 
-                    var cell = ws.Cell(row, i + 2);
+                    var cell = ws.Cell(row, i + ColunaPrimeiraAplicacao);
                     if (prof != null)
                     {
                         cell.Value = prof.Valor.ToString("N2", new CultureInfo("pt-BR"));
@@ -335,7 +371,7 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
                     }
                 }
 
-                var cellVar = ws.Cell(row, todasColunas.Count + 2);
+                var cellVar = ws.Cell(row, colunaVariacao);
                 cellVar.Value = FormatarVariacao(aluno.Variacao);
                 AplicarEstiloVariacao(cellVar, aluno.Variacao);
 
@@ -344,6 +380,13 @@ namespace SME.SERAp.Boletim.Aplicacao.UseCase
 
             return row;
         }
+
+        private static string FormatarGenero(string? sexo) => sexo switch
+        {
+            "M" => "Masculino",
+            "F" => "Feminino",
+            _ => "Não informado"
+        };
 
         private static IXLCell EstilarTituloRelatorio(IXLRange range)
         {

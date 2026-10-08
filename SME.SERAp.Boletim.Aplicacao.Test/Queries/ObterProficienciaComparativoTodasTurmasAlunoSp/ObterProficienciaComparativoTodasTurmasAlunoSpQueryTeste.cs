@@ -98,6 +98,28 @@ namespace SME.SERAp.Boletim.Aplicacao.Test.Queries.ObterProficienciaComparativoT
         }
 
         [Fact]
+        public async Task Handle_Deve_Propagar_Raca_E_Sexo_Do_Aluno()
+        {
+            var query = new ObterProficienciaComparativoTodasTurmasAlunoSpQuery(1, 10, 5, 100, null, null);
+            var profCorrente = new List<AlunoProficienciaDto>
+            {
+                new AlunoProficienciaDto { AlunoRa = 1, NomeAluno = "Aluno A", Raca = "Branca", Sexo = "M", Proficiencia = 600, Periodo = "1 Bim", Turma = "5A" },
+                new AlunoProficienciaDto { AlunoRa = 2, NomeAluno = "Aluno B", Raca = null, Sexo = null, Proficiencia = 500, Periodo = "1 Bim", Turma = "5B" }
+            };
+            ConfigurarMocks(profCorrente, new List<AlunoProficienciaDto>());
+
+            var resultado = await handler.Handle(query, CancellationToken.None);
+
+            var alunoA = resultado.Itens.Single(x => x.Nome == "Aluno A");
+            Assert.Equal("Branca", alunoA.Raca);
+            Assert.Equal("M", alunoA.Sexo);
+
+            var alunoB = resultado.Itens.Single(x => x.Nome == "Aluno B");
+            Assert.Null(alunoB.Raca);
+            Assert.Null(alunoB.Sexo);
+        }
+
+        [Fact]
         public async Task Handle_Deve_Ordenar_Por_Turma_E_Depois_Por_Nome()
         {
             var query = new ObterProficienciaComparativoTodasTurmasAlunoSpQuery(1, 10, 5, 100, null, null);

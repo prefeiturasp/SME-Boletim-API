@@ -89,6 +89,8 @@ namespace SME.SERAp.Boletim.Aplicacao.Queries.ObterProficienciaComparativoAlunoS
                 itensCompletos.Add(new ProficienciaAlunoDto
                 {
                     Nome = proficienciasPsa.First().NomeAluno,
+                    Raca = proficienciasPsa.First().Raca,
+                    Sexo = proficienciasPsa.First().Sexo,
                     Turma = proficienciasPsa.First().Turma,
                     Variacao = variacao,
                     Proficiencias = proficiencias

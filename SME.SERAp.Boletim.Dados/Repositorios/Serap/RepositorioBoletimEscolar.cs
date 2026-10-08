@@ -1201,6 +1201,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         select
                                             bpa.aluno_ra as AlunoRa,
                                             a.nome as NomeAluno,
+                                            a.raca as Raca,
+                                            a.sexo as Sexo,
                                             avg(bpa.proficiencia) as Proficiencia,
                                             blp.lote_id as LoteId,
                                             bpa.turma as Turma,
@@ -1232,7 +1234,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             and p.exibir_no_boletim = true
                                             and bpa.proficiencia is not null
                                         group by
-                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
+                                            bpa.aluno_ra, a.nome, a.raca, a.sexo, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
                                         order by
                                             a.nome;
                                     ";
@@ -1254,6 +1256,8 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                         select
                                             bpa.aluno_ra as AlunoRa,
                                             a.nome as NomeAluno,
+                                            a.raca as Raca,
+                                            a.sexo as Sexo,
                                             avg(bpa.proficiencia) as Proficiencia,
                                             blp.lote_id as LoteId,
                                             bpa.turma as Turma,
@@ -1284,7 +1288,7 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                                             and p.exibir_no_boletim = true
                                             and bpa.proficiencia is not null
                                         group by
-                                            bpa.aluno_ra, a.nome, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
+                                            bpa.aluno_ra, a.nome, a.raca, a.sexo, blp.lote_id, lp.nome, bpa.turma, bpa.disciplina
                                         order by
                                             bpa.turma, a.nome;
                                     ";
