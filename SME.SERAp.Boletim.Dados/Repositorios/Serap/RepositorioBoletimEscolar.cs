@@ -4,6 +4,7 @@ using SME.SERAp.Boletim.Dominio.Entidades;
 using SME.SERAp.Boletim.Infra.Dtos.Boletim;
 using SME.SERAp.Boletim.Infra.Dtos.BoletimEscolar;
 using SME.SERAp.Boletim.Infra.EnvironmentVariables;
+using SME.SERAp.Boletim.Dominio.Constraints;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -285,30 +286,32 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
         public async Task<IEnumerable<UePorDreDto>> ObterUesPorDreAsync(long dreId, int anoEscolar, long loteId)
         {
             const string query = @"select
-	                                u.id as UeId,
-	                                u.nome as UeNome,
-	                                u.tipo_escola as TipoEscola,
-	                                d.id as DreId,
-	                                d.abreviacao as drenomeabreviado,
-	                                d.nome as DreNome
-                                from
-	                                boletim_lote_ue blu
-                                inner join ue u on
-	                                u.id = blu.ue_id
-                                inner join dre d on
-	                                d.id = blu.dre_id
-                                where
-	                                blu.dre_id = @dreId
-	                                and blu.ano_escolar = @anoEscolar
-	                                and blu.lote_id = @loteId
-                                order by
-	                                d.nome,
-	                                u.nome";
+                            u.id as UeId,
+                            u.nome as UeNome,
+                            u.tipo_escola as TipoEscola,
+                            d.id as DreId,
+                            d.abreviacao as drenomeabreviado,
+                            d.nome as DreNome
+                        from
+                            boletim_lote_ue blu
+                        inner join ue u on
+                            u.id = blu.ue_id
+                        inner join dre d on
+                            d.id = blu.dre_id
+                        where
+                            blu.dre_id = @dreId
+                            and blu.ano_escolar = @anoEscolar
+                            and blu.lote_id = @loteId
+                            and u.tipo_escola = ANY(@tiposEscola)
+                        order by
+                            d.nome,
+                            u.nome";
 
             using var conn = ObterConexaoLeitura();
             try
             {
-                return await conn.QueryAsync<UePorDreDto>(query, new { dreId, anoEscolar, loteId });
+                return await conn.QueryAsync<UePorDreDto>(query,
+                    new { dreId, anoEscolar, loteId, tiposEscola = TipoEscolaBoletim.ObterTipos() });
             }
             finally
             {
@@ -364,9 +367,12 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 parameters.Add("anoEscolar", anoEscolar);
 
                 var where = new StringBuilder(@"  where
-	                                                blu.dre_id = @dreId
-	                                                and blu.ano_escolar = @anoEscolar
-	                                                and blu.lote_id = @loteId");
+                                            blu.dre_id = @dreId
+                                            and blu.ano_escolar = @anoEscolar
+                                            and blu.lote_id = @loteId");
+
+                where.Append(" and u.tipo_escola = ANY(@tiposEscola)");
+                parameters.Add("tiposEscola", TipoEscolaBoletim.ObterTipos(), DbType.Object);
 
                 if (filtros?.UesIds?.Any() ?? false)
                 {
@@ -375,39 +381,39 @@ namespace SME.SERAp.Boletim.Dados.Repositorios.Serap
                 }
 
                 var totalQuery = new StringBuilder(@"select
-	                                                    count(u.id)
-                                                    from
-	                                                    boletim_lote_ue blu
-                                                    inner join ue u on
-	                                                    u.id = blu.ue_id
-                                                inner join dre d on
-	                                                d.id = blu.dre_id");
+                                                count(u.id)
+                                            from
+                                                boletim_lote_ue blu
+                                            inner join ue u on
+                                                u.id = blu.ue_id
+                                        inner join dre d on
+                                            d.id = blu.dre_id");
 
                 totalQuery.Append(where);
                 var totalRegistros = await conn.QueryFirstOrDefaultAsync<int>(totalQuery.ToString(), parameters);
 
                 var query = new StringBuilder(@"select
-                                                    u.id,
-                                                    u.nome as ueNome,
-                                                    u.tipo_escola as tipoEscola,
-                                                    blu.ano_escolar as anoEscolar,
-                                                    blu.total_alunos as totalEstudantes,
-                                                    blu.realizaram_prova as totalEstudadesRealizaramProva,
-                                                    d.id as DreId,
-	                                                d.abreviacao as drenomeabreviado,
-	                                                d.nome as DreNome
-                                                from
-                                                    boletim_lote_ue blu
-                                                inner join ue u on
-                                                    u.id = blu.ue_id
-                                                inner join dre d on
-	                                                d.id = blu.dre_id");
-                
+                                            u.id,
+                                            u.nome as ueNome,
+                                            u.tipo_escola as tipoEscola,
+                                            blu.ano_escolar as anoEscolar,
+                                            blu.total_alunos as totalEstudantes,
+                                            blu.realizaram_prova as totalEstudadesRealizaramProva,
+                                            d.id as DreId,
+                                            d.abreviacao as drenomeabreviado,
+                                            d.nome as DreNome
+                                        from
+                                            boletim_lote_ue blu
+                                        inner join ue u on
+                                            u.id = blu.ue_id
+                                        inner join dre d on
+                                            d.id = blu.dre_id");
+
                 query.Append(where);
 
                 query.Append(@" order by
-	                                u.nome
-                                limit @limit offset @offset;");
+                            u.nome
+                        limit @limit offset @offset;");
 
                 parameters.Add("offset", (filtros.Pagina - 1) * filtros.TamanhoPagina);
                 parameters.Add("limit", filtros.TamanhoPagina);
